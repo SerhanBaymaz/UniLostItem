@@ -1,0 +1,17 @@
+<Project>
+  <PropertyGroup>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>compile;runtime;build;analyzers;native;contentfiles;none</IncludeAssets>
+    </PackageReference>
+
+    <PackageReference Include="SonarAnalyzer.CSharp" Version="10.16.1.129956">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>analyzers</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+</Project>
+
