@@ -54,6 +54,127 @@ public static class DbInitializer
                     KitapYazar = "Oğuz Atay",
                     KitapSayfaSayisi = 724
                 }
+                ,
+                new()
+                {
+                    KitapName = "Karamazov Kardeşler",
+                    KitapYazar = "Fyodor Dostoyevski",
+                    KitapSayfaSayisi = 824
+                },
+                new()
+                {
+                    KitapName = "Anna Karenina",
+                    KitapYazar = "Lev Tolstoy",
+                    KitapSayfaSayisi = 864
+                },
+                new()
+                {
+                    KitapName = "Madame Bovary",
+                    KitapYazar = "Gustave Flaubert",
+                    KitapSayfaSayisi = 329
+                },
+                new()
+                {
+                    KitapName = "Fahrenheit 451",
+                    KitapYazar = "Ray Bradbury",
+                    KitapSayfaSayisi = 194
+                },
+                new()
+                {
+                    KitapName = "Brave New World",
+                    KitapYazar = "Aldous Huxley",
+                    KitapSayfaSayisi = 268
+                },
+                new()
+                {
+                    KitapName = "The Catcher in the Rye",
+                    KitapYazar = "J.D. Salinger",
+                    KitapSayfaSayisi = 214
+                },
+                new()
+                {
+                    KitapName = "To Kill a Mockingbird",
+                    KitapYazar = "Harper Lee",
+                    KitapSayfaSayisi = 281
+                },
+                new()
+                {
+                    KitapName = "The Great Gatsby",
+                    KitapYazar = "F. Scott Fitzgerald",
+                    KitapSayfaSayisi = 180
+                },
+                new()
+                {
+                    KitapName = "Moby Dick",
+                    KitapYazar = "Herman Melville",
+                    KitapSayfaSayisi = 635
+                },
+                new()
+                {
+                    KitapName = "Yeraltından Notlar",
+                    KitapYazar = "Fyodor Dostoyevski",
+                    KitapSayfaSayisi = 88
+                },
+                new()
+                {
+                    KitapName = "Aşk",
+                    KitapYazar = "Elif Şafak",
+                    KitapSayfaSayisi = 408
+                },
+                new()
+                {
+                    KitapName = "Puslu Kıtalar Atlası",
+                    KitapYazar = "İhsan Oktay Anar",
+                    KitapSayfaSayisi = 584
+                },
+                new()
+                {
+                    KitapName = "Kürk Mantolu Madonna",
+                    KitapYazar = "Sabahattin Ali",
+                    KitapSayfaSayisi = 160
+                },
+                new()
+                {
+                    KitapName = "Sefiller",
+                    KitapYazar = "Victor Hugo",
+                    KitapSayfaSayisi = 1463
+                },
+                new()
+                {
+                    KitapName = "The Hobbit",
+                    KitapYazar = "J.R.R. Tolkien",
+                    KitapSayfaSayisi = 310
+                },
+                new()
+                {
+                    KitapName = "Lord of the Flies",
+                    KitapYazar = "William Golding",
+                    KitapSayfaSayisi = 224
+                },
+                new()
+                {
+                    KitapName = "One Hundred Years of Solitude",
+                    KitapYazar = "Gabriel García Márquez",
+                    KitapSayfaSayisi = 417
+                },
+                new()
+                {
+                    KitapName = "Walden",
+                    KitapYazar = "Henry David Thoreau",
+                    KitapSayfaSayisi = 224
+                },
+                new()
+                {
+                    KitapName = "The Road",
+                    KitapYazar = "Cormac McCarthy",
+                    KitapSayfaSayisi = 287
+                },
+                new()
+                {
+                    KitapName = "Beloved",
+                    KitapYazar = "Toni Morrison",
+                    KitapSayfaSayisi = 324
+                }
             };
 
             context.SerhanKitaplar.AddRange(kitaplar);
