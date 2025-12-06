@@ -1,7 +1,7 @@
 using FluentValidation;
 using Application.Features.SerhanKitaplar.Commands.EditSerhanKitap;
 
-namespace Application.Features.SerhanKitaplar.Validators;
+namespace Application.Features.SerhanKitaplar.Commands.EditSerhanKitap;
 
 public class EditSerhanKitapCommandValidator : AbstractValidator<EditSerhanKitapCommand>
 {

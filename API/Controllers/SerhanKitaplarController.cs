@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
 
+[Route("api/v1/serhan-kitaplar")]
 public class SerhanKitaplarController : BaseApiController
 {
     [HttpGet]
