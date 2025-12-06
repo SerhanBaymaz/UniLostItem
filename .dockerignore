@@ -1,0 +1,90 @@
+# Docker ignore dosyası - DevContainer ve Docker build için
+
+# .NET build output
+**/bin/
+**/obj/
+**/out/
+
+# .NET Core
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.userprefs
+
+# VS Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# JetBrains Rider
+.idea/
+*.sln.iml
+
+# NuGet packages (container'da yeniden restore edilecek)
+*.nupkg
+*.snupkg
+**/packages/*
+!**/packages/build/
+
+# Test results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+
+# Coverage
+coverage/
+*.coverage
+*.coveragexml
+
+# Database files (container'da yeniden oluşturulacak)
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+# Environment files (güvenlik için)
+.env
+.env.local
+.env.*.local
+
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Git files
+.git/
+.gitignore
+.gitattributes
+
+# Documentation (container'a gerek yok)
+*.md
+!README.md
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*~
+
+# DevContainer files (recursive copy önlemek için)
+.devcontainer/
+
+# Node modules (eğer frontend eklendiyse)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
