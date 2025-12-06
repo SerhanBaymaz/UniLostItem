@@ -4,7 +4,7 @@ using FluentValidation;
 using Microsoft.OpenApi.Models;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
-using Application.SerhanKitaplar.Validators;
+using Application.Features.SerhanKitaplar.Validators;
 
 var builder = WebApplication.CreateBuilder(args);
 

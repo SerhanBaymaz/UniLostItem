@@ -1,10 +1,11 @@
 using System;
 using API.Responses;
-using Application.SerhanKitaplar.Commands;
-using Application.SerhanKitaplar.DTOs;
-using Application.SerhanKitaplar.Queries;
-using Application.Core;
-using Domain;
+using Application.Features.SerhanKitaplar.Commands.CreateSerhanKitap;
+using Application.Features.SerhanKitaplar.Commands.DeleteSerhanKitap;
+using Application.Features.SerhanKitaplar.Commands.EditSerhanKitap;
+using Application.Features.SerhanKitaplar.Queries.Common.DTOs;
+using Application.Features.SerhanKitaplar.Queries.GetSerhanKitapDetails;
+using Application.Features.SerhanKitaplar.Queries.GetSerhanKitapList;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,33 +14,35 @@ namespace API.Controllers;
 public class SerhanKitaplarController : BaseApiController
 {
     [HttpGet]
-    public async Task<ActionResult<StandardApiResponse<List<SerhanKitap>>>> GetSerhanKitaplar()
+    public async Task<ActionResult<StandardApiResponse<List<GetSerhanKitapDto>>>> GetSerhanKitaplar()
     {
-        var serhanKitaplar = await Mediator.Send(new GetSerhanKitapList.Query());
+        var serhanKitaplar = await Mediator.Send(new GetSerhanKitapListQuery());
         return Success(serhanKitaplar, "SerhanKitaplar retrieved successfully");
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<StandardApiResponse<SerhanKitap>>> GetSerhanKitapDetail(string id)
+    public async Task<ActionResult<StandardApiResponse<GetSerhanKitapDto>>> GetSerhanKitapDetail(string id)
     {
-        return HandleResult(await Mediator.Send(new GetSerhanKitapDetails.Query { Id = id }));
+        return HandleResult(await Mediator.Send(new GetSerhanKitapDetailsQuery { Id = id }));
     }
 
     [HttpPost]
-    public async Task<ActionResult<StandardApiResponse<string>>> CreateSerhanKitap([FromBody] CreateSerhanKitapDto serhanKitapDto)
+    public async Task<ActionResult<StandardApiResponse<string>>> CreateSerhanKitap([FromBody] CreateSerhanKitapDto createSerhanKitapDto)
     {
-        return HandleResult(await Mediator.Send(new CreateSerhanKitap.Command { SerhanKitapDto = serhanKitapDto }));
+        var command = new CreateSerhanKitapCommand { CreateSerhanKitapDto = createSerhanKitapDto };
+        return HandleResult(await Mediator.Send(command));
     }
 
-    [HttpPut]
-    public async Task<ActionResult<StandardApiResponse<Unit>>> EditSerhanKitap([FromBody] EditSerhanKitap.Command command)
+    [HttpPut("{id}")]
+    public async Task<ActionResult<StandardApiResponse<Unit>>> EditSerhanKitap(string id, [FromBody] EditSerhanKitapDto editSerhanKitapDto)
     {
+        var command = new EditSerhanKitapCommand { Id = id, EditSerhanKitapDto = editSerhanKitapDto };
         return HandleResult(await Mediator.Send(command));
     }
 
     [HttpDelete("{id}")]
     public async Task<ActionResult<StandardApiResponse<Unit>>> DeleteSerhanKitap(string id)
     {
-        return HandleResult(await Mediator.Send(new DeleteSerhanKitap.Command { Id = id }));
+        return HandleResult(await Mediator.Send(new DeleteSerhanKitapCommand { Id = id }));
     }
 }

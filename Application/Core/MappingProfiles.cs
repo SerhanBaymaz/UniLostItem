@@ -1,5 +1,7 @@
 using System;
-using Application.SerhanKitaplar.DTOs;
+using Application.Features.SerhanKitaplar.Queries.Common.DTOs;
+using Application.Features.SerhanKitaplar.Commands.CreateSerhanKitap;
+using Application.Features.SerhanKitaplar.Commands.EditSerhanKitap;
 using AutoMapper;
 using Domain;
 
@@ -9,7 +11,17 @@ public class MappingProfiles : Profile
 {
     public MappingProfiles()
     {
-        CreateMap<SerhanKitap, SerhanKitap>();
-        CreateMap<CreateSerhanKitapDto, SerhanKitap>();
+        // ========== QUERIES (Read) ==========
+        // Entity → DTO
+        CreateMap<SerhanKitap, GetSerhanKitapDto>();
+
+
+        // ========== COMMANDS (Write) ==========
+        // DTO → Entity (Id is ignored for creation and editing)
+        CreateMap<CreateSerhanKitapDto, SerhanKitap>()
+            .ForMember(dest => dest.Id, opt => opt.Ignore());
+
+        CreateMap<EditSerhanKitapDto, SerhanKitap>()
+            .ForMember(dest => dest.Id, opt => opt.Ignore());
     }
 }
