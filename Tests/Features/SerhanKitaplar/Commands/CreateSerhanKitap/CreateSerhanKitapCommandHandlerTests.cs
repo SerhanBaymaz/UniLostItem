@@ -8,7 +8,7 @@ using Moq;
 using Persistence;
 using Tests.Helpers;
 
-namespace Tests.Features.SerhanKitaplar.Commands;
+namespace Tests.Features.SerhanKitaplar.Commands.CreateSerhanKitap;
 
 public class CreateSerhanKitapCommandHandlerTests
 {
