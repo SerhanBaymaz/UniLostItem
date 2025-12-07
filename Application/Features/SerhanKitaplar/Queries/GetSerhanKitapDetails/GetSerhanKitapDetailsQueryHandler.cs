@@ -10,10 +10,10 @@ namespace Application.Features.SerhanKitaplar.Queries.GetSerhanKitapDetails;
 
 public class GetSerhanKitapDetailsQueryHandler : IRequestHandler<GetSerhanKitapDetailsQuery, Result<GetSerhanKitapDto>>
 {
-    private readonly AppDbContext _context;
+    private readonly IAppDbContext _context;
     private readonly IMapper _mapper;
 
-    public GetSerhanKitapDetailsQueryHandler(AppDbContext context, IMapper mapper)
+    public GetSerhanKitapDetailsQueryHandler(IAppDbContext context, IMapper mapper)
     {
         _context = context;
         _mapper = mapper;

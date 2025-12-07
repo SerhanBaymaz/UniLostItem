@@ -10,10 +10,10 @@ namespace Application.Features.SerhanKitaplar.Commands.CreateSerhanKitap;
 
 public class CreateSerhanKitapCommandHandler : IRequestHandler<CreateSerhanKitapCommand, Result<string>>
 {
-    private readonly AppDbContext _context;
+    private readonly IAppDbContext _context;
     private readonly IMapper _mapper;
 
-    public CreateSerhanKitapCommandHandler(AppDbContext context, IMapper mapper)
+    public CreateSerhanKitapCommandHandler(IAppDbContext context, IMapper mapper)
     {
         _context = context;
         _mapper = mapper;

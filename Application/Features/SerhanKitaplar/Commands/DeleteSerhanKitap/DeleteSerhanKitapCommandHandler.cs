@@ -8,9 +8,9 @@ namespace Application.Features.SerhanKitaplar.Commands.DeleteSerhanKitap;
 
 public class DeleteSerhanKitapCommandHandler : IRequestHandler<DeleteSerhanKitapCommand, Result<Unit>>
 {
-    private readonly AppDbContext _context;
+    private readonly IAppDbContext _context;
 
-    public DeleteSerhanKitapCommandHandler(AppDbContext context)
+    public DeleteSerhanKitapCommandHandler(IAppDbContext context)
     {
         _context = context;
     }

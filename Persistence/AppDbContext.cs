@@ -4,7 +4,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Persistence;
 
-public class AppDbContext(DbContextOptions options) : DbContext(options)
+public class AppDbContext : DbContext, IAppDbContext
 {
-    public required DbSet<SerhanKitap> SerhanKitaplar { get; set; }
+    public AppDbContext(DbContextOptions options) : base(options)
+    {
+    }
+
+    public DbSet<SerhanKitap> SerhanKitaplar { get; set; } = null!;
 }

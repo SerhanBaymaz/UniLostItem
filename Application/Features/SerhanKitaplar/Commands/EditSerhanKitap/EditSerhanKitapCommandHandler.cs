@@ -9,9 +9,9 @@ namespace Application.Features.SerhanKitaplar.Commands.EditSerhanKitap;
 
 public class EditSerhanKitapCommandHandler : IRequestHandler<EditSerhanKitapCommand, Result<Unit>>
 {
-    private readonly AppDbContext _context;
+    private readonly IAppDbContext _context;
 
-    public EditSerhanKitapCommandHandler(AppDbContext context)
+    public EditSerhanKitapCommandHandler(IAppDbContext context)
     {
         _context = context;
     }
