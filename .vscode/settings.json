@@ -29,5 +29,9 @@
     "**/bin": true,
     "**/obj": true,
     "**/.vs": true
+  },
+  "sonarlint.connectedMode.project": {
+    "connectionId": "serhanbaymaz",
+    "projectKey": "SerhanBaymaz_TemplateDeneme"
   }
 }
