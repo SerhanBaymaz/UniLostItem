@@ -13,7 +13,7 @@ Bu proje, **Clean Architecture** prensiplerine uygun olarak geliştirilmiş bir 
 
 ## 🏗️ Proje Yapısı
 
-Proje, Clean Architecture prensiplerine göre 4 katmana ayrılmıştır:
+Proje,Clean Architecture prensiplerine göre 4 katmana ayrılmıştır:
 
 ```
 TemplateDeneme/
