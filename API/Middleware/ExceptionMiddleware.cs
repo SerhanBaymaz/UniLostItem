@@ -68,13 +68,17 @@ public class ExceptionMiddleware(ILogger<ExceptionMiddleware> logger, IHostEnvir
 
         var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
         var json = JsonSerializer.Serialize(standardResponse, options);
+
+        // Log validation details
+        logger.LogWarning("Validation failed for {Path} with {ErrorCount} errors", context.Request?.Path, validationErrors.Count);
+
         await context.Response.WriteAsync(json);
     }
 
 
     private async Task HandleException(HttpContext context, Exception ex)
     {
-        logger.LogError(ex, ex.Message);
+        logger.LogError(ex, "Unhandled exception while processing {Path}", context.Request?.Path);
 
         // RFC 9457 recommends using the "application/problem+json" media type
         context.Response.ContentType = "application/problem+json";

@@ -485,3 +485,4 @@ $RECYCLE.BIN/
 API/appsettings.json
 API/unilostitem.db-shm
 API/unilostitem.db-wal
+API/unilostitem.db

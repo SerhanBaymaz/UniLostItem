@@ -4,9 +4,21 @@ using FluentValidation;
 using Microsoft.OpenApi.Models;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
+using Serilog;
 using Application.Features.SerhanKitaplar.Validators;
 
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console(outputTemplate: "[ {Level:u3} {Timestamp:HH:mm:ss}] {Message:lj}{NewLine}{Exception}")
+    .CreateBootstrapLogger();
+
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Host.UseSerilog((ctx, services, lc) =>
+{
+    lc.MinimumLevel.Information()
+        .Enrich.FromLogContext()
+        .WriteTo.Console(outputTemplate: "[ {Level:u3} {Timestamp:HH:mm:ss}] {Message:lj}{NewLine}{Exception}");
+});
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -62,8 +74,8 @@ try
 }
 catch (Exception ex)
 {
-    var logger = services.GetRequiredService<ILogger<Program>>();
-    logger.LogError(ex, "An error occurred during migration.");
+    Log.Fatal(ex, "An error occurred during migration.");
 }
 
 await app.RunAsync();
+await Log.CloseAndFlushAsync();
