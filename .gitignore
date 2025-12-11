@@ -482,7 +482,15 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+# Ignore appsettings and database files
 API/appsettings.json
 API/unilostitem.db-shm
 API/unilostitem.db-wal
 API/unilostitem.db
+
+# Ignore seq-data folder and its contents
+seq-data/
+seq-data.bak/
+
+

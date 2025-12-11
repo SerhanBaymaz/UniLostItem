@@ -1,0 +1,19 @@
+name: dev-templatedeneme
+services:
+  seq:
+    image: datalust/seq:latest
+    container_name: template-deneme-seq
+    environment:
+      - ACCEPT_EULA=Y
+      - SEQ_FIRSTRUN_ADMINUSERNAME=admindev
+      - SEQ_FIRSTRUN_ADMINPASSWORD=admindev
+    ports:
+      - "5341:5341"
+      - "8081:80"
+    volumes:
+      - seq-data:/data
+    restart: unless-stopped
+
+volumes:
+  seq-data:
+    driver: local

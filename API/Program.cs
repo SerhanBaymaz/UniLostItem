@@ -7,17 +7,11 @@ using Persistence;
 using Serilog;
 using Application.Features.SerhanKitaplar.Validators;
 
-Log.Logger = new LoggerConfiguration()
-    .WriteTo.Console(outputTemplate: "[ {Level:u3} {Timestamp:HH:mm:ss}] {Message:lj}{NewLine}{Exception}")
-    .CreateBootstrapLogger();
-
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Host.UseSerilog((ctx, services, lc) =>
+builder.Host.UseSerilog((context, loggerConfig) =>
 {
-    lc.MinimumLevel.Information()
-        .Enrich.FromLogContext()
-        .WriteTo.Console(outputTemplate: "[ {Level:u3} {Timestamp:HH:mm:ss}] {Message:lj}{NewLine}{Exception}");
+    loggerConfig.ReadFrom.Configuration(context.Configuration);
 });
 
 // Add services to the container.
@@ -48,9 +42,13 @@ builder.Services.AddTransient<ExceptionMiddleware>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
+
 app.UseMiddleware<ExceptionMiddleware>();
 app.UseCors(x => x.AllowAnyHeader().AllowAnyMethod()
     .WithOrigins("http://localhost:3000", "https://localhost:3000"));
+
+// Log all HTTP requests
+app.UseSerilogRequestLogging();
 
 if (app.Environment.IsDevelopment())
 {
