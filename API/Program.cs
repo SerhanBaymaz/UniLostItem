@@ -5,6 +5,7 @@ using Microsoft.OpenApi.Models;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
 using Serilog;
+using System.Diagnostics;
 using Application.Features.SerhanKitaplar.Validators;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -47,8 +48,15 @@ app.UseMiddleware<ExceptionMiddleware>();
 app.UseCors(x => x.AllowAnyHeader().AllowAnyMethod()
     .WithOrigins("http://localhost:3000", "https://localhost:3000"));
 
-// Log all HTTP requests
-app.UseSerilogRequestLogging();
+app.UseSerilogRequestLogging(opts => opts.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
+    {
+        // Prefer Activity.TraceId (distributed tracing) when available
+        var traceId = Activity.Current?.TraceId.ToString() ?? httpContext.TraceIdentifier;
+        diagnosticContext.Set("TraceId", traceId);
+        // Also include the W3C traceparent (includes version/trace/span/flags) so it matches API responses
+        var traceParent = Activity.Current?.Id ?? httpContext.TraceIdentifier;
+        diagnosticContext.Set("TraceParent", traceParent);
+    });
 
 if (app.Environment.IsDevelopment())
 {
