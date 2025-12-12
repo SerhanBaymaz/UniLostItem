@@ -2,6 +2,9 @@ using API.Middleware;
 using Application.Core;
 using FluentValidation;
 using Microsoft.OpenApi.Models;
+using Microsoft.AspNetCore.Mvc;
+using System.Linq;
+using API.Responses;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
 using Serilog;
@@ -17,6 +20,36 @@ builder.Host.UseSerilog((context, loggerConfig) =>
 
 // Add services to the container.
 builder.Services.AddControllers();
+
+// Convert model state / input formatter errors into StandardApiResponse
+builder.Services.Configure<ApiBehaviorOptions>(options =>
+{
+    // disable the default automatic 400 so our factory runs
+    options.SuppressModelStateInvalidFilter = true;
+
+    options.InvalidModelStateResponseFactory = context =>
+    {
+        var errors = new Dictionary<string, string[]>();
+
+        foreach (var kvp in context.ModelState)
+        {
+            var key = string.IsNullOrEmpty(kvp.Key) ? "$" : kvp.Key;
+            var errorMessages = kvp.Value.Errors.Select(e => string.IsNullOrEmpty(e.ErrorMessage) ? e.Exception?.Message ?? "Invalid value" : e.ErrorMessage).ToArray();
+            if (errorMessages.Length > 0)
+            {
+                errors[key] = errorMessages;
+            }
+        }
+
+        var instance = context.HttpContext.Request?.Path.ToString();
+
+        var standard = StandardApiResponse<object>.ValidationErrorResponse(errors, instance);
+
+        var result = new BadRequestObjectResult(standard);
+        result.ContentTypes.Add("application/json");
+        return result;
+    };
+});
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
