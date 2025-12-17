@@ -13,25 +13,78 @@ Bu proje, **Clean Architecture** prensiplerine uygun olarak geliştirilmiş bir 
 
 ## 🏗️ Proje Yapısı
 
-Proje, Clean Architecture prensiplerine göre 4 katmana ayrılmıştır:
+Proje, Clean Architecture prensiplerine göre 4 katmana ayrılmıştır; ayrıca testler için bir `Tests/` proje dizini bulunmaktadır.
 
 ```
 TemplateDeneme/
 ├── API/                      # Presentation Layer - Web API
 │   ├── Controllers/          # API Controller'ları
+│   │   ├── BaseApiController.cs
+│   │   └── SerhanKitaplarController.cs
 │   ├── Middleware/           # Custom middleware'ler
-│   └── Responses/            # API response modelleri
+│   │   └── ExceptionMiddleware.cs
+│   ├── Responses/            # API response modelleri
+│   │   ├── AppProblemDetails.cs
+│   │   └── StandardApiResponse.cs
+│   ├── Properties/
+│   │   └── launchSettings.json
+│   ├── appsettings.Development.json
+│   └── Program.cs            # Uygulama başlangıç noktası
 ├── Application/              # Application Layer - İş mantığı
 │   ├── Core/                 # Ortak yapılar (Result, Validation, Mapping)
-│   └── SerhanKitaplar/       # Feature klasörü (Commands, Queries, DTOs, Validators)
+│   │   ├── MappingProfiles.cs       # AutoMapper profilleri
+│   │   ├── Result.cs                # Result pattern implementasyonu
+│   │   └── ValidationBehavior.cs    # MediatR validation pipeline
+│   └── Features/
+│       └── SerhanKitaplar/   # SerhanKitap feature modülü
+│           ├── Commands/
+│           │   ├── CreateSerhanKitap/
+│           │   │   ├── CreateSerhanKitapCommand.cs
+│           │   │   ├── CreateSerhanKitapCommandHandler.cs
+│           │   │   ├── CreateSerhanKitapCommandValidator.cs
+│           │   │   └── CreateSerhanKitapDto.cs
+│           │   ├── EditSerhanKitap/
+│           │   │   ├── EditSerhanKitapCommand.cs
+│           │   │   ├── EditSerhanKitapCommandHandler.cs
+│           │   │   ├── EditSerhanKitapCommandValidator.cs
+│           │   │   └── EditSerhanKitapDto.cs
+│           │   └── DeleteSerhanKitap/
+│           │       ├── DeleteSerhanKitapCommand.cs
+│           │       └── DeleteSerhanKitapCommandHandler.cs
+│           └── Queries/
+│               ├── Common/
+│               │   └── DTOs/
+│               │       └── GetSerhanKitapDto.cs
+│               ├── GetSerhanKitapList/
+│               │   ├── GetSerhanKitapListQuery.cs
+│               │   └── GetSerhanKitapListQueryHandler.cs
+│               └── GetSerhanKitapDetails/
+│                   ├── GetSerhanKitapDetailsQuery.cs
+│                   └── GetSerhanKitapDetailsQueryHandler.cs
 ├── Domain/                   # Domain Layer - Domain modelleri
 │   └── SerhanKitap.cs        # Domain entity
-└── Persistence/              # Infrastructure Layer - Data erişimi
-    ├── AppDbContext.cs       # Entity Framework DbContext
-    ├── DbInitializer.cs      # Veritabanı başlatma
-    └── Migrations/           # EF Core migration'ları
-```
-
+├── Persistence/              # Infrastructure Layer - Data erişimi
+│   ├── AppDbContext.cs       # Entity Framework DbContext
+│   ├── IAppDbContext.cs      # DbContext interface
+│   ├── DbInitializer.cs      # Veritabanı seed data
+│   └── Migrations/           # EF Core migration'ları
+└── Tests/                    # Unit and integration tests project
+    ├── Features/             # Feature-specific tests
+    │   └── SerhanKitaplar/
+    │       ├── Commands/
+    │       │   ├── CreateSerhanKitap/
+    │       │   │   ├── CreateSerhanKitapCommandHandlerTests.cs
+    │       │   │   └── CreateSerhanKitapCommandValidatorTests.cs
+    │       │   ├── EditSerhanKitap/
+    │       │   │   ├── EditSerhanKitapCommandHandlerTests.cs
+    │       │   │   └── EditSerhanKitapCommandValidatorTests.cs
+    │       │   └── DeleteSerhanKitap/
+    │       │       └── DeleteSerhanKitapCommandHandlerTests.cs
+    │       └── Queries/
+    │           ├── GetSerhanKitapList/
+    │           │   └── GetSerhanKitapListQueryHandlerTests.cs
+    │           └── GetSerhanKitapDetails/
+    │               └── GetSerhanKitapDetailsQueryHandlerTests.cs
 ## 🚀 Kullanılan Teknolojiler
 
 - **.NET 9.0** - .NET framework versiyonu
@@ -48,6 +101,8 @@ TemplateDeneme/
 | **Swashbuckle.AspNetCore** | 6.5.0 | Swagger/OpenAPI dokümantasyonu |
 | **Microsoft.EntityFrameworkCore.Design** | 9.0.0 | EF Core design-time araçları |
 | **Ben.Demystifier** | 0.4.1 | Gelişmiş exception stack trace formatlaması |
+| **Serilog** | 4.3.0 | Structured logging and enrichment |
+| **Serilog.Sinks.Seq** | 9.0.0 | Seq sink for centralized structured logging |
 
 ### Application Katmanı
 | Kütüphane | Versiyon | Açıklama |
@@ -64,11 +119,25 @@ TemplateDeneme/
 ### Domain Katmanı
 - Harici bağımlılık içermez (Clean Architecture prensibi)
 
+### Tests Katmanı
+| Kütüphane | Versiyon | Açıklama |
+|-----------|----------|----------|
+| **xUnit** | 2.9.2 | Test framework |
+| **xunit.runner.visualstudio** | 2.8.2 | Visual Studio test runner |
+| **FluentAssertions** | 8.8.0 | Readable test assertions |
+| **Moq** | 4.20.72 | Mocking framework |
+| **Microsoft.EntityFrameworkCore.InMemory** | 9.0.0 | In-memory database for testing |
+| **coverlet.collector** | 6.0.2 | Code coverage collection |
+| **Microsoft.NET.Test.Sdk** | 17.12.0 | .NET Test SDK |
+
 ### Code Quality & Analyzers (Directory.Build.props)
 | Kütüphane | Versiyon | Açıklama |
 |-----------|----------|----------|
 | **Microsoft.CodeAnalysis.NetAnalyzers** | 9.0.0 | .NET kod analizi ve best practice kuralları |
 | **SonarAnalyzer.CSharp** | 10.16.1.129956 | SonarQube/SonarCloud kod kalitesi analizi |
+| **SonarLint** | - | IDE-level static analysis (recommended for developers) |
+
+Bu projede ayrıca SonarQube ile merkezi kod kalite taramaları entegre edilebilir; `SonarAnalyzer.CSharp` sunucu/CI analizleri için yapılandırılmıştır.
 
 > **Not:** `TreatWarningsAsErrors` özelliği aktiftir - tüm uyarılar hata olarak kabul edilir.
 
@@ -111,6 +180,31 @@ dotnet run --project API
 ```
 https://localhost:5001/swagger
 ```
+
+### Logging ve Monitoring (Opsiyonel)
+
+Proje Serilog ile yapılandırılmıştır ve Seq desteği içerir:
+
+1. **Seq'i Docker Compose ile çalıştırın:**
+```bash
+docker-compose -f docker-compose.dev.yml up -d
+```
+
+2. **Seq UI'a erişin:**
+```
+http://localhost:8081
+```
+
+**Seq Giriş Bilgileri:**
+- Kullanıcı adı: `admindev`
+- Şifre: `admindev`
+
+3. **Servisleri durdurmak için:**
+```bash
+docker-compose -f docker-compose.dev.yml down
+```
+
+> **Not:** Serilog yapılandırması `appsettings.Development.json` dosyasında bulunur. Seq log verileri Docker volume'unda saklanır.
 
 ## 💻 Kullanım
 
@@ -218,6 +312,28 @@ dotnet run --project API
 Watch mode ile çalıştırmak (hot reload):
 ```bash
 dotnet watch run --project API
+```
+
+### Test Komutları
+
+Testleri çalıştırmak için:
+```bash
+dotnet test
+```
+
+Kod kapsamı (coverage) raporu ile:
+```bash
+dotnet test --collect:"XPlat Code Coverage"
+```
+
+Belirli bir test projesini çalıştırmak:
+```bash
+dotnet test Tests/Tests.csproj
+```
+
+Verbose output ile test çalıştırmak:
+```bash
+dotnet test --verbosity detailed
 ```
 
 ## 📝 Notlar- Proje SQLite veritabanı kullanmaktadır. Üretim ortamı için SQL Server, PostgreSQL gibi veritabanlarına geçiş yapılabilir.

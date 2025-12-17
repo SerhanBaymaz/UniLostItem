@@ -10,6 +10,7 @@ using Persistence;
 using Serilog;
 using System.Diagnostics;
 using Application.Features.SerhanKitaplar.Validators;
+using API.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,29 +27,7 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
 {
     // disable the default automatic 400 so our factory runs
     options.SuppressModelStateInvalidFilter = true;
-
-    options.InvalidModelStateResponseFactory = context =>
-    {
-        var errors = new Dictionary<string, string[]>();
-
-        foreach (var kvp in context.ModelState)
-        {
-            var key = string.IsNullOrEmpty(kvp.Key) ? "$" : kvp.Key;
-            var errorMessages = kvp.Value.Errors.Select(e => string.IsNullOrEmpty(e.ErrorMessage) ? e.Exception?.Message ?? "Invalid value" : e.ErrorMessage).ToArray();
-            if (errorMessages.Length > 0)
-            {
-                errors[key] = errorMessages;
-            }
-        }
-
-        var instance = context.HttpContext.Request?.Path.ToString();
-
-        var standard = StandardApiResponse<object>.ValidationErrorResponse(errors, instance);
-
-        var result = new BadRequestObjectResult(standard);
-        result.ContentTypes.Add("application/json");
-        return result;
-    };
+    options.InvalidModelStateResponseFactory = ModelStateResponseFactory.Create;
 });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
