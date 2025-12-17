@@ -11,8 +11,23 @@ using Serilog;
 using System.Diagnostics;
 using Application.Features.SerhanKitaplar.Validators;
 using API.Helpers;
+using DotNetEnv;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Load environment variables from .env file based on environment
+var envFile = builder.Environment.IsDevelopment() ? "../dev.env" : "../prod.env";
+if (File.Exists(envFile))
+{
+    Env.Load(envFile);
+}
+
+// Override configuration with environment variables
+builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
+{
+    ["ConnectionStrings:DefaultConnection"] = Environment.GetEnvironmentVariable("DefaultConnection"),
+    ["Serilog:WriteTo:1:Args:serverUrl"] = Environment.GetEnvironmentVariable("SeqServerUrl")
+}!);
 
 builder.Host.UseSerilog((context, loggerConfig) =>
 {

@@ -99,6 +99,7 @@ TemplateDeneme/
 | Kütüphane | Versiyon | Açıklama |
 |-----------|----------|----------|
 | **Swashbuckle.AspNetCore** | 6.5.0 | Swagger/OpenAPI dokümantasyonu |
+| **DotNetEnv** | 3.1.1 | Loads environment variables from .env files |
 | **Microsoft.EntityFrameworkCore.Design** | 9.0.0 | EF Core design-time araçları |
 | **Ben.Demystifier** | 0.4.1 | Gelişmiş exception stack trace formatlaması |
 | **Serilog** | 4.3.0 | Structured logging and enrichment |
