@@ -1,8 +1,8 @@
-version: '3.8'
+name: unilostitem-prod
 services:
   seq:
     image: datalust/seq:latest
-    container_name: template-deneme-seq
+    container_name: seq-unilostitem-prod
     environment:
       - ACCEPT_EULA=Y
       - SEQ_FIRSTRUN_ADMINUSERNAME=admindev
@@ -19,7 +19,7 @@ services:
       context: .
       dockerfile: Dockerfile.prod
     image: unilostitem-api:prod
-    container_name: unilostitem-api-prod
+    container_name: api-unilostitem-prod
     env_file:
       - prod.env
     ports:

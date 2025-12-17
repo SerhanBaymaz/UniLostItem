@@ -1,0 +1,37 @@
+# Development Dockerfile
+# Optimized for hot reload and debugging
+
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS development
+WORKDIR /src
+
+# Copy solution and project files
+COPY ["Unilostitem.sln", "./"]
+COPY ["Directory.Build.props", "./"]
+
+COPY ["API/API.csproj", "API/"]
+COPY ["Application/Application.csproj", "Application/"]
+COPY ["Domain/Domain.csproj", "Domain/"]
+COPY ["Persistence/Persistence.csproj", "Persistence/"]
+COPY ["Tests/Tests.csproj", "Tests/"]
+
+# Restore dependencies
+RUN dotnet restore "Unilostitem.sln"
+
+# Copy all source code
+COPY . .
+
+# Expose ports
+# 8089 for HTTP
+# 5009 for debugger (optional)
+EXPOSE 8089
+EXPOSE 5009
+
+# Environment variables
+ENV ASPNETCORE_URLS=http://+:8089
+ENV ASPNETCORE_ENVIRONMENT=Development
+
+# Set working directory to API project
+WORKDIR /src/API
+
+# Use dotnet watch for hot reload
+ENTRYPOINT ["dotnet", "watch", "run", "--no-launch-profile"]

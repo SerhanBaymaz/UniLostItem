@@ -1,18 +1,50 @@
-name: dev-templatedeneme
+name: unilostitem-dev
 services:
   seq:
     image: datalust/seq:latest
-    container_name: template-deneme-seq
+    container_name: seq-unilostitem-dev
     environment:
       - ACCEPT_EULA=Y
       - SEQ_FIRSTRUN_ADMINUSERNAME=admindev
       - SEQ_FIRSTRUN_ADMINPASSWORD=admindev
     ports:
-      - "5341:5341"
-      - "8081:80"
+      - "5348:5341"
+      - "8088:80"
     volumes:
       - seq-data:/data
     restart: unless-stopped
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    image: unilostitem-api:dev
+    container_name: api-unilostitem-dev
+    env_file:
+      - dev.env
+    ports:
+      - "8089:8089"
+      - "5009:5009"  # Debug port (optional)
+    volumes:
+      # Mount source code for hot reload
+      - ./API:/src/API
+      - ./Application:/src/Application
+      - ./Domain:/src/Domain
+      - ./Persistence:/src/Persistence
+      # Prevent overwriting of obj and bin folders
+      - /src/API/obj
+      - /src/API/bin
+      - /src/Application/obj
+      - /src/Application/bin
+      - /src/Domain/obj
+      - /src/Domain/bin
+      - /src/Persistence/obj
+      - /src/Persistence/bin
+    depends_on:
+      - seq
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
 
 volumes:
   seq-data:
