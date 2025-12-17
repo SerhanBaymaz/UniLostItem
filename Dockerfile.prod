@@ -1,0 +1,64 @@
+# Production Dockerfile
+# Multi-stage build for optimized production image
+
+# Stage 1: Build
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+WORKDIR /src
+
+# Copy solution and project files for restoring dependencies only (first layer caching, speeds up builds when code changes but dependencies do not)
+COPY ["Unilostitem.sln", "./"]
+COPY ["Directory.Build.props", "./"]
+
+COPY ["API/API.csproj", "API/"]
+COPY ["Application/Application.csproj", "Application/"]
+COPY ["Domain/Domain.csproj", "Domain/"]
+COPY ["Persistence/Persistence.csproj", "Persistence/"]
+COPY ["Tests/Tests.csproj", "Tests/"]
+
+# Restore dependencies (download NuGet packages, it will be cached if unchanged and not re-downloaded unless the project files change)
+RUN dotnet restore "Unilostitem.sln"
+
+
+# Copy all source code to the container /src directory
+COPY . .
+
+# Build the API project
+WORKDIR "/src/API"
+RUN dotnet build "API.csproj" -c Release -o /app/build
+
+
+
+
+
+# Stage 2: Publish
+FROM build AS publish
+RUN dotnet publish "API.csproj" -c Release -o /app/publish /p:UseAppHost=false
+
+
+
+
+# Stage 3: Runtime
+FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
+WORKDIR /app
+
+# Create a non-root user
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+
+# Copy published application
+COPY --from=publish /app/publish .
+
+# Set ownership
+RUN chown -R appuser:appuser /app
+
+# Switch to non-root user
+USER appuser
+
+# Expose ports
+EXPOSE 8080
+
+# Environment variables
+ENV ASPNETCORE_URLS=http://+:8080
+ENV ASPNETCORE_ENVIRONMENT=Production
+
+# Entry point
+ENTRYPOINT ["dotnet", "API.dll"]

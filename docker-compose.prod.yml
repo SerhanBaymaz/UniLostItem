@@ -1,0 +1,33 @@
+version: '3.8'
+services:
+  seq:
+    image: datalust/seq:latest
+    container_name: template-deneme-seq
+    environment:
+      - ACCEPT_EULA=Y
+      - SEQ_FIRSTRUN_ADMINUSERNAME=admindev
+      - SEQ_FIRSTRUN_ADMINPASSWORD=admindev
+    ports:
+      - "5341:5341"
+      - "8081:80"
+    volumes:
+      - seq-data:/data
+    restart: unless-stopped
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    image: unilostitem-api:prod
+    container_name: unilostitem-api-prod
+    env_file:
+      - prod.env
+    ports:
+      - "8080:8080"
+    depends_on:
+      - seq
+    restart: unless-stopped
+
+volumes:
+  seq-data:
+    driver: local
