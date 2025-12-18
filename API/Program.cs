@@ -76,11 +76,6 @@ builder.Services.AddTransient<ExceptionMiddleware>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-
-app.UseMiddleware<ExceptionMiddleware>();
-app.UseCors(x => x.AllowAnyHeader().AllowAnyMethod()
-    .WithOrigins("http://localhost:3000", "https://localhost:3000"));
-
 app.UseSerilogRequestLogging(opts => opts.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
     {
         // Prefer Activity.TraceId (distributed tracing) when available
@@ -90,6 +85,11 @@ app.UseSerilogRequestLogging(opts => opts.EnrichDiagnosticContext = (diagnosticC
         var traceParent = Activity.Current?.Id ?? httpContext.TraceIdentifier;
         diagnosticContext.Set("TraceParent", traceParent);
     });
+
+app.UseMiddleware<ExceptionMiddleware>();
+
+app.UseCors(x => x.AllowAnyHeader().AllowAnyMethod()
+    .WithOrigins("http://localhost:3000", "https://localhost:3000"));
 
 if (app.Environment.IsDevelopment())
 {
