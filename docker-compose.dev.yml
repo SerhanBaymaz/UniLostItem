@@ -3,10 +3,8 @@ services:
   seq:
     image: datalust/seq:latest
     container_name: seq-unilostitem-dev
-    environment:
-      - ACCEPT_EULA=Y
-      - SEQ_FIRSTRUN_ADMINUSERNAME=admindev
-      - SEQ_FIRSTRUN_ADMINPASSWORD=admindev
+    env_file:
+      - dev.env
     ports:
       - "5348:5341"
       - "8088:80"
@@ -22,12 +20,6 @@ services:
     container_name: api-unilostitem-dev
     env_file:
       - dev.env
-    environment:
-      # Enable file watcher polling for Docker volumes (critical for Windows/Mac)
-      - DOTNET_USE_POLLING_FILE_WATCHER=true
-      # Force hot reload even when debugger is attached
-      - DOTNET_WATCH_SUPPRESS_LAUNCH_BROWSER=true
-      - DOTNET_WATCH_RESTART_ON_RUDE_EDIT=true
     ports:
       - "8089:8089"
       - "5009:5009"  # Debug port (optional)

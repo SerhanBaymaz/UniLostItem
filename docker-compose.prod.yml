@@ -3,10 +3,8 @@ services:
   seq:
     image: datalust/seq:latest
     container_name: seq-unilostitem-prod
-    environment:
-      - ACCEPT_EULA=Y
-      - SEQ_FIRSTRUN_ADMINUSERNAME=admindev
-      - SEQ_FIRSTRUN_ADMINPASSWORD=admindev
+    env_file:
+      - prod.env
     ports:
       - "5341:5341"
       - "8081:80"
