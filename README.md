@@ -90,7 +90,9 @@ TemplateDeneme/
 - **.NET 9.0** - .NET framework versiyonu
 - **ASP.NET Core Web API** - RESTful API geliştirme
 - **Entity Framework Core 9.0** - ORM ve veritabanı işlemleri
-- **SQLite** - Hafif, dosya tabanlı veritabanı
+- **PostgreSQL** - Güçlü, açık kaynaklı ilişkisel veritabanı
+- **Docker & Docker Compose** - Container orchestration ve deployment
+- **Seq** - Structured logging ve log yönetimi
 - **C# 13** - Modern C# özellikleri ile geliştirme
 
 ## 📦 Kullanılan Kütüphaneler
@@ -115,7 +117,7 @@ TemplateDeneme/
 ### Persistence Katmanı
 | Kütüphane | Versiyon | Açıklama |
 |-----------|----------|----------|
-| **Microsoft.EntityFrameworkCore.Sqlite** | 9.0.0 | SQLite veritabanı sağlayıcısı |
+| **Npgsql.EntityFrameworkCore.PostgreSQL** | 9.0.3 | PostgreSQL veritabanı sağlayıcısı |
 
 ### Domain Katmanı
 - Harici bağımlılık içermez (Clean Architecture prensibi)
@@ -146,10 +148,12 @@ Bu projede ayrıca SonarQube ile merkezi kod kalite taramaları entegre edilebil
 
 ### Gereksinimler
 - .NET 9.0 SDK
-- Visual Studio 2022 / Visual Studio Code / JetBrains Rider
-- SQLite (opsiyonel - otomatik olarak oluşturulur)
+- Docker & Docker Compose
+- Visual Studio 2022 / Visual Studio Code / JetBrains Rider (opsiyonel)
 
-### Adımlar
+### Docker Compose ile Kurulum (Önerilen)
+
+#### Development Ortamı
 
 1. **Projeyi klonlayın:**
 ```bash
@@ -157,55 +161,111 @@ git clone <repository-url>
 cd TemplateDeneme
 ```
 
+2. **Environment dosyasını oluşturun:**
+```bash
+cp example.dev.env dev.env
+```
+
+> **Not:** `dev.env` dosyasını ihtiyaçlarınıza göre düzenleyebilirsiniz.
+
+3. **Docker Compose ile servisleri başlatın:**
+```bash
+docker-compose -f docker-compose.dev.yml up -d
+```
+
+Bu komut şu servisleri başlatır:
+- **PostgreSQL** (port: 5432) - Veritabanı
+- **Seq** (port: 8088 UI, 5348 ingestion) - Log yönetimi
+- **API** (port: 8089 HTTP, 5009 Debug) - .NET API
+
+4. **Servislerin durumunu kontrol edin:**
+```bash
+docker-compose -f docker-compose.dev.yml ps
+```
+
+5. **API'ye erişin:**
+- Swagger UI: `http://localhost:8089/swagger`
+- Seq UI: `http://localhost:8088` (Kullanıcı: `admindev`, Şifre: `admindev`)
+
+6. **Servisleri durdurmak için:**
+```bash
+docker-compose -f docker-compose.dev.yml down
+```
+
+#### Production Ortamı
+
+1. **Production environment dosyasını oluşturun:**
+```bash
+cp example.prod.env prod.env
+```
+
+> **ÖNEMLİ:** `prod.env` dosyasındaki şifreleri mutlaka değiştirin!
+
+2. **Production servisleri başlatın:**
+```bash
+docker-compose -f docker-compose.prod.yml up -d
+```
+
+Production servisleri:
+- **PostgreSQL** (port: 5433) - Veritabanı
+- **Seq** (port: 5341 ingestion, 8081 UI) - Log yönetimi
+- **API** (port: 8080) - .NET API
+
+### Manuel Kurulum (Docker Olmadan)
+
+1. **PostgreSQL'i yerel olarak kurun ve çalıştırın**
+
 2. **Bağımlılıkları yükleyin:**
 ```bash
 dotnet restore
 ```
 
-3. **Veritabanı migration'ını oluşturun (opsiyonel - zaten mevcut):**
+3. **Environment dosyası oluşturun:**
 ```bash
-dotnet ef migrations add <MigrationCommandMessage> -p Persistence -s API
+cp example.dev.env dev.env
 ```
 
-4. **Veritabanını oluşturun:**
+4. **Connection string'i güncelleyin:**
+`dev.env` dosyasında PostgreSQL bağlantı bilgilerinizi düzenleyin.
+
+5. **Veritabanı migration'larını uygulayın:**
 ```bash
 dotnet ef database update -p Persistence -s API
 ```
 
-5. **Projeyi çalıştırın:**
+> **Not:** Migration'lar uygulama başlangıcında otomatik olarak çalışır.
+
+6. **Projeyi çalıştırın:**
 ```bash
 dotnet run --project API
 ```
 
-6. **Swagger UI'a erişin:**
-```
-https://localhost:5001/swagger
-```
+### Environment Dosyaları
 
-### Logging ve Monitoring (Opsiyonel)
+Proje, farklı ortamlar için environment dosyaları kullanır:
 
-Proje Serilog ile yapılandırılmıştır ve Seq desteği içerir:
+- `dev.env` - Development ortamı için (Docker ve local)
+- `prod.env` - Production ortamı için
+- `example.dev.env` - Development örnek dosyası
+- `example.prod.env` - Production örnek dosyası
 
-1. **Seq'i Docker Compose ile çalıştırın:**
+**Environment Değişkenleri:**
 ```bash
-docker-compose -f docker-compose.dev.yml up -d
-```
+# PostgreSQL Ayarları
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+POSTGRES_DB=unilostitem_dev
+POSTGRES_PORT=5432
 
-2. **Seq UI'a erişin:**
-```
-http://localhost:8081
-```
+# Connection String (otomatik oluşur)
+DefaultConnection=Host=postgres;Port=${POSTGRES_PORT};Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
 
-**Seq Giriş Bilgileri:**
-- Kullanıcı adı: `admindev`
-- Şifre: `admindev`
-
-3. **Servisleri durdurmak için:**
-```bash
-docker-compose -f docker-compose.dev.yml down
+# Seq Ayarları
+SeqServerUrl=http://seq:5341
+ACCEPT_EULA=Y
+SEQ_FIRSTRUN_ADMINUSERNAME=admindev
+SEQ_FIRSTRUN_ADMINPASSWORD=admindev
 ```
-
-> **Not:** Serilog yapılandırması `appsettings.Development.json` dosyasında bulunur. Seq log verileri Docker volume'unda saklanır.
 
 ## 💻 Kullanım
 
@@ -272,12 +332,18 @@ API, `SerhanKitap` (Kitap) entity'si üzerinde CRUD işlemleri gerçekleştirir:
 ✅ **FluentValidation** ile güçlü validation
 ✅ **AutoMapper** ile nesne dönüşümleri
 ✅ **Entity Framework Core** ile ORM
+✅ **PostgreSQL** veritabanı desteği
+✅ **Docker & Docker Compose** ile containerization
+✅ **Seq** ile structured logging
+✅ **Environment-based configuration** (.env dosyaları)
+✅ **Otomatik migration** ve seed data
 ✅ **Custom Exception Middleware** ile merkezi hata yönetimi
 ✅ **Swagger/OpenAPI** dokümantasyonu
 ✅ **CORS** desteği
 ✅ **Standardize API Responses** yapısı
 ✅ **Code Analyzers** ile kod kalitesi kontrolü (Microsoft & SonarAnalyzer)
 ✅ **TreatWarningsAsErrors** ile sıkı kod standartları
+✅ **Hot reload** desteği (development ortamında)
 
 ## 🛠️ Geliştirme Komutları
 
@@ -337,7 +403,12 @@ Verbose output ile test çalıştırmak:
 dotnet test --verbosity detailed
 ```
 
-## 📝 Notlar- Proje SQLite veritabanı kullanmaktadır. Üretim ortamı için SQL Server, PostgreSQL gibi veritabanlarına geçiş yapılabilir.
+## 📝 Notlar
+
+- Proje **PostgreSQL** veritabanı kullanmaktadır.
+- **Docker Compose** ile hem development hem production ortamları hazır durumdadır.
+- **Migration'lar** uygulama başlangıcında otomatik olarak çalışır (`Program.cs`).
+- **Seed data** otomatik olarak veritabanına eklenir.
 - CORS yapılandırması development ortamı için `localhost:3000` portuna izin vermektedir.
 - Nullable referans türleri aktif durumdadır (C# 8.0+).
 - Implicit usings özelliği etkinleştirilmiştir.

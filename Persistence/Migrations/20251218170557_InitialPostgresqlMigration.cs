@@ -5,7 +5,7 @@
 namespace Persistence.Migrations
 {
     /// <inheritdoc />
-    public partial class AddSerhanKitapEntity : Migration
+    public partial class InitialPostgresqlMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -14,10 +14,10 @@ namespace Persistence.Migrations
                 name: "SerhanKitaplar",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "TEXT", nullable: false),
-                    KitapName = table.Column<string>(type: "TEXT", nullable: false),
-                    KitapYazar = table.Column<string>(type: "TEXT", nullable: false),
-                    KitapSayfaSayisi = table.Column<int>(type: "INTEGER", nullable: false)
+                    Id = table.Column<string>(type: "text", nullable: false),
+                    KitapName = table.Column<string>(type: "text", nullable: false),
+                    KitapYazar = table.Column<string>(type: "text", nullable: false),
+                    KitapSayfaSayisi = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {

@@ -15,7 +15,7 @@ using DotNetEnv;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Load environment variables from .env file based on environment
+// Load environment variables from .env file based on environment (only when not in Docker)
 var envFile = builder.Environment.IsDevelopment() ? "../dev.env" : "../prod.env";
 if (File.Exists(envFile))
 {
@@ -23,11 +23,17 @@ if (File.Exists(envFile))
 }
 
 // Override configuration with environment variables
-builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
+var connectionString = Environment.GetEnvironmentVariable("DefaultConnection");
+var seqServerUrl = Environment.GetEnvironmentVariable("SeqServerUrl");
+
+if (!string.IsNullOrEmpty(connectionString) && !string.IsNullOrEmpty(seqServerUrl))
 {
-    ["ConnectionStrings:DefaultConnection"] = Environment.GetEnvironmentVariable("DefaultConnection"),
-    ["Serilog:WriteTo:1:Args:serverUrl"] = Environment.GetEnvironmentVariable("SeqServerUrl")
-}!);
+    builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
+    {
+        ["ConnectionStrings:DefaultConnection"] = connectionString,
+        ["Serilog:WriteTo:1:Args:serverUrl"] = seqServerUrl
+    }!);
+}
 
 builder.Host.UseSerilog((context, loggerConfig) =>
 {
@@ -53,7 +59,7 @@ builder.Services.AddSwaggerGen(c =>
 });
 builder.Services.AddDbContext<AppDbContext>(opt =>
 {
-    opt.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"));
+    opt.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 builder.Services.AddScoped<IAppDbContext>(provider => provider.GetRequiredService<AppDbContext>());
 builder.Services.AddCors();
