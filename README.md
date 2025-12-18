@@ -85,6 +85,9 @@ TemplateDeneme/
     │           │   └── GetSerhanKitapListQueryHandlerTests.cs
     │           └── GetSerhanKitapDetails/
     │               └── GetSerhanKitapDetailsQueryHandlerTests.cs
+```
+
+
 ## 🚀 Kullanılan Teknolojiler
 
 - **.NET 9.0** - .NET framework versiyonu
