@@ -38,5 +38,5 @@ ENV ASPNETCORE_ENVIRONMENT=Development
 # Set working directory to API project
 WORKDIR /src/API
 
-# Use dotnet watch for hot reload
-ENTRYPOINT ["dotnet", "watch", "run", "--no-launch-profile"]
+# Use dotnet watch for hot reload with hot reload enabled even when debugger attached
+ENTRYPOINT ["dotnet", "watch", "run", "--no-launch-profile", "--non-interactive"]

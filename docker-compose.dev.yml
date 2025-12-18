@@ -22,6 +22,12 @@ services:
     container_name: api-unilostitem-dev
     env_file:
       - dev.env
+    environment:
+      # Enable file watcher polling for Docker volumes (critical for Windows/Mac)
+      - DOTNET_USE_POLLING_FILE_WATCHER=true
+      # Force hot reload even when debugger is attached
+      - DOTNET_WATCH_SUPPRESS_LAUNCH_BROWSER=true
+      - DOTNET_WATCH_RESTART_ON_RUDE_EDIT=true
     ports:
       - "8089:8089"
       - "5009:5009"  # Debug port (optional)
