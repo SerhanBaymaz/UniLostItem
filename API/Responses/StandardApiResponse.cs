@@ -96,8 +96,14 @@ public class StandardApiResponse<T>
     /// </summary>
     public static StandardApiResponse<T> ErrorResponse(
         AppProblemDetails problemDetails,
-        string? message = null)
+        string? message = null,
+        string? traceId = null)
     {
+        if (!string.IsNullOrEmpty(traceId))
+        {
+            problemDetails.Extensions["traceId"] = traceId;
+        }
+
         return new StandardApiResponse<T>
         {
             Success = false,
@@ -117,7 +123,8 @@ public class StandardApiResponse<T>
         string? type = null,
         string? detail = null,
         string? instance = null,
-        IDictionary<string, object?>? extensions = null)
+        IDictionary<string, object?>? extensions = null,
+        string? traceId = null)
     {
         var problemDetails = new AppProblemDetails(
             status: statusCode,
@@ -133,6 +140,11 @@ public class StandardApiResponse<T>
             {
                 problemDetails.Extensions[ext.Key] = ext.Value;
             }
+        }
+
+        if (!string.IsNullOrEmpty(traceId))
+        {
+            problemDetails.Extensions["traceId"] = traceId;
         }
 
         return new StandardApiResponse<T>
@@ -151,7 +163,8 @@ public class StandardApiResponse<T>
     public static StandardApiResponse<T> ValidationErrorResponse(
         Dictionary<string, string[]> validationErrors,
         string? instance = null,
-        string[]? stackTrace = null)
+        string[]? stackTrace = null,
+        string? traceId = null)
     {
         var problemDetails = new AppProblemDetails(
             status: 400,
@@ -166,6 +179,11 @@ public class StandardApiResponse<T>
         if (stackTrace != null)
         {
             problemDetails.Extensions["stackTrace"] = stackTrace;
+        }
+
+        if (!string.IsNullOrEmpty(traceId))
+        {
+            problemDetails.Extensions["traceId"] = traceId;
         }
 
         return new StandardApiResponse<T>
@@ -183,7 +201,8 @@ public class StandardApiResponse<T>
     /// </summary>
     public static StandardApiResponse<T> NotFoundResponse(
         string message = "Resource not found",
-        string? instance = null)
+        string? instance = null,
+        string? traceId = null)
     {
         var problemDetails = new AppProblemDetails(
             status: 404,
@@ -192,6 +211,11 @@ public class StandardApiResponse<T>
             title: "Not Found",
             instance: instance
         );
+
+        if (!string.IsNullOrEmpty(traceId))
+        {
+            problemDetails.Extensions["traceId"] = traceId;
+        }
 
         return new StandardApiResponse<T>
         {

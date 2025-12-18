@@ -1,5 +1,6 @@
 using API.Responses;
 using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics;
 
 namespace API.Helpers;
 
@@ -9,7 +10,14 @@ public static class ModelStateResponseFactory
     {
         var errors = ExtractErrorsFromModelState(context);
         var instance = context.HttpContext.Request?.Path.ToString();
-        var standard = StandardApiResponse<object>.ValidationErrorResponse(errors, instance);
+        var traceId = Activity.Current?.TraceId.ToString() ?? context.HttpContext.TraceIdentifier;
+
+        var standard = StandardApiResponse<object>.ValidationErrorResponse(
+            errors,
+            instance,
+            stackTrace: null,
+            traceId: traceId
+        );
 
         var result = new BadRequestObjectResult(standard);
         result.ContentTypes.Add("application/json");

@@ -51,6 +51,9 @@ public class ExceptionMiddleware(ILogger<ExceptionMiddleware> logger, IHostEnvir
         context.Response.StatusCode = StatusCodes.Status400BadRequest;
         context.Response.ContentType = "application/problem+json";
 
+        // Get trace ID
+        var traceId = Activity.Current?.TraceId.ToString() ?? context.TraceIdentifier;
+
         // Create stack trace for development mode
         string[]? stackTrace = null;
         if (env.IsDevelopment())
@@ -63,7 +66,8 @@ public class ExceptionMiddleware(ILogger<ExceptionMiddleware> logger, IHostEnvir
         var standardResponse = StandardApiResponse<object>.ValidationErrorResponse(
             validationErrors,
             context.Request?.Path.ToString(),
-            stackTrace
+            stackTrace,
+            traceId
         );
 
         var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
@@ -83,6 +87,9 @@ public class ExceptionMiddleware(ILogger<ExceptionMiddleware> logger, IHostEnvir
         // RFC 9457 recommends using the "application/problem+json" media type
         context.Response.ContentType = "application/problem+json";
         context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+
+        // Get trace ID
+        var traceId = Activity.Current?.TraceId.ToString() ?? context.TraceIdentifier;
 
         // Create stack trace for development mode
         string[]? stackTrace = null;
@@ -107,7 +114,10 @@ public class ExceptionMiddleware(ILogger<ExceptionMiddleware> logger, IHostEnvir
         }
 
         // Use StandardApiResponse for errors
-        var standardResponse = StandardApiResponse<object>.ErrorResponse(problemDetails);
+        var standardResponse = StandardApiResponse<object>.ErrorResponse(
+            problemDetails,
+            traceId: traceId
+        );
 
         var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
         var json = JsonSerializer.Serialize(standardResponse, options);
