@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Application.Core;
 using Application.Features.SerhanKitaplar.Queries.Common.DTOs;
 using AutoMapper;
 using MediatR;
@@ -9,7 +10,7 @@ using Persistence;
 
 namespace Application.Features.SerhanKitaplar.Queries.GetSerhanKitapList;
 
-public class GetSerhanKitapListQueryHandler : IRequestHandler<GetSerhanKitapListQuery, List<GetSerhanKitapDto>>
+public class GetSerhanKitapListQueryHandler : IRequestHandler<GetSerhanKitapListQuery, Result<List<GetSerhanKitapDto>>>
 {
     private readonly IAppDbContext _context;
     private readonly IMapper _mapper;
@@ -20,9 +21,10 @@ public class GetSerhanKitapListQueryHandler : IRequestHandler<GetSerhanKitapList
         _mapper = mapper;
     }
 
-    public async Task<List<GetSerhanKitapDto>> Handle(GetSerhanKitapListQuery request, CancellationToken cancellationToken)
+    public async Task<Result<List<GetSerhanKitapDto>>> Handle(GetSerhanKitapListQuery request, CancellationToken cancellationToken)
     {
         var serhanKitaplar = await _context.SerhanKitaplar.ToListAsync(cancellationToken);
-        return _mapper.Map<List<GetSerhanKitapDto>>(serhanKitaplar);
+        var dtos = _mapper.Map<List<GetSerhanKitapDto>>(serhanKitaplar);
+        return Result<List<GetSerhanKitapDto>>.Success("SerhanKitaplar retrieved successfully", dtos);
     }
 }
