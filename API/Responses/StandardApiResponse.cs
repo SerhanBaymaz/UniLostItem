@@ -70,22 +70,6 @@ public class StandardApiResponse<T>
         };
     }
 
-    /// <summary>
-    /// Creates a successful response without data (e.g., for DELETE operations)
-    /// </summary>
-    public static StandardApiResponse<T> SuccessResponse(
-        string message,
-        int statusCode = 200)
-    {
-        return new StandardApiResponse<T>
-        {
-            Success = true,
-            StatusCode = statusCode,
-            Message = message,
-            Data = default,
-            Error = null
-        };
-    }
 
     #endregion
 
@@ -191,37 +175,6 @@ public class StandardApiResponse<T>
             Success = false,
             StatusCode = 400,
             Message = "Validation failed",
-            Data = default,
-            Error = problemDetails
-        };
-    }
-
-    /// <summary>
-    /// Creates a not found error response
-    /// </summary>
-    public static StandardApiResponse<T> NotFoundResponse(
-        string message = "Resource not found",
-        string? instance = null,
-        string? traceId = null)
-    {
-        var problemDetails = new AppProblemDetails(
-            status: 404,
-            detail: message,
-            type: "NotFound",
-            title: "Not Found",
-            instance: instance
-        );
-
-        if (!string.IsNullOrEmpty(traceId))
-        {
-            problemDetails.Extensions["traceId"] = traceId;
-        }
-
-        return new StandardApiResponse<T>
-        {
-            Success = false,
-            StatusCode = 404,
-            Message = message,
             Data = default,
             Error = problemDetails
         };

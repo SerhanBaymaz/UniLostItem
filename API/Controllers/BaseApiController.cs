@@ -31,10 +31,13 @@ namespace API.Controllers
 
             if (!result.IsSuccess && result.Code == 404)
             {
-                var notFoundResponse = StandardApiResponse<T>.NotFoundResponse(
+                var notFoundResponse = StandardApiResponse<T>.ErrorResponse(
                     result.Message ?? "Resource not found",
+                    404,
+                    "NotFound",
+                    result.Message ?? "The requested resource was not found",
                     HttpContext.Request?.Path.ToString(),
-                    traceId
+                    traceId: traceId
                 );
                 return NotFound(notFoundResponse);
             }
@@ -57,56 +60,6 @@ namespace API.Controllers
                 traceId: traceId
             );
             return BadRequest(errorResponse);
-        }
-
-        /// <summary>
-        /// Creates a standardized success response
-        /// </summary>
-        protected ActionResult<StandardApiResponse<T>> Success<T>(
-            T data,
-            string? message = null,
-            int statusCode = 200)
-        {
-            var response = StandardApiResponse<T>.SuccessResponse(
-                data,
-                message,
-                statusCode
-            );
-            return StatusCode(statusCode, response);
-        }
-
-        /// <summary>
-        /// Creates a standardized success response without data
-        /// </summary>
-        protected ActionResult<StandardApiResponse<object>> Success(
-            string message = "Operation completed successfully",
-            int statusCode = 200)
-        {
-            var response = StandardApiResponse<object>.SuccessResponse(
-                message,
-                statusCode
-            );
-            return StatusCode(statusCode, response);
-        }
-
-        /// <summary>
-        /// Creates a standardized error response
-        /// </summary>
-        protected ActionResult<StandardApiResponse<T>> Error<T>(
-            string message,
-            int statusCode = 400,
-            string? type = null,
-            string? detail = null)
-        {
-            var response = StandardApiResponse<T>.ErrorResponse(
-                message,
-                statusCode,
-                type,
-                detail,
-                HttpContext.Request?.Path.ToString(),
-                traceId: GetTraceId()
-            );
-            return StatusCode(statusCode, response);
         }
     }
 }

@@ -17,8 +17,7 @@ public class SerhanKitaplarController : BaseApiController
     [HttpGet]
     public async Task<ActionResult<StandardApiResponse<List<GetSerhanKitapDto>>>> GetSerhanKitaplar()
     {
-        var serhanKitaplar = await Mediator.Send(new GetSerhanKitapListQuery());
-        return Success(serhanKitaplar, "SerhanKitaplar retrieved successfully");
+        return HandleResult(await Mediator.Send(new GetSerhanKitapListQuery()));
     }
 
     [HttpGet("{id}")]

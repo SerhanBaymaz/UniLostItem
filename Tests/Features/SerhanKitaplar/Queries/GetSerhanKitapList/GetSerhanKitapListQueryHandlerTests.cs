@@ -52,9 +52,11 @@ namespace Tests.Features.SerhanKitaplar.Queries.GetSerhanKitapList
 
             // Assert
             Assert.NotNull(result);
-            Assert.Equal(2, result.Count);
-            Assert.Equal("A", result[0].KitapName);
-            Assert.Equal("B", result[1].KitapName);
+            Assert.True(result.IsSuccess);
+            Assert.NotNull(result.Value);
+            Assert.Equal(2, result.Value.Count);
+            Assert.Equal("A", result.Value[0].KitapName);
+            Assert.Equal("B", result.Value[1].KitapName);
         }
     }
 }
