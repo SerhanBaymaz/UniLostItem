@@ -496,4 +496,3 @@ seq-data.bak/
 
 # Openspec prompt files for Gemini CLI and GitHub Copilot prompts
 .gemini/commands/openspec/
-.github/prompts/
