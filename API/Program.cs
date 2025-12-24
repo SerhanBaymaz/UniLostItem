@@ -13,6 +13,8 @@ using Application.Features.SerhanKitaplar.Validators;
 using API.Helpers;
 using DotNetEnv;
 
+#region Builder and Configuration
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Load environment variables from .env file based on environment (only when not in Docker)
@@ -75,7 +77,9 @@ builder.Services.AddTransient<ExceptionMiddleware>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+#endregion
+
+#region HTTP request pipeline
 app.UseSerilogRequestLogging(opts => opts.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
     {
         // Prefer Activity.TraceId (distributed tracing) when available
@@ -85,11 +89,18 @@ app.UseSerilogRequestLogging(opts => opts.EnrichDiagnosticContext = (diagnosticC
         var traceParent = Activity.Current?.Id ?? httpContext.TraceIdentifier;
         diagnosticContext.Set("TraceParent", traceParent);
     });
-
 app.UseMiddleware<ExceptionMiddleware>();
 
+//app.UseHttpsRedirection();
+//app.UseCookiePolicy();
+//app.UseRouting();
+//app.UseRateLimiter();
 app.UseCors(x => x.AllowAnyHeader().AllowAnyMethod()
     .WithOrigins("http://localhost:3000", "https://localhost:3000"));
+
+
+//app.UseAuthentication();
+//app.UseAuthorization();
 
 if (app.Environment.IsDevelopment())
 {
@@ -102,6 +113,10 @@ if (app.Environment.IsDevelopment())
 
 app.MapControllers();
 
+#endregion
+
+#region  Run Migrations and Seed Data
+// Apply migrations and seed database
 using var scope = app.Services.CreateScope();
 var services = scope.ServiceProvider;
 
@@ -115,6 +130,7 @@ catch (Exception ex)
 {
     Log.Fatal(ex, "An error occurred during migration.");
 }
+#endregion
 
 await app.RunAsync();
 await Log.CloseAndFlushAsync();
