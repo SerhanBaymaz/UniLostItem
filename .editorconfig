@@ -193,4 +193,4 @@ dotnet_naming_style.begins_with_i.word_separator =
 dotnet_naming_style.begins_with_i.capitalization = pascal_case
 
 # S125: Sections of code should not be commented out
-dotnet_diagnostic.S125.severity = suggestion
+dotnet_diagnostic.S125.severity = none
