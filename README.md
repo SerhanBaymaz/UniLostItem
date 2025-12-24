@@ -21,6 +21,13 @@ TemplateDeneme/
 │   ├── Controllers/          # API Controller'ları
 │   │   ├── BaseApiController.cs
 │   │   └── SerhanKitaplarController.cs
+│   ├── Extensions/           # Extension Methods - Program.cs yapılandırması
+│   │   ├── ApiExtensions.cs           # Controller & ModelState config
+│   │   ├── ApplicationExtensions.cs   # MediatR, AutoMapper, Validation
+│   │   ├── ConfigurationExtensions.cs # .env dosyası yönetimi
+│   │   ├── DatabaseExtensions.cs      # DbContext & Migration
+│   │   ├── LoggingExtensions.cs       # Serilog configuration
+│   │   └── SwaggerExtensions.cs       # Swagger/OpenAPI docs
 │   ├── Middleware/           # Custom middleware'ler
 │   │   └── ExceptionMiddleware.cs
 │   ├── Responses/            # API response modelleri
@@ -29,7 +36,7 @@ TemplateDeneme/
 │   ├── Properties/
 │   │   └── launchSettings.json
 │   ├── appsettings.Development.json
-│   └── Program.cs            # Uygulama başlangıç noktası
+│   └── Program.cs            #Uygulama başlangıç noktası (Extensions method ile Temiz ve okunabilir yapılandırma )
 ├── Application/              # Application Layer - İş mantığı
 │   ├── Core/                 # Ortak yapılar (Result, Validation, Mapping)
 │   │   ├── MappingProfiles.cs       # AutoMapper profilleri
@@ -344,6 +351,7 @@ API, `SerhanKitap` (Kitap) entity'si üzerinde CRUD işlemleri gerçekleştirir:
 ✅ **Swagger/OpenAPI** dokümantasyonu
 ✅ **CORS** desteği
 ✅ **Standardize API Responses** yapısı
+✅ **Extension Methods** ile temiz ve modüler Program.cs yapısı
 ✅ **Code Analyzers** ile kod kalitesi kontrolü (Microsoft & SonarAnalyzer)
 ✅ **TreatWarningsAsErrors** ile sıkı kod standartları
 ✅ **Hot reload** desteği (development ortamında)
