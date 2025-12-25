@@ -86,23 +86,40 @@ jobs:
         id: git-sha
         run: echo "sha=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
+      - name: Set lowercase repository owner
+        id: repo-owner
+        run: echo "owner=$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Build Docker production image
         run: |
           docker build -f Dockerfile.prod \
-            -t prod-templatedeneme:latest \
-            -t prod-templatedeneme:sha-${{ steps.git-sha.outputs.sha }} \
+            -t ghcr.io/${{ steps.repo-owner.outputs.owner }}/prod-templatedeneme:latest \
+            -t ghcr.io/${{ steps.repo-owner.outputs.owner }}/prod-templatedeneme:sha-${{ steps.git-sha.outputs.sha }} \
             .
 
       - name: Verify Docker image
         run: |
           docker images | grep prod-templatedeneme
           echo "📦 Built tags:"
-          echo "  - prod-templatedeneme:latest"
-          echo "  - prod-templatedeneme:sha-${{ steps.git-sha.outputs.sha }}"
+          echo "  - ghcr.io/${{ steps.repo-owner.outputs.owner }}/prod-templatedeneme:latest"
+          echo "  - ghcr.io/${{ steps.repo-owner.outputs.owner }}/prod-templatedeneme:sha-${{ steps.git-sha.outputs.sha }}"
+
+      - name: Push to GitHub Container Registry
+        run: |
+          docker push ghcr.io/${{ steps.repo-owner.outputs.owner }}/prod-templatedeneme:latest
+          docker push ghcr.io/${{ steps.repo-owner.outputs.owner }}/prod-templatedeneme:sha-${{ steps.git-sha.outputs.sha }}
+          echo "✅ Images pushed to GitHub Container Registry"
 
       - name: Test Docker container
         run: |
-          docker run --rm -d --name test-container -p 8080:8080 prod-templatedeneme:latest
+          docker run --rm -d --name test-container -p 8080:8080 ghcr.io/${{ steps.repo-owner.outputs.owner }}/prod-templatedeneme:latest
           sleep 5
           docker ps | grep test-container || exit 1
           docker stop test-container
