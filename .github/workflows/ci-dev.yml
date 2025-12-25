@@ -131,13 +131,27 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Extract Git SHA
+        id: git-sha
+        run: echo "sha=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
       - name: Build Docker dev image
         run: |
-          docker build -f Dockerfile.dev -t templatedeneme:dev .
+          docker build -f Dockerfile.dev \
+            -t dev-templatedeneme:latest \
+            -t dev-templatedeneme:sha-${{ steps.git-sha.outputs.sha }} \
+            .
 
       - name: Verify Docker image
         run: |
-          docker images | grep templatedeneme
+          docker images | grep dev-templatedeneme
+          echo "📦 Built tags:"
+          echo "  - dev-templatedeneme:latest"
+          echo "  - dev-templatedeneme:sha-${{ steps.git-sha.outputs.sha }}"
 
-      - name: Docker Build Success Message
-        run: echo "✅ Docker development image built successfully"
+      - name: Test Docker container
+        run: |
+          docker run -d --name test-container dev-templatedeneme:latest
+          sleep 5
+          docker ps | grep test-container || exit 1
+          docker stop test-container
