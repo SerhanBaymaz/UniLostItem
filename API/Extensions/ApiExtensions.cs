@@ -16,6 +16,9 @@ public static class ApiExtensions
             // disable the default automatic 400 so our factory runs
             options.SuppressModelStateInvalidFilter = true;
             options.InvalidModelStateResponseFactory = ModelStateResponseFactory.Create;
+
+            // Suppress default ProblemDetails for client errors (4xx) so ExceptionMiddleware can handle them
+            options.SuppressMapClientErrors = true;
         });
     }
 

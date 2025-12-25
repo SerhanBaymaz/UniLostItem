@@ -1,15 +1,17 @@
 using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace API.Responses;
 
+[method: JsonConstructor]
 /// <summary>
 /// Standardized API response wrapper for all HTTP responses.
 /// Provides a consistent structure for both successful and error responses.
 /// Compatible with RFC 9457 Problem Details for error scenarios.
 /// </summary>
 /// <typeparam name="T">The type of data being returned in successful responses</typeparam>
-public class StandardApiResponse<T>
+public class StandardApiResponse<T>()
 {
     /// <summary>
     /// Indicates whether the request was successful
@@ -45,8 +47,6 @@ public class StandardApiResponse<T>
     /// Optional metadata for pagination, filtering, etc.
     /// </summary>
     public IDictionary<string, object?>? Metadata { get; init; }
-
-    private StandardApiResponse() { }
 
     #region Success Response Factory Methods
 

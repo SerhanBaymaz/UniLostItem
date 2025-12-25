@@ -15,6 +15,12 @@ public class ExceptionMiddleware(ILogger<ExceptionMiddleware> logger, IHostEnvir
         try
         {
             await next(context);
+
+            // Handle non-exception error responses (e.g. 404, 415)
+            if (!context.Response.HasStarted && context.Response.StatusCode >= 400 && context.Response.StatusCode < 600)
+            {
+                await HandleErrorResponse(context);
+            }
         }
         catch (ValidationException ex)
         {
@@ -28,6 +34,45 @@ public class ExceptionMiddleware(ILogger<ExceptionMiddleware> logger, IHostEnvir
 
     #region Private Methods - Handle Exceptions
 
+
+    private async Task HandleErrorResponse(HttpContext context)
+    {
+        var statusCode = context.Response.StatusCode;
+        context.Response.ContentType = "application/json";
+
+        var message = GetDefaultMessageForStatusCode(statusCode);
+        var traceId = Activity.Current?.TraceId.ToString() ?? context.TraceIdentifier;
+
+        var response = StandardApiResponse<object>.ErrorResponse(
+            type: $"Error {statusCode}",
+            message: message,
+            statusCode: statusCode,
+            traceId: traceId
+        );
+
+        var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+        var json = JsonSerializer.Serialize(response, options);
+
+        await context.Response.WriteAsync(json);
+    }
+
+    private static string GetDefaultMessageForStatusCode(int statusCode)
+    {
+        return statusCode switch
+        {
+            400 => "Bad Request",
+            401 => "Unauthorized",
+            403 => "Forbidden",
+            404 => "Resource Not Found",
+            405 => "Method Not Allowed",
+            406 => "Not Acceptable",
+            415 => "Unsupported Media Type",
+            422 => "Unprocessable Entity",
+            500 => "Internal Server Error",
+            503 => "Service Unavailable",
+            _ => "An error occurred"
+        };
+    }
 
     private async Task HandleValidationException(HttpContext context, ValidationException ex)
     {
