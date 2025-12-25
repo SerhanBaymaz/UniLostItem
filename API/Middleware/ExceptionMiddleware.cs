@@ -10,6 +10,10 @@ namespace API.Middleware;
 public class ExceptionMiddleware(ILogger<ExceptionMiddleware> logger, IHostEnvironment env)
     : IMiddleware
 {
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+    };
     public async Task InvokeAsync(HttpContext context, RequestDelegate next)
     {
         try
@@ -35,7 +39,7 @@ public class ExceptionMiddleware(ILogger<ExceptionMiddleware> logger, IHostEnvir
     #region Private Methods - Handle Exceptions
 
 
-    private async Task HandleErrorResponse(HttpContext context)
+    private static async Task HandleErrorResponse(HttpContext context)
     {
         var statusCode = context.Response.StatusCode;
         context.Response.ContentType = "application/json";
@@ -50,8 +54,7 @@ public class ExceptionMiddleware(ILogger<ExceptionMiddleware> logger, IHostEnvir
             traceId: traceId
         );
 
-        var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
-        var json = JsonSerializer.Serialize(response, options);
+        var json = JsonSerializer.Serialize(response, JsonOptions);
 
         await context.Response.WriteAsync(json);
     }
@@ -115,8 +118,7 @@ public class ExceptionMiddleware(ILogger<ExceptionMiddleware> logger, IHostEnvir
             traceId
         );
 
-        var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
-        var json = JsonSerializer.Serialize(standardResponse, options);
+        var json = JsonSerializer.Serialize(standardResponse, JsonOptions);
 
         // Log validation details
         logger.LogWarning("Validation failed for {Path} with {ErrorCount} errors", context.Request?.Path, validationErrors.Count);
@@ -164,8 +166,7 @@ public class ExceptionMiddleware(ILogger<ExceptionMiddleware> logger, IHostEnvir
             traceId: traceId
         );
 
-        var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
-        var json = JsonSerializer.Serialize(standardResponse, options);
+        var json = JsonSerializer.Serialize(standardResponse, JsonOptions);
         await context.Response.WriteAsync(json);
     }
 

@@ -12,6 +12,11 @@ namespace Tests.Middleware;
 
 public class ExceptionMiddlewareTests
 {
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true
+    };
+
     private readonly Mock<ILogger<ExceptionMiddleware>> _loggerMock;
     private readonly Mock<IHostEnvironment> _envMock;
     private readonly ExceptionMiddleware _middleware;
@@ -43,7 +48,7 @@ public class ExceptionMiddlewareTests
         context.Response.Body.Seek(0, SeekOrigin.Begin);
         var body = await new StreamReader(context.Response.Body).ReadToEndAsync();
 
-        var response = JsonSerializer.Deserialize<StandardApiResponse<object>>(body, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        var response = JsonSerializer.Deserialize<StandardApiResponse<object>>(body, JsonOptions);
 
         response.Should().NotBeNull();
         response!.Success.Should().BeFalse();
@@ -71,7 +76,7 @@ public class ExceptionMiddlewareTests
         context.Response.Body.Seek(0, SeekOrigin.Begin);
         var body = await new StreamReader(context.Response.Body).ReadToEndAsync();
 
-        var response = JsonSerializer.Deserialize<StandardApiResponse<object>>(body, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        var response = JsonSerializer.Deserialize<StandardApiResponse<object>>(body, JsonOptions);
 
         response.Should().NotBeNull();
         response!.Success.Should().BeFalse();
