@@ -493,6 +493,3 @@ API/unilostitem.db
 # Ignore seq-data folder and its contents
 seq-data/
 seq-data.bak/
-
-# Openspec prompt files for Gemini CLI and GitHub Copilot prompts
-.gemini/commands/openspec/
