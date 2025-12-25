@@ -9,40 +9,22 @@ on:
 
 env:
   DOTNET_VERSION: "9.0.x"
-  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  SONAR_TOKEN_PROD: ${{ secrets.SONAR_TOKEN_PROD }}
-  SONAR_PROJECT_KEY_PROD: ${{ secrets.SONAR_PROJECT_KEY_PROD }}
-  SONAR_ORGANIZATION_PROD: ${{ secrets.SONAR_ORGANIZATION_PROD }}
-  SONAR_HOST_URL_PROD: ${{ secrets.SONAR_HOST_URL_PROD }}
 
 jobs:
   build-test-analyze:
-    name: Build, Test & SonarCloud Analysis (Production)
+    name: Build & Test (Production)
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Shallow clones should be disabled for better analysis
+          fetch-depth: 0
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
-
-      - name: Setup Java (required for SonarCloud)
-        uses: actions/setup-java@v4
-        with:
-          distribution: "temurin"
-          java-version: "17"
-
-      - name: Cache SonarCloud packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.sonar/cache
-          key: ${{ runner.os }}-sonar
-          restore-keys: ${{ runner.os }}-sonar
 
       - name: Cache NuGet packages
         uses: actions/cache@v4
@@ -52,35 +34,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-nuget-
 
-      - name: Cache SonarCloud scanner
-        id: cache-sonar-scanner
-        uses: actions/cache@v4
-        with:
-          path: ~/.dotnet/tools
-          key: ${{ runner.os }}-sonar-scanner
-          restore-keys: ${{ runner.os }}-sonar-scanner
-
-      - name: Install SonarCloud scanner
-        if: steps.cache-sonar-scanner.outputs.cache-hit != 'true'
-        run: |
-          dotnet tool install --global dotnet-sonarscanner
-
       - name: Restore dependencies
         run: dotnet restore Unilostitem.sln
-
-      - name: Begin SonarCloud analysis
-        env:
-          GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
-          SONAR_TOKEN_PROD: ${{ env.SONAR_TOKEN_PROD }}
-        run: |
-          dotnet sonarscanner begin \
-            /k:"${{ env.SONAR_PROJECT_KEY_PROD }}" \
-            /o:"${{ env.SONAR_ORGANIZATION_PROD }}" \
-            /d:sonar.token="${{ env.SONAR_TOKEN_PROD }}" \
-            /d:sonar.host.url="${{ env.SONAR_HOST_URL_PROD }}" \
-            /d:sonar.cs.opencover.reportsPaths="**/coverage.opencover.xml" \
-            /d:sonar.coverage.exclusions="**/Migrations/**,**/Program.cs,**/obj/**,**/bin/**" \
-            /d:sonar.exclusions="**/Migrations/**,**/obj/**,**/bin/**"
 
       - name: Build solution
         run: dotnet build Unilostitem.sln --no-restore --configuration Release
@@ -98,13 +53,6 @@ jobs:
       - name: Move coverage files
         run: |
           find ./coverage -name "coverage.opencover.xml" -exec cp {} ./Tests/ \;
-
-      - name: End SonarCloud analysis
-        env:
-          GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
-          SONAR_TOKEN_PROD: ${{ env.SONAR_TOKEN_PROD }}
-        run: |
-          dotnet sonarscanner end /d:sonar.token="${{ env.SONAR_TOKEN_PROD }}"
 
       - name: Upload coverage to artifacts
         uses: actions/upload-artifact@v4
