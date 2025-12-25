@@ -104,6 +104,9 @@ TemplateDeneme/
 - **Docker & Docker Compose** - Container orchestration ve deployment
 - **Seq** - Structured logging ve log yönetimi
 - **C# 13** - Modern C# özellikleri ile geliştirme
+- **GitHub Actions** - CI/CD pipeline automation
+- **SonarCloud** - Code quality and security analysis
+- **GitHub Container Registry (GHCR)** - Docker image hosting
 
 ## 📦 Kullanılan Kütüphaneler
 
@@ -355,6 +358,103 @@ API, `SerhanKitap` (Kitap) entity'si üzerinde CRUD işlemleri gerçekleştirir:
 ✅ **Code Analyzers** ile kod kalitesi kontrolü (Microsoft & SonarAnalyzer)
 ✅ **TreatWarningsAsErrors** ile sıkı kod standartları
 ✅ **Hot reload** desteği (development ortamında)
+✅ **CI/CD Pipelines** (GitHub Actions)
+  - Development pipeline: Build, test, SonarCloud analysis, Docker build & push
+  - Production pipeline: Build, test, Docker build & push to GHCR
+✅ **Test Coverage** with Coverlet (OpenCover format)
+✅ **Docker Image Registry** - GitHub Container Registry entegrasyonu
+✅ **Automated Docker Tagging** - Git SHA ve latest tags
+✅ **CI/CD Pipelines** (GitHub Actions)
+  - Development pipeline: Build, test, SonarCloud analysis, Docker build & push
+  - Production pipeline: Build, test, Docker build & push to GHCR
+✅ **Test Coverage** with Coverlet (OpenCover format)
+✅ **Docker Image Registry** - GitHub Container Registry entegrasyonu
+✅ **Automated Docker Tagging** - Git SHA ve latest tags
+
+## 🚀 CI/CD Pipelines
+
+### Development Pipeline (ci-dev.yml)
+
+Tetikleyiciler:
+- `main` ve `develop` branch'lerine push
+- Pull request'ler (main ve develop'a)
+- Manuel tetikleme
+
+**Pipeline Adımları:**
+1. ✅ **Build & Test** - .NET 9 ile build ve test çalıştırma
+2. ✅ **Code Coverage** - Coverlet ile test coverage toplama (OpenCover format)
+3. ✅ **SonarCloud Analysis** - Kod kalitesi ve güvenlik analizi
+4. ✅ **Docker Build** - Development image build (`dev-templatedeneme`)
+5. ✅ **Docker Push** - GHCR'ye image push (sadece push event'lerinde)
+
+**Docker Tags:**
+```
+ghcr.io/serhanbaymaz/dev-templatedeneme:latest
+ghcr.io/serhanbaymaz/dev-templatedeneme:sha-<git-sha>
+```
+
+**Gerekli Secrets:**
+- `SONAR_TOKEN_DEV` - SonarCloud authentication token
+- `SONAR_PROJECT_KEY_DEV` - SonarCloud project key
+- `SONAR_ORGANIZATION_DEV` - SonarCloud organization
+- `SONAR_HOST_URL_DEV` - SonarCloud URL (https://sonarcloud.io)
+
+### Production Pipeline (ci-prod.yml)
+
+Tetikleyiciler:
+- `main` branch'e push
+- Version tags (`v*.*.*`)
+- Manuel tetikleme
+
+**Pipeline Adımları:**
+1. ✅ **Build & Test** - .NET 9 ile build ve test çalıştırma
+2. ✅ **Code Coverage** - Coverlet ile test coverage toplama (90 gün saklama)
+3. ✅ **Docker Build** - Production image build (`prod-templatedeneme`)
+4. ✅ **Docker Test** - Container smoke test
+5. ✅ **Docker Push** - GHCR'ye image push
+
+**Docker Tags:**
+```
+ghcr.io/serhanbaymaz/prod-templatedeneme:latest
+ghcr.io/serhanbaymaz/prod-templatedeneme:sha-<git-sha>
+```
+
+### Docker Image Kullanımı
+
+**Development image'ı çekmek:**
+```bash
+docker pull ghcr.io/serhanbaymaz/dev-templatedeneme:latest
+# veya specific version
+docker pull ghcr.io/serhanbaymaz/dev-templatedeneme:sha-abc1234
+```
+
+**Production image'ı çekmek:**
+```bash
+docker pull ghcr.io/serhanbaymaz/prod-templatedeneme:latest
+# veya specific version
+docker pull ghcr.io/serhanbaymaz/prod-templatedeneme:sha-xyz5678
+```
+
+**Image'ı çalıştırmak:**
+```bash
+docker run -p 8080:8080 ghcr.io/serhanbaymaz/prod-templatedeneme:latest
+```
+
+### Pipeline Özellikleri
+
+- 🚀 **Otomatik build ve test** her commit'te
+- 📊 **SonarCloud entegrasyonu** (development)
+- 🐳 **Docker image build ve push** (GHCR)
+- 📦 **Multi-tag stratejisi** (latest + git SHA)
+- 🔒 **Job-level permissions** (least privilege)
+- 💾 **Caching** - NuGet, SonarCloud scanner
+- 📈 **Coverage artifacts** - 30/90 gün saklama
+- ✅ **Container testing** - Smoke tests
+
+### GitHub Actions Badge
+
+[![CI-Dev Pipeline](https://github.com/SerhanBaymaz/TemplateDeneme/actions/workflows/ci-dev.yml/badge.svg)](https://github.com/SerhanBaymaz/TemplateDeneme/actions/workflows/ci-dev.yml)
+[![CI-Prod Pipeline](https://github.com/SerhanBaymaz/TemplateDeneme/actions/workflows/ci-prod.yml/badge.svg)](https://github.com/SerhanBaymaz/TemplateDeneme/actions/workflows/ci-prod.yml)
 
 ## 🛠️ Geliştirme Komutları
 

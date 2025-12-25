@@ -13,6 +13,14 @@
 - Docker dev stack: `docker-compose -f docker-compose.dev.yml up -d`; default ports: API 8089, PostgreSQL 5432, Seq 8088 (UI) / 5348 (ingestion).
 - Environment files: copy `example.dev.env` → `dev.env` (or `example.prod.env` → `prod.env`); `ConfigurationExtensions` loads `.env` early.
 
+## CI/CD Pipelines
+
+- Two GitHub Actions: `ci-dev.yml` (dev + SonarCloud) and `ci-prod.yml` (prod).
+- Triggers: dev → push/PR on main/develop; prod → push on main or version tags (v*.*.\*).
+- Steps: build, test, Docker build & push to GHCR; dev job includes SonarCloud analysis.
+- Images: tagged `latest` and `sha-<git-sha>`; names `ghcr.io/serhanbaymaz/dev-templatedeneme` and `ghcr.io/serhanbaymaz/prod-templatedeneme`.
+- Dev secrets: `SONAR_TOKEN_DEV`, `SONAR_PROJECT_KEY_DEV`, `SONAR_ORGANIZATION_DEV`, `SONAR_HOST_URL_DEV`.
+
 ## Testing
 
 - Run all tests: `dotnet test` (Tests project). Coverage example: `dotnet test --collect:"XPlat Code Coverage"`.
