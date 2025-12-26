@@ -79,8 +79,9 @@ jobs:
             /d:sonar.token="${{ env.SONAR_TOKEN_DEV }}" \
             /d:sonar.host.url="${{ env.SONAR_HOST_URL_DEV }}" \
             /d:sonar.cs.opencover.reportsPaths="**/coverage.opencover.xml" \
-            /d:sonar.coverage.exclusions="**/Migrations/**,**/Program.cs,**/obj/**,**/bin/**" \
-            /d:sonar.exclusions="**/Migrations/**,**/obj/**,**/bin/**"
+            /d:sonar.coverage.inclusions="API/**,Application/**,Domain/**,Persistence/**" \
+            /d:sonar.coverage.exclusions="**/Persistence/Migrations/**,**/Migrations/**,**/obj/**,**/bin/**" \
+            /d:sonar.exclusions="**/Persistence/Migrations/**,**/Migrations/**,**/obj/**,**/bin/**"
 
       - name: Build solution
         run: dotnet build Unilostitem.sln --no-restore --configuration Release
