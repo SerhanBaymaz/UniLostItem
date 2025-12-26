@@ -80,7 +80,7 @@ jobs:
             /d:sonar.host.url="${{ env.SONAR_HOST_URL_DEV }}" \
             /d:sonar.cs.opencover.reportsPaths="**/coverage.opencover.xml" \
             /d:sonar.coverage.inclusions="API/**,Application/**,Domain/**,Persistence/**" \
-            /d:sonar.coverage.exclusions="**/Persistence/Migrations/**,**/Migrations/**,**/obj/**,**/bin/**" \
+            /d:sonar.coverage.exclusions="**/Persistence/Migrations/**,**/Migrations/**,**/obj/**,**/bin/**,**/Program.cs" \
             /d:sonar.exclusions="**/Persistence/Migrations/**,**/Migrations/**,**/obj/**,**/bin/**"
 
       - name: Build solution
