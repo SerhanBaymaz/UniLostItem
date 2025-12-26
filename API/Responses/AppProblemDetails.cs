@@ -22,7 +22,7 @@ public class AppProblemDetails
     public string? Instance { get; init; }
 
     // RFC 9457 allows extension members. Use a dictionary to carry them.
-    public IDictionary<string, object?> Extensions { get; } = new Dictionary<string, object?>();
+    public IDictionary<string, object?> Extensions { get; init; } = new Dictionary<string, object?>();
 
     public AppProblemDetails() { }
 
