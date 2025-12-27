@@ -8,18 +8,18 @@ using Persistence;
 using Xunit;
 using MediatR;
 
-namespace Tests.Features.SerhanKitaplar.Commands.DeleteSerhanKitap
-{
-    public class DeleteSerhanKitapCommandHandlerTests
-    {
-        private readonly Mock<IAppDbContext> _mockContext;
-        private readonly DeleteSerhanKitapCommandHandler _handler;
+namespace Tests.Application_Tests.Features.SerhanKitaplar.Commands.DeleteSerhanKitap;
 
-        public DeleteSerhanKitapCommandHandlerTests()
-        {
-            _mockContext = new Mock<IAppDbContext>();
-            _handler = new DeleteSerhanKitapCommandHandler(_mockContext.Object);
-        }
+public class DeleteSerhanKitapCommandHandlerTests
+{
+    private readonly Mock<IAppDbContext> _mockContext;
+    private readonly DeleteSerhanKitapCommandHandler _handler;
+
+    public DeleteSerhanKitapCommandHandlerTests()
+    {
+        _mockContext = new Mock<IAppDbContext>();
+        _handler = new DeleteSerhanKitapCommandHandler(_mockContext.Object);
+    }
 
         [Fact]
         public async Task Handle_ShouldReturnNotFound_WhenSerhanKitapDoesNotExist()
@@ -80,4 +80,3 @@ namespace Tests.Features.SerhanKitaplar.Commands.DeleteSerhanKitap
             Assert.Equal("Failed to delete the serhan kitap", result.Message);
         }
     }
-}

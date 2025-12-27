@@ -8,18 +8,18 @@ using Persistence;
 using Xunit;
 using MediatR;
 
-namespace Tests.Features.SerhanKitaplar.Commands.EditSerhanKitap
-{
-    public class EditSerhanKitapCommandHandlerTests
-    {
-        private readonly Mock<IAppDbContext> _mockContext;
-        private readonly EditSerhanKitapCommandHandler _handler;
+namespace Tests.Application_Tests.Features.SerhanKitaplar.Commands.EditSerhanKitap;
 
-        public EditSerhanKitapCommandHandlerTests()
-        {
-            _mockContext = new Mock<IAppDbContext>();
-            _handler = new EditSerhanKitapCommandHandler(_mockContext.Object);
-        }
+public class EditSerhanKitapCommandHandlerTests
+{
+    private readonly Mock<IAppDbContext> _mockContext;
+    private readonly EditSerhanKitapCommandHandler _handler;
+
+    public EditSerhanKitapCommandHandlerTests()
+    {
+        _mockContext = new Mock<IAppDbContext>();
+        _handler = new EditSerhanKitapCommandHandler(_mockContext.Object);
+    }
 
         [Fact]
         public async Task Handle_ShouldReturnNotFound_WhenSerhanKitapDoesNotExist()
@@ -107,4 +107,3 @@ namespace Tests.Features.SerhanKitaplar.Commands.EditSerhanKitap
             Assert.Equal($"No changes were made to the {kitap.KitapName}.", result.Message);
         }
     }
-}

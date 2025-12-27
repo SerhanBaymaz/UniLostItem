@@ -2,7 +2,7 @@ using Application.Features.SerhanKitaplar.Commands.CreateSerhanKitap;
 using Application.Features.SerhanKitaplar.Validators;
 using FluentAssertions;
 
-namespace Tests.Features.SerhanKitaplar.Commands.CreateSerhanKitap;
+namespace Tests.Application_Tests.Features.SerhanKitaplar.Commands.CreateSerhanKitap;
 
 public class CreateSerhanKitapCommandValidatorTests
 {
