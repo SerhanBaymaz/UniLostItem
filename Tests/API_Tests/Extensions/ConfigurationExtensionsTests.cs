@@ -168,20 +168,28 @@ public class ConfigurationExtensionsTests
         var envMock = new Mock<IWebHostEnvironment>();
         envMock.Setup(e => e.EnvironmentName).Returns("Development");
 
-        var testEnvFilePath = "../test.env";
+        // The code specifically looks for "../dev.env" when in Development
+        var testEnvFilePath = "../dev.env";
         var testConnectionString = "Host=testhost;Database=testdb;";
         var testSeqUrl = "http://testseq:5341";
 
-        // Create a temporary .env file
+        // Create a temporary .env file at the expected location
         File.WriteAllText(testEnvFilePath, $"DefaultConnection={testConnectionString}\nSeqServerUrl={testSeqUrl}");
 
         try
         {
-            // Act - This verifies the File.Exists check allows loading when file is present
-            Action act = () => configBuilder.AddEnvironmentConfiguration(envMock.Object);
+            // Act
+            configBuilder.AddEnvironmentConfiguration(envMock.Object);
+            var config = configBuilder.Build();
 
-            // Assert - After Env.Load, environment variables should be set
-            act.Should().NotThrow("because File.Exists should return true and Env.Load should execute");
+            // Assert
+            // 1. Verify environment variables were loaded into the process
+            Environment.GetEnvironmentVariable("DefaultConnection").Should().Be(testConnectionString);
+            Environment.GetEnvironmentVariable("SeqServerUrl").Should().Be(testSeqUrl);
+
+            // 2. Verify they were also added to the IConfiguration
+            config.GetConnectionString("DefaultConnection").Should().Be(testConnectionString);
+            config["Serilog:WriteTo:1:Args:serverUrl"].Should().Be(testSeqUrl);
         }
         finally
         {

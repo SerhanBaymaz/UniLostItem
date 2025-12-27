@@ -11,52 +11,51 @@ using Tests.Helpers;
 using Xunit;
 using Microsoft.EntityFrameworkCore;
 
-namespace Tests.Features.SerhanKitaplar.Queries.GetSerhanKitapList
+namespace Tests.Application_Tests.Features.SerhanKitaplar.Queries.GetSerhanKitapList;
+
+public class GetSerhanKitapListQueryHandlerTests
 {
-    public class GetSerhanKitapListQueryHandlerTests
+    private readonly IAppDbContext _context;
+    private readonly Mock<IMapper> _mockMapper;
+    private readonly GetSerhanKitapListQueryHandler _handler;
+
+    public GetSerhanKitapListQueryHandlerTests()
     {
-        private readonly IAppDbContext _context;
-        private readonly Mock<IMapper> _mockMapper;
-        private readonly GetSerhanKitapListQueryHandler _handler;
+        _context = TestDbContextFactory.CreateInMemoryDbContext();
+        _mockMapper = new Mock<IMapper>();
+        _handler = new GetSerhanKitapListQueryHandler(_context, _mockMapper.Object);
+    }
 
-        public GetSerhanKitapListQueryHandlerTests()
+    [Fact]
+    public async Task Handle_ShouldReturnMappedList()
+    {
+        // Arrange
+        var kitaplar = new List<SerhanKitap>
         {
-            _context = TestDbContextFactory.CreateInMemoryDbContext();
-            _mockMapper = new Mock<IMapper>();
-            _handler = new GetSerhanKitapListQueryHandler(_context, _mockMapper.Object);
-        }
+            new SerhanKitap { Id = "1", KitapName = "A", KitapYazar = "Y1", KitapSayfaSayisi = 100 },
+            new SerhanKitap { Id = "2", KitapName = "B", KitapYazar = "Y2", KitapSayfaSayisi = 200 }
+        };
+        await (_context as Persistence.AppDbContext)!.SerhanKitaplar.AddRangeAsync(kitaplar);
+        await (_context as Persistence.AppDbContext)!.SaveChangesAsync();
 
-        [Fact]
-        public async Task Handle_ShouldReturnMappedList()
+        var kitaplarDto = new List<GetSerhanKitapDto>
         {
-            // Arrange
-            var kitaplar = new List<SerhanKitap>
-            {
-                new SerhanKitap { Id = "1", KitapName = "A", KitapYazar = "Y1", KitapSayfaSayisi = 100 },
-                new SerhanKitap { Id = "2", KitapName = "B", KitapYazar = "Y2", KitapSayfaSayisi = 200 }
-            };
-            await (_context as Persistence.AppDbContext)!.SerhanKitaplar.AddRangeAsync(kitaplar);
-            await (_context as Persistence.AppDbContext)!.SaveChangesAsync();
+            new GetSerhanKitapDto { Id = "1", KitapName = "A", KitapYazar = "Y1", KitapSayfaSayisi = 100 },
+            new GetSerhanKitapDto { Id = "2", KitapName = "B", KitapYazar = "Y2", KitapSayfaSayisi = 200 }
+        };
+        _mockMapper.Setup(x => x.Map<List<GetSerhanKitapDto>>(It.IsAny<List<SerhanKitap>>())).Returns(kitaplarDto);
 
-            var kitaplarDto = new List<GetSerhanKitapDto>
-            {
-                new GetSerhanKitapDto { Id = "1", KitapName = "A", KitapYazar = "Y1", KitapSayfaSayisi = 100 },
-                new GetSerhanKitapDto { Id = "2", KitapName = "B", KitapYazar = "Y2", KitapSayfaSayisi = 200 }
-            };
-            _mockMapper.Setup(x => x.Map<List<GetSerhanKitapDto>>(It.IsAny<List<SerhanKitap>>())).Returns(kitaplarDto);
+        var query = new GetSerhanKitapListQuery();
 
-            var query = new GetSerhanKitapListQuery();
+        // Act
+        var result = await _handler.Handle(query, CancellationToken.None);
 
-            // Act
-            var result = await _handler.Handle(query, CancellationToken.None);
-
-            // Assert
-            Assert.NotNull(result);
-            Assert.True(result.IsSuccess);
-            Assert.NotNull(result.Value);
-            Assert.Equal(2, result.Value.Count);
-            Assert.Equal("A", result.Value[0].KitapName);
-            Assert.Equal("B", result.Value[1].KitapName);
-        }
+        // Assert
+        Assert.NotNull(result);
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Value);
+        Assert.Equal(2, result.Value.Count);
+        Assert.Equal("A", result.Value[0].KitapName);
+        Assert.Equal("B", result.Value[1].KitapName);
     }
 }
