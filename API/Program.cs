@@ -30,6 +30,7 @@ app.UseMiddleware<ExceptionMiddleware>();
 //app.UseRouting();
 //app.UseRateLimiter();
 app.UseCorsConfiguration();
+app.UseHealthChecksConfiguration();
 //app.UseAuthentication();
 //app.UseAuthorization();
 

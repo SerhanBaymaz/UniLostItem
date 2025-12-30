@@ -10,6 +10,9 @@ public static class ApiExtensions
         // Add services to the container.
         services.AddControllers();
 
+        // Expose a simple liveness endpoint for container orchestrators
+        services.AddHealthChecks();
+
         // Convert model state / input formatter errors into StandardApiResponse
         services.Configure<ApiBehaviorOptions>(options =>
         {
@@ -31,5 +34,10 @@ public static class ApiExtensions
     {
         app.UseCors(x => x.AllowAnyHeader().AllowAnyMethod()
             .WithOrigins("http://localhost:3000", "https://localhost:3000"));
+    }
+
+    public static void UseHealthChecksConfiguration(this IApplicationBuilder app)
+    {
+        app.UseHealthChecks("/health");
     }
 }
