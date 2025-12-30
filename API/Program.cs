@@ -11,6 +11,7 @@ builder.Host.AddSerilogConfiguration();
 
 // Add services
 builder.Services.AddApiConfiguration();
+builder.Services.AddHealthCheckServices(builder.Configuration);
 builder.Services.AddDatabaseServices(builder.Configuration);
 builder.Services.AddApplicationServices();
 builder.Services.AddCorsConfiguration();

@@ -1,4 +1,6 @@
 using API.Helpers;
+using HealthChecks.UI.Client;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Extensions;
@@ -10,9 +12,6 @@ public static class ApiExtensions
         // Add services to the container.
         services.AddControllers();
 
-        // Expose a simple liveness endpoint for container orchestrators
-        services.AddHealthChecks();
-
         // Convert model state / input formatter errors into StandardApiResponse
         services.Configure<ApiBehaviorOptions>(options =>
         {
@@ -23,6 +22,24 @@ public static class ApiExtensions
             // Suppress default ProblemDetails for client errors (4xx) so ExceptionMiddleware can handle them
             options.SuppressMapClientErrors = true;
         });
+    }
+
+    public static void AddHealthCheckServices(this IServiceCollection services, IConfiguration configuration)
+    {
+        var healthChecks = services.AddHealthChecks();
+
+        var connectionString = configuration["ConnectionStrings:DefaultConnection"];
+        if (!string.IsNullOrEmpty(connectionString))
+        {
+            healthChecks.AddNpgSql(connectionString, name: "PostgreSQL", tags: new[] { "dependency" });
+        }
+
+        var seqUrl = configuration["Serilog:WriteTo:1:Args:serverUrl"];
+        if (!string.IsNullOrEmpty(seqUrl) && Uri.TryCreate(seqUrl, UriKind.Absolute, out var uri))
+        {
+            // Check if Seq ingestion port is open (TCP) because HTTP root might return 404
+            healthChecks.AddTcpHealthCheck(setup => setup.AddHost(uri.Host, uri.Port), name: "Seq", tags: new[] { "dependency" });
+        }
     }
 
     public static void AddCorsConfiguration(this IServiceCollection services)
@@ -38,6 +55,18 @@ public static class ApiExtensions
 
     public static void UseHealthChecksConfiguration(this IApplicationBuilder app)
     {
-        app.UseHealthChecks("/health");
+        // API only (liveness)
+        app.UseHealthChecks("/health/api", new HealthCheckOptions
+        {
+            Predicate = check => !check.Tags.Contains("dependency"),
+            ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+        });
+
+        // All dependencies (readiness)
+        app.UseHealthChecks("/health/all", new HealthCheckOptions
+        {
+            Predicate = _ => true,
+            ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+        });
     }
 }
