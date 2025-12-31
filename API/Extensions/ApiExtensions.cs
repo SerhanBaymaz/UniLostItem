@@ -28,19 +28,19 @@ public static class ApiExtensions
     public static void AddHealthCheckServices(this IServiceCollection services, IConfiguration configuration)
     {
         var healthChecks = services.AddHealthChecks()
-            .AddCheck("API", () => HealthCheckResult.Healthy(), tags: new[] { "api" });
+            .AddCheck("API", () => HealthCheckResult.Healthy(), tags: ["api"]);
 
         var connectionString = configuration["ConnectionStrings:DefaultConnection"];
         if (!string.IsNullOrEmpty(connectionString))
         {
-            healthChecks.AddNpgSql(connectionString, name: "PostgreSQL", tags: new[] { "dependency", "postgresql" });
+            healthChecks.AddNpgSql(connectionString, name: "PostgreSQL", tags: ["dependency", "postgresql"]);
         }
 
         var seqUrl = configuration["Serilog:WriteTo:1:Args:serverUrl"];
         if (!string.IsNullOrEmpty(seqUrl) && Uri.TryCreate(seqUrl, UriKind.Absolute, out var uri))
         {
             // Check if Seq ingestion port is open (TCP) because HTTP root might return 404
-            healthChecks.AddTcpHealthCheck(setup => setup.AddHost(uri.Host, uri.Port), name: "Seq", tags: new[] { "dependency", "seq" });
+            healthChecks.AddTcpHealthCheck(setup => setup.AddHost(uri.Host, uri.Port), name: "Seq", tags: ["dependency", "seq"]);
         }
     }
 

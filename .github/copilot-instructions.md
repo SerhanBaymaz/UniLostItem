@@ -44,6 +44,7 @@
 ## API Surface
 
 - Primary resource: `SerhanKitap`; CRUD endpoints in `SerhanKitaplarController` (`/api/serhankitaplar`).
+- Health Checks: `/health/api` (liveness, no deps) and `/health/all` (readiness, includes DB/Seq); configured in `ApiExtensions`.
 - Standard API responses serialized via `StandardApiResponse`; model state errors use `ModelStateResponseFactory`.
 - Controllers and middleware wrap both success and error responses in `StandardApiResponse`; `BaseApiController.HandleResult` and `ExceptionMiddleware` enforce the envelope.
 
