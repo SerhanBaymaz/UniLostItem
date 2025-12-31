@@ -33,5 +33,6 @@
   "sonarlint.connectedMode.project": {
     "connectionId": "serhanbaymaz",
     "projectKey": "SerhanBaymaz_TemplateDeneme"
-  }
+  },
+  "postman.settings.dotenv-detection-notification-visibility": false
 }

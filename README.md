@@ -11,11 +11,11 @@ Bu proje, **Clean Architecture** prensiplerine uygun olarak geliştirilmiş bir 
 - [Kullanım](#kullanım)
 - [Mimari](#mimari)
 
-## 🏗️ Proje Yapısı
+## Proje Yapısı
 
 Proje, Clean Architecture prensiplerine göre 4 katmana ayrılmıştır; ayrıca testler için bir `Tests/` proje dizini bulunmaktadır.
 
-```
+```text
 TemplateDeneme/
 ├── API/                      # Presentation Layer - Web API
 │   ├── Controllers/          # API Controller'ları
@@ -94,8 +94,7 @@ TemplateDeneme/
     │               └── GetSerhanKitapDetailsQueryHandlerTests.cs
 ```
 
-
-## 🚀 Kullanılan Teknolojiler
+## Kullanılan Teknolojiler
 
 - **.NET 9.0** - .NET framework versiyonu
 - **ASP.NET Core Web API** - RESTful API geliştirme
@@ -108,36 +107,44 @@ TemplateDeneme/
 - **SonarCloud** - Code quality and security analysis
 - **GitHub Container Registry (GHCR)** - Docker image hosting
 
-## 📦 Kullanılan Kütüphaneler
+## Kullanılan Kütüphaneler
 
 ### API Katmanı
+
 | Kütüphane | Versiyon | Açıklama |
-|-----------|----------|----------|
+| ----------- | ---------- | ---------- |
 | **Swashbuckle.AspNetCore** | 6.5.0 | Swagger/OpenAPI dokümantasyonu |
 | **DotNetEnv** | 3.1.1 | Loads environment variables from .env files |
 | **Microsoft.EntityFrameworkCore.Design** | 9.0.0 | EF Core design-time araçları |
 | **Ben.Demystifier** | 0.4.1 | Gelişmiş exception stack trace formatlaması |
 | **Serilog** | 4.3.0 | Structured logging and enrichment |
 | **Serilog.Sinks.Seq** | 9.0.0 | Seq sink for centralized structured logging |
+| **AspNetCore.HealthChecks.NpgSql** | 9.0.0 | PostgreSQL health check |
+| **AspNetCore.HealthChecks.Network** | 9.0.0 | Network (TCP) health check |
+| **AspNetCore.HealthChecks.UI.Client** | 9.0.0 | Health check UI response writer |
 
 ### Application Katmanı
+
 | Kütüphane | Versiyon | Açıklama |
-|-----------|----------|----------|
+| ----------- | ---------- | ---------- |
 | **MediatR** | 12.4.1 | CQRS pattern implementasyonu |
 | **AutoMapper** | 13.0.1 | Object-to-object mapping |
 | **FluentValidation.DependencyInjectionExtensions** | 11.11.0 | Validation kuralları ve DI entegrasyonu |
 
 ### Persistence Katmanı
+
 | Kütüphane | Versiyon | Açıklama |
-|-----------|----------|----------|
+| ----------- | ---------- | ---------- |
 | **Npgsql.EntityFrameworkCore.PostgreSQL** | 9.0.3 | PostgreSQL veritabanı sağlayıcısı |
 
 ### Domain Katmanı
+
 - Harici bağımlılık içermez (Clean Architecture prensibi)
 
 ### Tests Katmanı
+
 | Kütüphane | Versiyon | Açıklama |
-|-----------|----------|----------|
+| ----------- | ---------- | ---------- |
 | **xUnit** | 2.9.2 | Test framework |
 | **xunit.runner.visualstudio** | 2.8.2 | Visual Studio test runner |
 | **FluentAssertions** | 8.8.0 | Readable test assertions |
@@ -147,8 +154,9 @@ TemplateDeneme/
 | **Microsoft.NET.Test.Sdk** | 17.12.0 | .NET Test SDK |
 
 ### Code Quality & Analyzers (Directory.Build.props)
+
 | Kütüphane | Versiyon | Açıklama |
-|-----------|----------|----------|
+| ----------- | ---------- | ---------- |
 | **Microsoft.CodeAnalysis.NetAnalyzers** | 9.0.0 | .NET kod analizi ve best practice kuralları |
 | **SonarAnalyzer.CSharp** | 10.16.1.129956 | SonarQube/SonarCloud kod kalitesi analizi |
 | **SonarLint** | - | IDE-level static analysis (recommended for developers) |
@@ -157,9 +165,10 @@ Bu projede ayrıca SonarQube ile merkezi kod kalite taramaları entegre edilebil
 
 > **Not:** `TreatWarningsAsErrors` özelliği aktiftir - tüm uyarılar hata olarak kabul edilir.
 
-## 🔧 Kurulum
+## Kurulum
 
 ### Gereksinimler
+
 - .NET 9.0 SDK
 - Docker & Docker Compose
 - Visual Studio 2022 / Visual Studio Code / JetBrains Rider (opsiyonel)
@@ -169,38 +178,45 @@ Bu projede ayrıca SonarQube ile merkezi kod kalite taramaları entegre edilebil
 #### Development Ortamı
 
 1. **Projeyi klonlayın:**
+
 ```bash
 git clone <repository-url>
 cd TemplateDeneme
 ```
 
-2. **Environment dosyasını oluşturun:**
+1. **Environment dosyasını oluşturun:**
+
 ```bash
 cp example.dev.env dev.env
 ```
 
 > **Not:** `dev.env` dosyasını ihtiyaçlarınıza göre düzenleyebilirsiniz.
 
-3. **Docker Compose ile servisleri başlatın:**
+1. **Docker Compose ile servisleri başlatın:**
+
 ```bash
 docker-compose -f docker-compose.dev.yml up -d
 ```
 
 Bu komut şu servisleri başlatır:
+
 - **PostgreSQL** (port: 5432) - Veritabanı
 - **Seq** (port: 8088 UI, 5348 ingestion) - Log yönetimi
 - **API** (port: 8089 HTTP, 5009 Debug) - .NET API
 
-4. **Servislerin durumunu kontrol edin:**
+1. **Servislerin durumunu kontrol edin:**
+
 ```bash
 docker-compose -f docker-compose.dev.yml ps
 ```
 
-5. **API'ye erişin:**
+1. **API'ye erişin:**
+
 - Swagger UI: `http://localhost:8089/swagger`
 - Seq UI: `http://localhost:8088` (Kullanıcı: `admindev`, Şifre: `admindev`)
 
-6. **Servisleri durdurmak için:**
+1. **Servisleri durdurmak için:**
+
 ```bash
 docker-compose -f docker-compose.dev.yml down
 ```
@@ -208,18 +224,21 @@ docker-compose -f docker-compose.dev.yml down
 #### Production Ortamı
 
 1. **Production environment dosyasını oluşturun:**
+
 ```bash
 cp example.prod.env prod.env
 ```
 
 > **ÖNEMLİ:** `prod.env` dosyasındaki şifreleri mutlaka değiştirin!
 
-2. **Production servisleri başlatın:**
+1. **Production servisleri başlatın:**
+
 ```bash
 docker-compose -f docker-compose.prod.yml up -d
 ```
 
 Production servisleri:
+
 - **PostgreSQL** (port: 5433) - Veritabanı
 - **Seq** (port: 5341 ingestion, 8081 UI) - Log yönetimi
 - **API** (port: 8080) - .NET API
@@ -229,26 +248,30 @@ Production servisleri:
 1. **PostgreSQL'i yerel olarak kurun ve çalıştırın**
 
 2. **Bağımlılıkları yükleyin:**
+
 ```bash
 dotnet restore
 ```
 
-3. **Environment dosyası oluşturun:**
+1. **Environment dosyası oluşturun:**
+
 ```bash
 cp example.dev.env dev.env
 ```
 
-4. **Connection string'i güncelleyin:**
+1. **Connection string'i güncelleyin:**
 `dev.env` dosyasında PostgreSQL bağlantı bilgilerinizi düzenleyin.
 
-5. **Veritabanı migration'larını uygulayın:**
+2. **Veritabanı migration'larını uygulayın:**
+
 ```bash
 dotnet ef database update -p Persistence -s API
 ```
 
 > **Not:** Migration'lar uygulama başlangıcında otomatik olarak çalışır.
 
-6. **Projeyi çalıştırın:**
+1. **Projeyi çalıştırın:**
+
 ```bash
 dotnet run --project API
 ```
@@ -263,6 +286,7 @@ Proje, farklı ortamlar için environment dosyaları kullanır:
 - `example.prod.env` - Production örnek dosyası
 
 **Environment Değişkenleri:**
+
 ```bash
 # PostgreSQL Ayarları
 POSTGRES_USER=postgres
@@ -280,7 +304,7 @@ SEQ_FIRSTRUN_ADMINUSERNAME=admindev
 SEQ_FIRSTRUN_ADMINPASSWORD=admindev
 ```
 
-## 💻 Kullanım
+## Kullanım
 
 ### API Endpoints
 
@@ -292,7 +316,13 @@ API, `SerhanKitap` (Kitap) entity'si üzerinde CRUD işlemleri gerçekleştirir:
 - **PUT** `/api/serhankitaplar/{id}` - Kitap bilgilerini güncelle
 - **DELETE** `/api/serhankitaplar/{id}` - Kitap sil
 
+### Health Check Endpoints
+
+- **GET** `/health/api` - **Liveness Check**: Sadece API uygulamasının ayakta olup olmadığını kontrol eder. Bağımlılıkları (DB, Seq) kontrol etmez.
+- **GET** `/health/all` - **Readiness Check**: API ve tüm bağımlılıkların (PostgreSQL, Seq) durumunu kontrol eder.
+
 ### Örnek Request (POST)
+
 ```json
 {
   "kitapName": "1984",
@@ -301,28 +331,32 @@ API, `SerhanKitap` (Kitap) entity'si üzerinde CRUD işlemleri gerçekleştirir:
 }
 ```
 
-## 🏛️ Mimari
+## Mimari
 
 ### Clean Architecture Katmanları
 
-**1. Domain Layer (Domain/)**
+#### 1. Domain Layer (Domain/)
+
 - En içteki katman
 - İş kurallarını ve entity'leri içerir
 - Dış katmanlara bağımlılığı yoktur
 
-**2. Application Layer (Application/)**
+#### 2. Application Layer (Application/)
+
 - Use case'leri ve iş mantığını içerir
 - CQRS pattern ile Commands ve Queries
 - MediatR ile request/response pipeline
 - FluentValidation ile input validasyonu
 - AutoMapper ile DTO dönüşümleri
 
-**3. Infrastructure Layer (Persistence/)**
+#### 3. Infrastructure Layer (Persistence/)
+
 - Veritabanı işlemleri
 - Entity Framework Core implementasyonu
 - Repository pattern (DbContext üzerinden)
 
-**4. Presentation Layer (API/)**
+#### 4. Presentation Layer (API/)
+
 - HTTP isteklerini karşılar
 - Controller'lar ve middleware'ler
 - Swagger dokümantasyonu
@@ -339,48 +373,53 @@ API, `SerhanKitap` (Kitap) entity'si üzerinde CRUD işlemleri gerçekleştirir:
 
 ### Özellikler
 
-✅ **Clean Architecture** ile katmanlı mimari
-✅ **CQRS Pattern** ile command/query ayrımı
-✅ **MediatR** ile request handling
-✅ **FluentValidation** ile güçlü validation
-✅ **AutoMapper** ile nesne dönüşümleri
-✅ **Entity Framework Core** ile ORM
-✅ **PostgreSQL** veritabanı desteği
-✅ **Docker & Docker Compose** ile containerization
-✅ **Seq** ile structured logging
-✅ **Environment-based configuration** (.env dosyaları)
-✅ **Otomatik migration** ve seed data
-✅ **Custom Exception Middleware** ile merkezi hata yönetimi
-✅ **Swagger/OpenAPI** dokümantasyonu
-✅ **CORS** desteği
-✅ **Standardize API Responses** yapısı
-✅ **Extension Methods** ile temiz ve modüler Program.cs yapısı
-✅ **Code Analyzers** ile kod kalitesi kontrolü (Microsoft & SonarAnalyzer)
-✅ **TreatWarningsAsErrors** ile sıkı kod standartları
-✅ **Hot reload** desteği (development ortamında)
-✅ **CI/CD Pipelines** (GitHub Actions)
+- **Clean Architecture** ile katmanlı mimari
+- **CQRS Pattern** ile command/query ayrımı
+- **MediatR** ile request handling
+- **FluentValidation** ile güçlü validation
+- **AutoMapper** ile nesne dönüşümleri
+- **Entity Framework Core** ile ORM
+- **PostgreSQL** veritabanı desteği
+- **Docker & Docker Compose** ile containerization
+- **Seq** ile structured logging
+- **Environment-based configuration** (.env dosyaları)
+- **Advanced Health Checks** - Liveness (`/health/api`) & Readiness (`/health/all`) endpoints with Seq integration
+- **Otomatik migration** ve seed data
+- **Custom Exception Middleware** ile merkezi hata yönetimi
+- **Swagger/OpenAPI** dokümantasyonu
+- **CORS** desteği
+- **Standardize API Responses** yapısı
+- **Extension Methods** ile temiz ve modüler Program.cs yapısı
+- **Code Analyzers** ile kod kalitesi kontrolü (Microsoft & SonarAnalyzer)
+- **TreatWarningsAsErrors** ile sıkı kod standartları
+- **Hot reload** desteği (development ortamında)
+- **CI/CD Pipelines** (GitHub Actions)
+
   - Development pipeline: Build, test, SonarCloud analysis, Docker build & push
   - Production pipeline: Build, test, Docker build & push to GHCR
-✅ **Test Coverage** with Coverlet (OpenCover format)
-✅ **Docker Image Registry** - GitHub Container Registry entegrasyonu
-✅ **Automated Docker Tagging** - Git SHA ve latest tags
-✅ **CI/CD Pipelines** (GitHub Actions)
+- **Test Coverage** with Coverlet (OpenCover format)
+- **Docker Image Registry** - GitHub Container Registry entegrasyonu
+- **Automated Docker Tagging** - Git SHA ve latest tags
+- **CI/CD Pipelines** (GitHub Actions)
+
   - Development pipeline: Build, test, SonarCloud analysis, Docker build & push
   - Production pipeline: Build, test, Docker build & push to GHCR
-✅ **Test Coverage** with Coverlet (OpenCover format)
-✅ **Docker Image Registry** - GitHub Container Registry entegrasyonu
-✅ **Automated Docker Tagging** - Git SHA ve latest tags
+- **Test Coverage** with Coverlet (OpenCover format)
+- **Docker Image Registry** - GitHub Container Registry entegrasyonu
+- **Automated Docker Tagging** - Git SHA ve latest tags
 
 ## 🚀 CI/CD Pipelines
 
 ### Development Pipeline (ci-dev.yml)
 
 Tetikleyiciler:
+
 - `main` ve `develop` branch'lerine push
 - Pull request'ler (main ve develop'a)
 - Manuel tetikleme
 
 **Pipeline Adımları:**
+
 1. ✅ **Build & Test** - .NET 9 ile build ve test çalıştırma
 2. ✅ **Code Coverage** - Coverlet ile test coverage toplama (OpenCover format)
 3. ✅ **SonarCloud Analysis** - Kod kalitesi ve güvenlik analizi
@@ -388,25 +427,29 @@ Tetikleyiciler:
 5. ✅ **Docker Push** - GHCR'ye image push (sadece push event'lerinde)
 
 **Docker Tags:**
-```
+
+```text
 ghcr.io/serhanbaymaz/dev-templatedeneme:latest
 ghcr.io/serhanbaymaz/dev-templatedeneme:sha-<git-sha>
 ```
 
 **Gerekli Secrets:**
+
 - `SONAR_TOKEN_DEV` - SonarCloud authentication token
 - `SONAR_PROJECT_KEY_DEV` - SonarCloud project key
 - `SONAR_ORGANIZATION_DEV` - SonarCloud organization
-- `SONAR_HOST_URL_DEV` - SonarCloud URL (https://sonarcloud.io)
+- `SONAR_HOST_URL_DEV` - SonarCloud URL (<https://sonarcloud.io>)
 
 ### Production Pipeline (ci-prod.yml)
 
 Tetikleyiciler:
+
 - `main` branch'e push
 - Version tags (`v*.*.*`)
 - Manuel tetikleme
 
 **Pipeline Adımları:**
+
 1. ✅ **Build & Test** - .NET 9 ile build ve test çalıştırma
 2. ✅ **Code Coverage** - Coverlet ile test coverage toplama (90 gün saklama)
 3. ✅ **Docker Build** - Production image build (`prod-templatedeneme`)
@@ -414,7 +457,8 @@ Tetikleyiciler:
 5. ✅ **Docker Push** - GHCR'ye image push
 
 **Docker Tags:**
-```
+
+```text
 ghcr.io/serhanbaymaz/prod-templatedeneme:latest
 ghcr.io/serhanbaymaz/prod-templatedeneme:sha-<git-sha>
 ```
@@ -422,6 +466,7 @@ ghcr.io/serhanbaymaz/prod-templatedeneme:sha-<git-sha>
 ### Docker Image Kullanımı
 
 **Development image'ı çekmek:**
+
 ```bash
 docker pull ghcr.io/serhanbaymaz/dev-templatedeneme:latest
 # veya specific version
@@ -429,6 +474,7 @@ docker pull ghcr.io/serhanbaymaz/dev-templatedeneme:sha-abc1234
 ```
 
 **Production image'ı çekmek:**
+
 ```bash
 docker pull ghcr.io/serhanbaymaz/prod-templatedeneme:latest
 # veya specific version
@@ -436,6 +482,7 @@ docker pull ghcr.io/serhanbaymaz/prod-templatedeneme:sha-xyz5678
 ```
 
 **Image'ı çalıştırmak:**
+
 ```bash
 docker run -p 8080:8080 ghcr.io/serhanbaymaz/prod-templatedeneme:latest
 ```
@@ -461,16 +508,19 @@ docker run -p 8080:8080 ghcr.io/serhanbaymaz/prod-templatedeneme:latest
 ### Entity Framework Migrations
 
 Yeni bir migration oluşturmak için:
+
 ```bash
 dotnet ef migrations add <MigrationCommandMessage> -p Persistence -s API
 ```
 
 Veritabanını güncellemek için:
+
 ```bash
 dotnet ef database update -p Persistence -s API
 ```
 
 Migration'ı geri almak için:
+
 ```bash
 dotnet ef migrations remove -p Persistence -s API
 ```
@@ -478,16 +528,19 @@ dotnet ef migrations remove -p Persistence -s API
 ### Build & Run
 
 Projeyi build etmek:
+
 ```bash
 dotnet build
 ```
 
 Projeyi çalıştırmak:
+
 ```bash
 dotnet run --project API
 ```
 
 Watch mode ile çalıştırmak (hot reload):
+
 ```bash
 dotnet watch run --project API
 ```
@@ -495,21 +548,25 @@ dotnet watch run --project API
 ### Test Komutları
 
 Testleri çalıştırmak için:
+
 ```bash
 dotnet test
 ```
 
 Kod kapsamı (coverage) raporu ile:
+
 ```bash
 dotnet test --collect:"XPlat Code Coverage"
 ```
 
 Belirli bir test projesini çalıştırmak:
+
 ```bash
 dotnet test Tests/Tests.csproj
 ```
 
 Verbose output ile test çalıştırmak:
+
 ```bash
 dotnet test --verbosity detailed
 ```
