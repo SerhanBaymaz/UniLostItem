@@ -3,7 +3,10 @@ using API.Helpers;
 using FluentAssertions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Tests.API_Tests.Extensions;
@@ -38,7 +41,7 @@ public class ApiExtensionsTests
 
         // Assert
         var serviceProvider = services.BuildServiceProvider();
-        var options = serviceProvider.GetService<Microsoft.Extensions.Options.IOptions<ApiBehaviorOptions>>();
+        var options = serviceProvider.GetService<IOptions<ApiBehaviorOptions>>();
 
         options.Should().NotBeNull();
         var behaviorOptions = options!.Value;
@@ -59,7 +62,7 @@ public class ApiExtensionsTests
 
         // Assert
         var serviceProvider = services.BuildServiceProvider();
-        var options = serviceProvider.GetService<Microsoft.Extensions.Options.IOptions<ApiBehaviorOptions>>();
+        var options = serviceProvider.GetService<IOptions<ApiBehaviorOptions>>();
 
         var factory = options!.Value.InvalidModelStateResponseFactory;
         factory.Should().NotBeNull();
@@ -125,5 +128,80 @@ public class ApiExtensionsTests
         // Assert
         Action act = () => services.BuildServiceProvider();
         act.Should().NotThrow();
+    }
+
+    [Fact]
+    public void AddHealthCheckServices_ShouldRegisterBaseApiCheck()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        var configuration = new ConfigurationBuilder().Build();
+
+        // Act
+        services.AddHealthCheckServices(configuration);
+        var serviceProvider = services.BuildServiceProvider();
+        var options = serviceProvider.GetRequiredService<IOptions<HealthCheckServiceOptions>>();
+
+        // Assert
+        options.Value.Registrations.Should().Contain(r => r.Name == "API");
+    }
+
+    [Fact]
+    public void AddHealthCheckServices_WhenPostgresConnectionIsPresent_ShouldRegisterPostgreSQLCheck()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        var inMemorySettings = new Dictionary<string, string?> {
+            {"ConnectionStrings:DefaultConnection", "Host=localhost;Database=test"}
+        };
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(inMemorySettings)
+            .Build();
+
+        // Act
+        services.AddHealthCheckServices(configuration);
+        var serviceProvider = services.BuildServiceProvider();
+        var options = serviceProvider.GetRequiredService<IOptions<HealthCheckServiceOptions>>();
+
+        // Assert
+        options.Value.Registrations.Should().Contain(r => r.Name == "PostgreSQL");
+    }
+
+    [Fact]
+    public void AddHealthCheckServices_WhenSeqUrlIsPresent_ShouldRegisterSeqCheck()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        var inMemorySettings = new Dictionary<string, string?> {
+            {"Serilog:WriteTo:1:Args:serverUrl", "http://localhost:5341"}
+        };
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(inMemorySettings)
+            .Build();
+
+        // Act
+        services.AddHealthCheckServices(configuration);
+        var serviceProvider = services.BuildServiceProvider();
+        var options = serviceProvider.GetRequiredService<IOptions<HealthCheckServiceOptions>>();
+
+        // Assert
+        options.Value.Registrations.Should().Contain(r => r.Name == "Seq");
+    }
+
+    [Fact]
+    public void AddHealthCheckServices_WhenBothConfigsAreMissing_ShouldOnlyRegisterApiCheck()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        var configuration = new ConfigurationBuilder().Build();
+
+        // Act
+        services.AddHealthCheckServices(configuration);
+        var serviceProvider = services.BuildServiceProvider();
+        var options = serviceProvider.GetRequiredService<IOptions<HealthCheckServiceOptions>>();
+
+        // Assert
+        options.Value.Registrations.Should().HaveCount(1);
+        options.Value.Registrations.Should().Contain(r => r.Name == "API");
     }
 }
