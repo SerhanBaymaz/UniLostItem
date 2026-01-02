@@ -18,7 +18,7 @@ public static class RateLimitingExtensions
         {
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 
-            options.OnRejected = (context, token) => HandleRejected(context.HttpContext, token, permitLimit, windowSeconds);
+            options.OnRejected = (context, token) => HandleRejected(context.HttpContext, permitLimit, windowSeconds, token);
 
             options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
                 RateLimitPartition.GetFixedWindowLimiter(
@@ -33,7 +33,7 @@ public static class RateLimitingExtensions
         });
     }
 
-    public static async ValueTask HandleRejected(HttpContext httpContext, CancellationToken token, int permitLimit, int windowSeconds)
+    public static async ValueTask HandleRejected(HttpContext httpContext, int permitLimit, int windowSeconds, CancellationToken token)
     {
         var remoteIp = httpContext.Connection.RemoteIpAddress;
         var clientIPv4 = remoteIp?.AddressFamily == System.Net.Sockets.AddressFamily.InterNetworkV6

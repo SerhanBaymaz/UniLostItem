@@ -35,6 +35,9 @@ public class RateLimitingExtensionsTests : IDisposable
         }
     }
 
+    // Cache and reuse JsonSerializerOptions to avoid allocating repeatedly in tests
+    private static readonly JsonSerializerOptions JsonOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+
     [Fact]
     public void AddRateLimitingServices_ShouldRegisterRateLimiterOptions()
     {
@@ -78,7 +81,7 @@ public class RateLimitingExtensionsTests : IDisposable
         int windowSeconds = 60;
 
         // Act
-        await RateLimitingExtensions.HandleRejected(context, CancellationToken.None, permitLimit, windowSeconds);
+        await RateLimitingExtensions.HandleRejected(context, permitLimit, windowSeconds, CancellationToken.None);
 
         // Assert
         context.Response.StatusCode.Should().Be(StatusCodes.Status429TooManyRequests);
@@ -86,15 +89,15 @@ public class RateLimitingExtensionsTests : IDisposable
 
         context.Response.Body.Seek(0, SeekOrigin.Begin);
         var body = await new StreamReader(context.Response.Body).ReadToEndAsync();
-        
-        var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+
+        var options = JsonOptions;
         var response = JsonSerializer.Deserialize<StandardApiResponse<object>>(body, options);
 
         response.Should().NotBeNull();
         response!.StatusCode.Should().Be(StatusCodes.Status429TooManyRequests);
         response.Success.Should().BeFalse();
         response.Message.Should().Be("Rate limit exceeded. Please try again later.");
-        
+
         response.Error.Should().NotBeNull();
         response.Error!.Detail.Should().Be("You have sent too many requests in a given amount of time.");
         response.Error.Type.Should().Be("https://tools.ietf.org/html/rfc6585#section-4");
