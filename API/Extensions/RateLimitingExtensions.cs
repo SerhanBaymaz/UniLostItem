@@ -1,3 +1,5 @@
+using Serilog;
+using System.Diagnostics;
 using System.Threading.RateLimiting;
 using API.Responses;
 using Microsoft.AspNetCore.RateLimiting;
@@ -18,8 +20,24 @@ public static class RateLimitingExtensions
 
             options.OnRejected = async (context, token) =>
             {
-                context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
-                context.HttpContext.Response.ContentType = "application/json";
+                var httpContext = context.HttpContext;
+                var remoteIp = httpContext.Connection.RemoteIpAddress;
+                var clientIPv4 = remoteIp?.AddressFamily == System.Net.Sockets.AddressFamily.InterNetworkV6
+                    ? remoteIp.MapToIPv4().ToString()
+                    : remoteIp?.ToString();
+                var clientIPv6 = remoteIp?.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork
+                    ? remoteIp.MapToIPv6().ToString()
+                    : remoteIp?.ToString();
+                var path = httpContext.Request.Path.Value ?? "unknown";
+                var userAgent = httpContext.Request.Headers.UserAgent.ToString();
+                var traceId = Activity.Current?.TraceId.ToString() ?? httpContext.TraceIdentifier;
+
+                Log.Warning(
+                    "Rate limit exceeded for client - ClientIPv4: {ClientIPv4}, ClientIPv6: {ClientIPv6} - Path: {Path} - UserAgent: {UserAgent} - TraceId: {TraceId} - PermitLimit: {PermitLimit} - WindowSeconds: {WindowSeconds}",
+                    clientIPv4 ?? "N/A", clientIPv6 ?? "N/A", path, userAgent, traceId, permitLimit, windowSeconds);
+
+                httpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+                httpContext.Response.ContentType = "application/json";
 
                 var response = StandardApiResponse<object>.ErrorResponse(
                     message: "Rate limit exceeded. Please try again later.",
@@ -28,7 +46,7 @@ public static class RateLimitingExtensions
                     detail: "You have sent too many requests in a given amount of time."
                 );
 
-                await context.HttpContext.Response.WriteAsJsonAsync(response, token);
+                await httpContext.Response.WriteAsJsonAsync(response, token);
             };
 
             options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
