@@ -11,6 +11,7 @@ builder.Host.AddSerilogConfiguration();
 
 // Add services
 builder.Services.AddApiConfiguration();
+builder.Services.AddRateLimitingServices(builder.Configuration);
 builder.Services.AddHealthCheckServices(builder.Configuration);
 builder.Services.AddDatabaseServices(builder.Configuration);
 builder.Services.AddApplicationServices();
@@ -29,7 +30,7 @@ app.UseMiddleware<ExceptionMiddleware>();
 //app.UseHttpsRedirection();
 //app.UseCookiePolicy();
 //app.UseRouting();
-//app.UseRateLimiter();
+app.UseRateLimiter();
 app.UseCorsConfiguration();
 app.UseHealthChecksConfiguration();
 //app.UseAuthentication();
