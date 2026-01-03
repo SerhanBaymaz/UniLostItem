@@ -1,7 +1,12 @@
 using API.Extensions;
+using API.Helpers;
 using API.Middleware;
 using Infrastructure;
 using Serilog;
+using DotNetEnv;
+
+// Load environment variables from .env files
+EnvLoader.Load();
 
 #region Builder and Configuration
 var builder = WebApplication.CreateBuilder(args);
