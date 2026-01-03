@@ -1,3 +1,5 @@
+using Domain;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
 using Serilog;
@@ -23,8 +25,11 @@ public static class DatabaseExtensions
         try
         {
             var context = services.GetRequiredService<AppDbContext>();
+            var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+            var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+
             await context.Database.MigrateAsync();
-            await DbInitializer.SeedData(context);
+            await DbInitializer.SeedData(context, userManager, roleManager);
         }
         catch (Exception ex)
         {

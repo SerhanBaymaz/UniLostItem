@@ -1,12 +1,43 @@
 using System;
 using Domain;
+using Microsoft.AspNetCore.Identity;
 
 namespace Persistence;
 
 public static class DbInitializer
 {
-    public static async Task SeedData(AppDbContext context)
+    public static async Task SeedData(AppDbContext context, UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager)
     {
+        // Seed Roles
+        if (!await roleManager.RoleExistsAsync("Admin"))
+        {
+            await roleManager.CreateAsync(new IdentityRole("Admin"));
+        }
+        if (!await roleManager.RoleExistsAsync("BaseUser"))
+        {
+            await roleManager.CreateAsync(new IdentityRole("BaseUser"));
+        }
+
+        // Seed Admin User
+        if (await userManager.FindByEmailAsync("admin@admin.com") == null)
+        {
+            var admin = new ApplicationUser
+            {
+                UserName = "admin",
+                Email = "admin@admin.com",
+                FirstName = "System",
+                LastName = "Admin",
+                EmailConfirmed = true,
+                CreatedDate = DateTime.UtcNow
+            };
+
+            var result = await userManager.CreateAsync(admin, "Pa$$w0rd");
+            if (result.Succeeded)
+            {
+                await userManager.AddToRoleAsync(admin, "Admin");
+            }
+        }
+
         // Seed SerhanKitaplar
         if (!context.SerhanKitaplar.Any())
         {
