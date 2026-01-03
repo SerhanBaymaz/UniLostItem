@@ -1,4 +1,4 @@
-namespace Application.Features.Auth.DTOs;
+namespace Application.Features.Auth.Common.DTOs;
 
 public class UserDto
 {

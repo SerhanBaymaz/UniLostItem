@@ -3,15 +3,16 @@
 ## Core Architecture
 
 - Clean Architecture with five layers: Domain (pure entities), Application (CQRS + MediatR), Infrastructure (External services, JWT, Auth), Persistence (EF Core + PostgreSQL), API (ASP.NET Core controllers, middleware, Swagger).
-- Feature slices under `Application/Features/SerhanKitaplar` use Commands/Queries folders with DTOs, validators, and handlers; mapping in `Application/Core/MappingProfiles.cs`; validation pipeline via `ValidationBehavior`.
-- Persistence layer uses `AppDbContext` implementing `IAppDbContext`; migrations live in `Persistence/Migrations`; database seeding in `DbInitializer` (called on startup).
+- Feature slices under `Application/Features/SerhanKitaplar` and `Application/Features/Auth` use Commands/Queries folders with DTOs, validators, and handlers; mapping in `Application/Core/MappingProfiles.cs`; validation pipeline via `ValidationBehavior`.
+- Auth module (`Application/Features/Auth`) follows the same structure: `Commands/Login`, `Commands/Register` with corresponding DTOs and Validators.
+- Persistence layer uses `AppDbContext` implementing `IAppDbContext` and extends `IdentityDbContext<ApplicationUser>`; migrations live in `Persistence/Migrations`; database seeding in `DbInitializer` (called on startup).
 - API startup is extension-driven (`API/Extensions/*`) wired in `API/Program.cs`; custom error handling in `API/Middleware/ExceptionMiddleware.cs`; standardized responses in `API/Responses`.
 
 ## Build & Run
 
 - Restore/build/run: `dotnet restore`, `dotnet build`, `dotnet run --project API` (hot reload: `dotnet watch run --project API`).
 - Docker dev stack: `docker-compose -f docker-compose.dev.yml up -d`; default ports: API 8089, PostgreSQL 5432, Seq 8088 (UI) / 5348 (ingestion).
-- Environment files: copy `example.dev.env` → `dev.env` (or `example.prod.env` → `prod.env`); `ConfigurationExtensions` loads `.env` early.
+- Environment files: managed via `EnvLoader` helper. Copy `example.dev.env` → `dev.env` (or `example.prod.env` → `prod.env`); `EnvLoader` loads variables before builder construction.
 
 ## CI/CD Pipelines
 
@@ -25,16 +26,18 @@
 
 - Run all tests: `dotnet test` (Tests project). Coverage example: `dotnet test --collect:"XPlat Code Coverage"`.
 - In-memory EF used in tests (`Microsoft.EntityFrameworkCore.InMemory`); mocks via Moq; assertions via FluentAssertions.
+- Integration tests (e.g., `HealthCheckTests`) use `WebApplicationFactory` and MUST mock sensitive configuration (like `Jwt:SecretKey`) via environment variables in constructor/dispose pattern to pass in CI/test environments without .env files.
 
 ## Conventions & Patterns
 
 - Treat warnings as errors (see `Directory.Build.props` analyzers); keep code analyzer-friendly.
 - Use Result pattern (`Application/Core/Result.cs`) for operation outcomes; prefer returning `Result<T>` from handlers and surface via controllers with standardized responses.
-- Validation: FluentValidation validators per command (e.g., `CreateSerhanKitapCommandValidator`); pipeline behavior enforces before handlers.
-- Mapping: add AutoMapper profiles to `MappingProfiles`; commands/queries expect DTOs (e.g., `CreateSerhanKitapDto`, `GetSerhanKitapDto`).
+- Validation: FluentValidation validators per command (e.g., `CreateSerhanKitapCommandValidator`, `RegisterCommandValidator`); pipeline behavior enforces before handlers.
+- Mapping: add AutoMapper profiles to `MappingProfiles`; commands/queries expect DTOs (e.g., `CreateSerhanKitapDto`, `RegisterDto`).
 - Controllers inherit `BaseApiController` to access `Mediator` and standardized responses; prefer MediatR requests over direct service calls.
 - Exception handling centralized via `ExceptionMiddleware`; rely on it instead of try/catch in controllers.
 - Logging uses Serilog (Seq sink); configuration in `LoggingExtensions`; enrich logs rather than Console.WriteLine.
+- **Identity & Auth:** Uses ASP.NET Core Identity (`ApplicationUser`); JWT for authentication (`IJwtService`). Secrets must be loaded from Environment Variables (not appsettings.json).
 
 ## Data & Migrations
 
@@ -44,6 +47,7 @@
 ## API Surface
 
 - Primary resource: `SerhanKitap`; CRUD endpoints in `SerhanKitaplarController` (`/api/serhankitaplar`).
+- Authentication: `AuthController` (`/api/v1/auth/register`, `/api/v1/auth/login`).
 - Health Checks: `/health/api` (liveness, no deps) and `/health/all` (readiness, includes DB/Seq); configured in `ApiExtensions`.
 - Standard API responses serialized via `StandardApiResponse`; model state errors use `ModelStateResponseFactory`.
 - Controllers and middleware wrap both success and error responses in `StandardApiResponse`; `BaseApiController.HandleResult` and `ExceptionMiddleware` enforce the envelope.
@@ -66,4 +70,5 @@
 
 - Nullable reference types enabled; favor explicit null checks.
 - Keep DTOs decoupled from EF entities; mapping handles transformations.
-- Ensure new configuration values are read from `.env` and bound via extension methods.
+- Ensure new configuration values are read from `.env` and bound via extension methods or `EnvLoader`.
+- Do NOT put secrets in `appsettings.json`; use `.env` files locally and Secrets in CI/CD.

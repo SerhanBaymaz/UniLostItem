@@ -7,12 +7,17 @@ using Xunit;
 
 namespace Tests.API_Tests;
 
-public class HealthCheckTests : IClassFixture<WebApplicationFactory<BaseApiController>>
+public sealed class HealthCheckTests : IClassFixture<WebApplicationFactory<BaseApiController>>, IDisposable
 {
     private readonly WebApplicationFactory<BaseApiController> _factory;
 
     public HealthCheckTests(WebApplicationFactory<BaseApiController> factory)
     {
+        // Set environment variables required for startup
+        Environment.SetEnvironmentVariable("Jwt__SecretKey", "SuperSecretTestKeyThatIsLongEnoughForHmacSha512_AtLeast64BytesLong_123456789");
+        Environment.SetEnvironmentVariable("Jwt__Issuer", "TestIssuer");
+        Environment.SetEnvironmentVariable("Jwt__Audience", "TestAudience");
+
         _factory = factory.WithWebHostBuilder(builder =>
         {
             builder.ConfigureAppConfiguration((context, config) =>
@@ -24,6 +29,14 @@ public class HealthCheckTests : IClassFixture<WebApplicationFactory<BaseApiContr
                 });
             });
         });
+    }
+
+    public void Dispose()
+    {
+        // Clean up environment variables
+        Environment.SetEnvironmentVariable("Jwt__SecretKey", null);
+        Environment.SetEnvironmentVariable("Jwt__Issuer", null);
+        Environment.SetEnvironmentVariable("Jwt__Audience", null);
     }
 
     [Fact]

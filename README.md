@@ -42,8 +42,23 @@ TemplateDeneme/
 │   │   ├── MappingProfiles.cs       # AutoMapper profilleri
 │   │   ├── Result.cs                # Result pattern implementasyonu
 │   │   └── ValidationBehavior.cs    # MediatR validation pipeline
-│   └── Features/
-│       └── SerhanKitaplar/   # SerhanKitap feature modülü
+    └── Features/
+        ├── Auth/             # Authentication & Identity module
+        │   ├── Commands/
+        │   │   ├── Login/
+        │   │   │   ├── LoginCommand.cs
+        │   │   │   ├── LoginCommandHandler.cs
+        │   │   │   ├── LoginCommandValidator.cs
+        │   │   │   └── LoginDto.cs
+        │   │   └── Register/
+        │   │       ├── RegisterCommand.cs
+        │   │       ├── RegisterCommandHandler.cs
+        │   │       ├── RegisterCommandValidator.cs
+        │   │       └── RegisterDto.cs
+        │   └── Common/
+        │       └── DTOs/
+        │           └── UserDto.cs
+        └── SerhanKitaplar/   # SerhanKitap feature modülü
 │           ├── Commands/
 │           │   ├── CreateSerhanKitap/
 │           │   │   ├── CreateSerhanKitapCommand.cs

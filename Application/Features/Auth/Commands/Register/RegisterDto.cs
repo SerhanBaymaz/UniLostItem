@@ -1,10 +1,6 @@
-using Application.Core;
-using Application.Features.Auth.DTOs;
-using MediatR;
+namespace Application.Features.Auth.Commands.Register;
 
-namespace Application.Features.Auth.RegisterUser;
-
-public class RegisterUserCommand : IRequest<Result<UserDto>>
+public class RegisterDto
 {
     public string Email { get; set; } = string.Empty;
     public string Password { get; set; } = string.Empty;

@@ -1,5 +1,5 @@
 using Application.Core;
-using Application.Features.Auth.DTOs;
+using Application.Features.Auth.Common.DTOs;
 using Application.Interfaces;
 using Domain;
 using MediatR;
@@ -7,31 +7,31 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
-namespace Application.Features.Auth.LoginUser;
+namespace Application.Features.Auth.Commands.Login;
 
-public class LoginUserCommandHandler : IRequestHandler<LoginUserCommand, Result<UserDto>>
+public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<UserDto>>
 {
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IJwtService _jwtService;
     private readonly IConfiguration _configuration;
 
-    public LoginUserCommandHandler(UserManager<ApplicationUser> userManager, IJwtService jwtService, IConfiguration configuration)
+    public LoginCommandHandler(UserManager<ApplicationUser> userManager, IJwtService jwtService, IConfiguration configuration)
     {
         _userManager = userManager;
         _jwtService = jwtService;
         _configuration = configuration;
     }
 
-    public async Task<Result<UserDto>> Handle(LoginUserCommand request, CancellationToken cancellationToken)
+    public async Task<Result<UserDto>> Handle(LoginCommand request, CancellationToken cancellationToken)
     {
-        var user = await _userManager.FindByEmailAsync(request.Email);
+        var user = await _userManager.FindByEmailAsync(request.LoginDto.Email);
 
         if (user == null)
         {
             return Result<UserDto>.Failure("Invalid email or password.", 401);
         }
 
-        var result = await _userManager.CheckPasswordAsync(user, request.Password);
+        var result = await _userManager.CheckPasswordAsync(user, request.LoginDto.Password);
 
         if (!result)
         {

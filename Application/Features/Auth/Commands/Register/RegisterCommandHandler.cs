@@ -1,27 +1,27 @@
 using Application.Core;
-using Application.Features.Auth.DTOs;
+using Application.Features.Auth.Common.DTOs;
 using Application.Interfaces;
 using Domain;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 
-namespace Application.Features.Auth.RegisterUser;
+namespace Application.Features.Auth.Commands.Register;
 
-public class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommand, Result<UserDto>>
+public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result<UserDto>>
 {
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IJwtService _jwtService;
 
-    public RegisterUserCommandHandler(UserManager<ApplicationUser> userManager, IJwtService jwtService)
+    public RegisterCommandHandler(UserManager<ApplicationUser> userManager, IJwtService jwtService)
     {
         _userManager = userManager;
         _jwtService = jwtService;
     }
 
-    public async Task<Result<UserDto>> Handle(RegisterUserCommand request, CancellationToken cancellationToken)
+    public async Task<Result<UserDto>> Handle(RegisterCommand request, CancellationToken cancellationToken)
     {
         // 1. Email kontrolü
-        if (await _userManager.FindByEmailAsync(request.Email) != null)
+        if (await _userManager.FindByEmailAsync(request.RegisterDto.Email) != null)
         {
             return Result<UserDto>.Failure("Email is already taken", 400);
         }
@@ -29,16 +29,16 @@ public class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommand, R
         // 2. Kullanıcı oluşturma
         var user = new ApplicationUser
         {
-            Email = request.Email,
-            UserName = request.Email, // Email'i UserName olarak kullanıyoruz
-            FirstName = request.FirstName,
-            LastName = request.LastName,
-            PhoneNumber = request.PhoneNumber,
+            Email = request.RegisterDto.Email,
+            UserName = request.RegisterDto.Email, // Email'i UserName olarak kullanıyoruz
+            FirstName = request.RegisterDto.FirstName,
+            LastName = request.RegisterDto.LastName,
+            PhoneNumber = request.RegisterDto.PhoneNumber,
             CreatedDate = DateTime.UtcNow,
             IsActive = true
         };
 
-        var result = await _userManager.CreateAsync(user, request.Password);
+        var result = await _userManager.CreateAsync(user, request.RegisterDto.Password);
 
         if (!result.Succeeded)
         {
