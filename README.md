@@ -70,7 +70,11 @@ TemplateDeneme/
 │                   └── GetSerhanKitapDetailsQueryHandler.cs
 ├── Domain/                   # Domain Layer - Domain modelleri
 │   └── SerhanKitap.cs        # Domain entity
-├── Persistence/              # Infrastructure Layer - Data erişimi
+├── Infrastructure/           # Infrastructure Layer - Dış servisler (JWT, Security)
+│   ├── Security/             # Güvenlik implementasyonları
+│   │   └── JwtService.cs
+│   └── InfrastructureServiceExtensions.cs
+├── Persistence/              # Persistence Layer - Data erişimi
 │   ├── AppDbContext.cs       # Entity Framework DbContext
 │   ├── IAppDbContext.cs      # DbContext interface
 │   ├── DbInitializer.cs      # Veritabanı seed data
@@ -130,6 +134,13 @@ TemplateDeneme/
 | **MediatR** | 12.4.1 | CQRS pattern implementasyonu |
 | **AutoMapper** | 13.0.1 | Object-to-object mapping |
 | **FluentValidation.DependencyInjectionExtensions** | 11.11.0 | Validation kuralları ve DI entegrasyonu |
+
+### Infrastructure Katmanı
+
+| Kütüphane | Versiyon | Açıklama |
+| ----------- | ---------- | ---------- |
+| **System.IdentityModel.Tokens.Jwt** | 8.15.0 | JWT oluşturma ve doğrulama |
+| **Microsoft.Extensions.Configuration.Abstractions** | 10.0.1 | Konfigürasyon okuma arayüzleri |
 
 ### Persistence Katmanı
 
@@ -349,13 +360,19 @@ API, `SerhanKitap` (Kitap) entity'si üzerinde CRUD işlemleri gerçekleştirir:
 - FluentValidation ile input validasyonu
 - AutoMapper ile DTO dönüşümleri
 
-#### 3. Infrastructure Layer (Persistence/)
+#### 3. Infrastructure Layer (Infrastructure/)
+
+- Dış dünya ile iletişim (3rd party services)
+- JWT Token üretimi ve güvenliği
+- Email, Dosya sistemi gibi servisler
+
+#### 4. Persistence Layer (Persistence/)
 
 - Veritabanı işlemleri
 - Entity Framework Core implementasyonu
 - Repository pattern (DbContext üzerinden)
 
-#### 4. Presentation Layer (API/)
+#### 5. Presentation Layer (API/)
 
 - HTTP isteklerini karşılar
 - Controller'lar ve middleware'ler

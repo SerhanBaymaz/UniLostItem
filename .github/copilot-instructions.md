@@ -2,7 +2,7 @@
 
 ## Core Architecture
 
-- Clean Architecture with four layers: Domain (pure entities), Application (CQRS + MediatR), Persistence (EF Core + PostgreSQL), API (ASP.NET Core controllers, middleware, Swagger).
+- Clean Architecture with five layers: Domain (pure entities), Application (CQRS + MediatR), Infrastructure (External services, JWT, Auth), Persistence (EF Core + PostgreSQL), API (ASP.NET Core controllers, middleware, Swagger).
 - Feature slices under `Application/Features/SerhanKitaplar` use Commands/Queries folders with DTOs, validators, and handlers; mapping in `Application/Core/MappingProfiles.cs`; validation pipeline via `ValidationBehavior`.
 - Persistence layer uses `AppDbContext` implementing `IAppDbContext`; migrations live in `Persistence/Migrations`; database seeding in `DbInitializer` (called on startup).
 - API startup is extension-driven (`API/Extensions/*`) wired in `API/Program.cs`; custom error handling in `API/Middleware/ExceptionMiddleware.cs`; standardized responses in `API/Responses`.

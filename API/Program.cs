@@ -1,5 +1,6 @@
 using API.Extensions;
 using API.Middleware;
+using Infrastructure;
 using Serilog;
 
 #region Builder and Configuration
@@ -15,6 +16,7 @@ builder.Services.AddRateLimitingServices(builder.Configuration);
 builder.Services.AddHealthCheckServices(builder.Configuration);
 builder.Services.AddDatabaseServices(builder.Configuration);
 builder.Services.AddIdentityServices(builder.Configuration);
+builder.Services.AddInfrastructureServices();
 builder.Services.AddApplicationServices();
 builder.Services.AddCorsConfiguration();
 builder.Services.AddSwaggerDocumentation();
