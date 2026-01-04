@@ -1,10 +1,12 @@
 using API.Controllers;
 using API.Responses;
 using Application.Core;
-using Application.Features.Auth.Common.DTOs;
 using Application.Features.Auth.Commands.Login;
 using Application.Features.Auth.Commands.RefreshToken;
 using Application.Features.Auth.Commands.Register;
+using Application.Features.Auth.Commands.UpdateUserProfile;
+using Application.Features.Auth.Common.DTOs;
+using Application.Features.Auth.Queries.GetCurrentUser;
 using FluentAssertions;
 using MediatR;
 using Microsoft.AspNetCore.Http;
@@ -345,6 +347,245 @@ public class AuthControllerTests
         // Assert
         _mediatorMock.Verify(m => m.Send(
             It.Is<RefreshTokenCommand>(cmd => cmd.RefreshTokenDto == refreshTokenDto),
+            It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    #endregion
+
+    #region GetProfile Tests
+
+    [Fact]
+    public async Task GetProfile_ShouldReturnOk_WhenProfileRetrievedSuccessfully()
+    {
+        // Arrange
+        var currentUserDto = new CurrentUserDto
+        {
+            Id = "user123",
+            Email = "test@test.com",
+            FirstName = "Test",
+            LastName = "User",
+            PhoneNumber = "1234567890",
+            Roles = new List<string> { "User" }
+        };
+        var result = Result<CurrentUserDto>.Success("User retrieved successfully", currentUserDto);
+
+        _mediatorMock.Setup(m => m.Send(It.IsAny<GetCurrentUserQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(result);
+
+        // Act
+        var actionResult = await _controller.GetProfile();
+
+        // Assert
+        actionResult.Should().NotBeNull();
+        actionResult.Result.Should().BeOfType<OkObjectResult>();
+
+        var okResult = actionResult.Result as OkObjectResult;
+        var response = okResult!.Value as StandardApiResponse<CurrentUserDto>;
+
+        response.Should().NotBeNull();
+        response!.Success.Should().BeTrue();
+        response.Data.Should().BeEquivalentTo(currentUserDto);
+        response.Message.Should().Be("User retrieved successfully");
+    }
+
+    [Fact]
+    public async Task GetProfile_ShouldReturnUnauthorized_WhenUserIsNotAuthenticated()
+    {
+        // Arrange
+        var result = Result<CurrentUserDto>.Failure("User is not authenticated.", 401);
+
+        _mediatorMock.Setup(m => m.Send(It.IsAny<GetCurrentUserQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(result);
+
+        // Act
+        var actionResult = await _controller.GetProfile();
+
+        // Assert
+        actionResult.Result.Should().BeOfType<BadRequestObjectResult>();
+
+        var badRequestResult = actionResult.Result as BadRequestObjectResult;
+        var response = badRequestResult!.Value as StandardApiResponse<CurrentUserDto>;
+
+        response!.Success.Should().BeFalse();
+        response.Message.Should().Be("User is not authenticated.");
+    }
+
+    [Fact]
+    public async Task GetProfile_ShouldReturnNotFound_WhenUserNotFound()
+    {
+        // Arrange
+        var result = Result<CurrentUserDto>.Failure("User not found.", 404);
+
+        _mediatorMock.Setup(m => m.Send(It.IsAny<GetCurrentUserQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(result);
+
+        // Act
+        var actionResult = await _controller.GetProfile();
+
+        // Assert
+        actionResult.Result.Should().BeOfType<NotFoundObjectResult>();
+
+        var notFoundResult = actionResult.Result as NotFoundObjectResult;
+        var response = notFoundResult!.Value as StandardApiResponse<CurrentUserDto>;
+
+        response!.Success.Should().BeFalse();
+        response.StatusCode.Should().Be(404);
+        response.Message.Should().Be("User not found.");
+    }
+
+    #endregion
+
+    #region UpdateProfile Tests
+
+    [Fact]
+    public async Task UpdateProfile_ShouldReturnOk_WhenProfileUpdatedSuccessfully()
+    {
+        // Arrange
+        var updateProfileDto = new UpdateUserProfileDto
+        {
+            FirstName = "UpdatedFirstName",
+            LastName = "UpdatedLastName",
+            PhoneNumber = "9876543210"
+        };
+
+        var currentUserDto = new CurrentUserDto
+        {
+            Id = "user123",
+            Email = "test@test.com",
+            FirstName = "UpdatedFirstName",
+            LastName = "UpdatedLastName",
+            PhoneNumber = "9876543210",
+            Roles = new List<string> { "User" }
+        };
+        var result = Result<CurrentUserDto>.Success("Profile updated successfully", currentUserDto);
+
+        _mediatorMock.Setup(m => m.Send(It.IsAny<UpdateUserProfileCommand>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(result);
+
+        // Act
+        var actionResult = await _controller.UpdateProfile(updateProfileDto);
+
+        // Assert
+        actionResult.Should().NotBeNull();
+        actionResult.Result.Should().BeOfType<OkObjectResult>();
+
+        var okResult = actionResult.Result as OkObjectResult;
+        var response = okResult!.Value as StandardApiResponse<CurrentUserDto>;
+
+        response.Should().NotBeNull();
+        response!.Success.Should().BeTrue();
+        response.Data.Should().BeEquivalentTo(currentUserDto);
+        response.Message.Should().Be("Profile updated successfully");
+    }
+
+    [Fact]
+    public async Task UpdateProfile_ShouldReturnBadRequest_WhenValidationFails()
+    {
+        // Arrange
+        var updateProfileDto = new UpdateUserProfileDto
+        {
+            FirstName = "", // Invalid - empty
+            LastName = "", // Invalid - empty
+            PhoneNumber = "" // Invalid - empty
+        };
+        var result = Result<CurrentUserDto>.Failure("First name is required.", 400);
+
+        _mediatorMock.Setup(m => m.Send(It.IsAny<UpdateUserProfileCommand>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(result);
+
+        // Act
+        var actionResult = await _controller.UpdateProfile(updateProfileDto);
+
+        // Assert
+        actionResult.Result.Should().BeOfType<BadRequestObjectResult>();
+
+        var badRequestResult = actionResult.Result as BadRequestObjectResult;
+        var response = badRequestResult!.Value as StandardApiResponse<CurrentUserDto>;
+
+        response!.Success.Should().BeFalse();
+        response.StatusCode.Should().Be(400);
+        response.Message.Should().Be("First name is required.");
+    }
+
+    [Fact]
+    public async Task UpdateProfile_ShouldReturnUnauthorized_WhenUserIsNotAuthenticated()
+    {
+        // Arrange
+        var updateProfileDto = new UpdateUserProfileDto
+        {
+            FirstName = "Test",
+            LastName = "User",
+            PhoneNumber = "1234567890"
+        };
+        var result = Result<CurrentUserDto>.Failure("User is not authenticated.", 401);
+
+        _mediatorMock.Setup(m => m.Send(It.IsAny<UpdateUserProfileCommand>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(result);
+
+        // Act
+        var actionResult = await _controller.UpdateProfile(updateProfileDto);
+
+        // Assert
+        actionResult.Result.Should().BeOfType<BadRequestObjectResult>();
+
+        var badRequestResult = actionResult.Result as BadRequestObjectResult;
+        var response = badRequestResult!.Value as StandardApiResponse<CurrentUserDto>;
+
+        response!.Success.Should().BeFalse();
+        response.Message.Should().Be("User is not authenticated.");
+    }
+
+    [Fact]
+    public async Task UpdateProfile_ShouldReturnNotFound_WhenUserNotFound()
+    {
+        // Arrange
+        var updateProfileDto = new UpdateUserProfileDto
+        {
+            FirstName = "Test",
+            LastName = "User",
+            PhoneNumber = "1234567890"
+        };
+        var result = Result<CurrentUserDto>.Failure("User not found.", 404);
+
+        _mediatorMock.Setup(m => m.Send(It.IsAny<UpdateUserProfileCommand>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(result);
+
+        // Act
+        var actionResult = await _controller.UpdateProfile(updateProfileDto);
+
+        // Assert
+        actionResult.Result.Should().BeOfType<NotFoundObjectResult>();
+
+        var notFoundResult = actionResult.Result as NotFoundObjectResult;
+        var response = notFoundResult!.Value as StandardApiResponse<CurrentUserDto>;
+
+        response!.Success.Should().BeFalse();
+        response.StatusCode.Should().Be(404);
+        response.Message.Should().Be("User not found.");
+    }
+
+    [Fact]
+    public async Task UpdateProfile_ShouldPassDto_ToCommand()
+    {
+        // Arrange
+        var updateProfileDto = new UpdateUserProfileDto
+        {
+            FirstName = "Test",
+            LastName = "User",
+            PhoneNumber = "1234567890"
+        };
+        var result = Result<CurrentUserDto>.Success("Success", new CurrentUserDto());
+
+        _mediatorMock.Setup(m => m.Send(It.IsAny<UpdateUserProfileCommand>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(result);
+
+        // Act
+        await _controller.UpdateProfile(updateProfileDto);
+
+        // Assert
+        _mediatorMock.Verify(m => m.Send(
+            It.Is<UpdateUserProfileCommand>(cmd => cmd.UpdateUserProfileDto == updateProfileDto),
             It.IsAny<CancellationToken>()),
             Times.Once);
     }

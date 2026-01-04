@@ -1,8 +1,10 @@
 using API.Responses;
-using Application.Features.Auth.Common.DTOs;
 using Application.Features.Auth.Commands.Login;
 using Application.Features.Auth.Commands.RefreshToken;
 using Application.Features.Auth.Commands.Register;
+using Application.Features.Auth.Commands.UpdateUserProfile;
+using Application.Features.Auth.Common.DTOs;
+using Application.Features.Auth.Queries.GetCurrentUser;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -32,6 +34,20 @@ public class AuthController : BaseApiController
     public async Task<ActionResult<StandardApiResponse<UserDto>>> RefreshToken([FromBody] RefreshTokenDto refreshTokenDto)
     {
         var command = new RefreshTokenCommand { RefreshTokenDto = refreshTokenDto };
+        return HandleResult(await Mediator.Send(command));
+    }
+
+    [HttpGet("profile")]
+    public async Task<ActionResult<StandardApiResponse<CurrentUserDto>>> GetProfile()
+    {
+        var query = new GetCurrentUserQuery();
+        return HandleResult(await Mediator.Send(query));
+    }
+
+    [HttpPut("profile")]
+    public async Task<ActionResult<StandardApiResponse<CurrentUserDto>>> UpdateProfile([FromBody] UpdateUserProfileDto updateProfileDto)
+    {
+        var command = new UpdateUserProfileCommand { UpdateUserProfileDto = updateProfileDto };
         return HandleResult(await Mediator.Send(command));
     }
 }
