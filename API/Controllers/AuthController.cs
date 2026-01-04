@@ -1,6 +1,7 @@
 using API.Responses;
 using Application.Features.Auth.Common.DTOs;
 using Application.Features.Auth.Commands.Login;
+using Application.Features.Auth.Commands.RefreshToken;
 using Application.Features.Auth.Commands.Register;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -23,6 +24,14 @@ public class AuthController : BaseApiController
     public async Task<ActionResult<StandardApiResponse<UserDto>>> Login([FromBody] LoginDto loginDto)
     {
         var command = new LoginCommand { LoginDto = loginDto };
+        return HandleResult(await Mediator.Send(command));
+    }
+
+    [AllowAnonymous]
+    [HttpPost("refresh-token")]
+    public async Task<ActionResult<StandardApiResponse<UserDto>>> RefreshToken([FromBody] RefreshTokenDto refreshTokenDto)
+    {
+        var command = new RefreshTokenCommand { RefreshTokenDto = refreshTokenDto };
         return HandleResult(await Mediator.Send(command));
     }
 }

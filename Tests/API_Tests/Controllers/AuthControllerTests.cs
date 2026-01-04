@@ -3,6 +3,7 @@ using API.Responses;
 using Application.Core;
 using Application.Features.Auth.Common.DTOs;
 using Application.Features.Auth.Commands.Login;
+using Application.Features.Auth.Commands.RefreshToken;
 using Application.Features.Auth.Commands.Register;
 using FluentAssertions;
 using MediatR;
@@ -197,6 +198,153 @@ public class AuthControllerTests
         // Assert
         _mediatorMock.Verify(m => m.Send(
             It.Is<LoginCommand>(cmd => cmd.LoginDto == loginDto),
+            It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    #endregion
+
+    #region RefreshToken Tests
+
+    [Fact]
+    public async Task RefreshToken_ShouldReturnOk_WhenRefreshTokenSucceeds()
+    {
+        // Arrange
+        var refreshTokenDto = new RefreshTokenDto
+        {
+            AccessToken = "old_access_token",
+            RefreshToken = "valid_refresh_token"
+        };
+        var userDto = new UserDto
+        {
+            Id = "1",
+            Email = "test@test.com",
+            AccessToken = "new_access_token",
+            RefreshToken = "new_refresh_token"
+        };
+        var result = Result<UserDto>.Success("Token refreshed successfully", userDto);
+
+        _mediatorMock.Setup(m => m.Send(It.IsAny<RefreshTokenCommand>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(result);
+
+        // Act
+        var actionResult = await _controller.RefreshToken(refreshTokenDto);
+
+        // Assert
+        actionResult.Should().NotBeNull();
+        actionResult.Result.Should().BeOfType<OkObjectResult>();
+
+        var okResult = actionResult.Result as OkObjectResult;
+        var response = okResult!.Value as StandardApiResponse<UserDto>;
+
+        response.Should().NotBeNull();
+        response!.Success.Should().BeTrue();
+        response.Data.Should().BeEquivalentTo(userDto);
+        response.Message.Should().Be("Token refreshed successfully");
+    }
+
+    [Fact]
+    public async Task RefreshToken_ShouldReturnBadRequest_WhenRefreshTokenFails()
+    {
+        // Arrange
+        var refreshTokenDto = new RefreshTokenDto
+        {
+            AccessToken = "invalid_token",
+            RefreshToken = "invalid_refresh_token"
+        };
+        var result = Result<UserDto>.Failure("Invalid access token.", 401);
+
+        _mediatorMock.Setup(m => m.Send(It.IsAny<RefreshTokenCommand>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(result);
+
+        // Act
+        var actionResult = await _controller.RefreshToken(refreshTokenDto);
+
+        // Assert
+        actionResult.Result.Should().BeOfType<BadRequestObjectResult>();
+
+        var badRequestResult = actionResult.Result as BadRequestObjectResult;
+        var response = badRequestResult!.Value as StandardApiResponse<UserDto>;
+
+        response!.Success.Should().BeFalse();
+        response.Message.Should().Be("Invalid access token.");
+    }
+
+    [Fact]
+    public async Task RefreshToken_ShouldReturnBadRequest_WhenRefreshTokenIsExpired()
+    {
+        // Arrange
+        var refreshTokenDto = new RefreshTokenDto
+        {
+            AccessToken = "expired_access_token",
+            RefreshToken = "expired_refresh_token"
+        };
+        var result = Result<UserDto>.Failure("Refresh token has expired. Please login again.", 401);
+
+        _mediatorMock.Setup(m => m.Send(It.IsAny<RefreshTokenCommand>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(result);
+
+        // Act
+        var actionResult = await _controller.RefreshToken(refreshTokenDto);
+
+        // Assert
+        actionResult.Result.Should().BeOfType<BadRequestObjectResult>();
+
+        var badRequestResult = actionResult.Result as BadRequestObjectResult;
+        var response = badRequestResult!.Value as StandardApiResponse<UserDto>;
+
+        response!.Success.Should().BeFalse();
+        response.Message.Should().Be("Refresh token has expired. Please login again.");
+    }
+
+    [Fact]
+    public async Task RefreshToken_ShouldReturnNotFound_WhenUserNotFound()
+    {
+        // Arrange
+        var refreshTokenDto = new RefreshTokenDto
+        {
+            AccessToken = "valid_token_format",
+            RefreshToken = "some_refresh_token"
+        };
+        var result = Result<UserDto>.Failure("User not found.", 404);
+
+        _mediatorMock.Setup(m => m.Send(It.IsAny<RefreshTokenCommand>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(result);
+
+        // Act
+        var actionResult = await _controller.RefreshToken(refreshTokenDto);
+
+        // Assert
+        actionResult.Result.Should().BeOfType<NotFoundObjectResult>();
+
+        var notFoundResult = actionResult.Result as NotFoundObjectResult;
+        var response = notFoundResult!.Value as StandardApiResponse<UserDto>;
+
+        response!.Success.Should().BeFalse();
+        response.StatusCode.Should().Be(404);
+        response.Message.Should().Be("User not found.");
+    }
+
+    [Fact]
+    public async Task RefreshToken_ShouldPassDto_ToCommand()
+    {
+        // Arrange
+        var refreshTokenDto = new RefreshTokenDto
+        {
+            AccessToken = "access_token",
+            RefreshToken = "refresh_token"
+        };
+        var result = Result<UserDto>.Success("Success", new UserDto());
+
+        _mediatorMock.Setup(m => m.Send(It.IsAny<RefreshTokenCommand>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(result);
+
+        // Act
+        await _controller.RefreshToken(refreshTokenDto);
+
+        // Assert
+        _mediatorMock.Verify(m => m.Send(
+            It.Is<RefreshTokenCommand>(cmd => cmd.RefreshTokenDto == refreshTokenDto),
             It.IsAny<CancellationToken>()),
             Times.Once);
     }
