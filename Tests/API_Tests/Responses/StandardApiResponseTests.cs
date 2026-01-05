@@ -5,6 +5,8 @@ namespace Tests.API_Tests.Responses;
 
 public class StandardApiResponseTests
 {
+    private static readonly string[] Field1Errors = ["Error 1"];
+
     [Fact]
     public void SuccessResponse_WithData_ReturnsSuccessfulResponse()
     {
@@ -130,7 +132,7 @@ public class StandardApiResponseTests
         // Arrange
         var validationErrors = new Dictionary<string, string[]>
         {
-            { "Field1", new[] { "Error 1" } }
+            { "Field1", Field1Errors }
         };
         var instance = "/api/validate";
         var stackTrace = new[] { "Line 1", "Line 2" };

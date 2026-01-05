@@ -22,8 +22,11 @@ public static class IdentityServiceExtensions
         .AddSignInManager<SignInManager<ApplicationUser>>()
         .AddDefaultTokenProviders();
 
-        // JWT Settings
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["Jwt:SecretKey"] ?? "super secret key must be at least 64 bytes long for security reasons"));
+        // JWT Settings - Secret must be loaded from environment variables
+        var jwtSecretKey = config["Jwt:SecretKey"]
+            ?? throw new InvalidOperationException("Jwt:SecretKey is not configured. Please set it in environment variables.");
+
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecretKey));
 
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>

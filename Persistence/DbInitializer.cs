@@ -6,16 +6,19 @@ namespace Persistence;
 
 public static class DbInitializer
 {
+    private const string AdminRole = "Admin";
+    private const string BaseUserRole = "BaseUser";
+
     public static async Task SeedData(AppDbContext context, UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager)
     {
         // Seed Roles
-        if (!await roleManager.RoleExistsAsync("Admin"))
+        if (!await roleManager.RoleExistsAsync(AdminRole))
         {
-            await roleManager.CreateAsync(new IdentityRole("Admin"));
+            await roleManager.CreateAsync(new IdentityRole(AdminRole));
         }
-        if (!await roleManager.RoleExistsAsync("BaseUser"))
+        if (!await roleManager.RoleExistsAsync(BaseUserRole))
         {
-            await roleManager.CreateAsync(new IdentityRole("BaseUser"));
+            await roleManager.CreateAsync(new IdentityRole(BaseUserRole));
         }
 
         // Seed Admin User
@@ -34,7 +37,7 @@ public static class DbInitializer
             var result = await userManager.CreateAsync(admin, "Pa$$w0rd");
             if (result.Succeeded)
             {
-                await userManager.AddToRoleAsync(admin, "Admin");
+                await userManager.AddToRoleAsync(admin, AdminRole);
             }
         }
 

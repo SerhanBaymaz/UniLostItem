@@ -14,6 +14,7 @@ public class ExceptionMiddleware(ILogger<ExceptionMiddleware> logger, IHostEnvir
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     };
+    private static readonly char[] NewLineSeparators = ['\r', '\n'];
     public async Task InvokeAsync(HttpContext context, RequestDelegate next)
     {
         try
@@ -107,7 +108,7 @@ public class ExceptionMiddleware(ILogger<ExceptionMiddleware> logger, IHostEnvir
         if (env.IsDevelopment())
         {
             var dem = ex.Demystify();
-            stackTrace = dem.ToString().Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+            stackTrace = dem.ToString().Split(NewLineSeparators, StringSplitOptions.RemoveEmptyEntries);
         }
 
         // Use StandardApiResponse for validation errors
@@ -143,7 +144,7 @@ public class ExceptionMiddleware(ILogger<ExceptionMiddleware> logger, IHostEnvir
         if (env.IsDevelopment())
         {
             var dem = ex.Demystify();
-            stackTrace = dem.ToString().Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+            stackTrace = dem.ToString().Split(NewLineSeparators, StringSplitOptions.RemoveEmptyEntries);
         }
 
         // Create problem details

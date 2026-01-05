@@ -55,13 +55,13 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result<Us
 
         // 4. Token üretme
         var roles = await _userManager.GetRolesAsync(user);
-        
+
         var accessToken = _jwtService.GenerateAccessToken(user, roles);
         var refreshToken = _jwtService.GenerateRefreshToken();
 
         // Refresh token'ı veritabanına kaydet
         user.RefreshToken = refreshToken;
-        user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7); 
+        user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
         await _userManager.UpdateAsync(user);
 
         // 5. DTO Dönüş
@@ -71,6 +71,7 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result<Us
             Email = user.Email!,
             FirstName = user.FirstName,
             LastName = user.LastName,
+            PhoneNumber = user.PhoneNumber,
             AccessToken = accessToken,
             RefreshToken = refreshToken,
             Roles = roles.ToList()

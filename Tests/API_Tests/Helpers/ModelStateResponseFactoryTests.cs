@@ -11,6 +11,8 @@ namespace Tests.API_Tests.Helpers;
 
 public class ModelStateResponseFactoryTests
 {
+    private static readonly string[] ExpectedField2Errors = ["Error 2", "Error 3"];
+
     [Fact]
     public void Create_WithModelStateErrors_ReturnsBadRequestWithStandardErrorResponse()
     {
@@ -54,7 +56,7 @@ public class ModelStateResponseFactoryTests
         errors.Should().NotBeNull();
         errors.Should().HaveCount(2);
         errors!["Field1"].Should().ContainSingle().Which.Should().Be("Error 1");
-        errors["Field2"].Should().HaveCount(2).And.Contain(new[] { "Error 2", "Error 3" });
+        errors["Field2"].Should().HaveCount(2).And.Contain(ExpectedField2Errors);
     }
 
     [Fact]

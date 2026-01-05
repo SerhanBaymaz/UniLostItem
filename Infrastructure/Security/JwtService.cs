@@ -34,13 +34,16 @@ public class JwtService : IJwtService
             claims.Add(new Claim(ClaimTypes.Role, role));
         }
 
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:SecretKey"]!));
+        var jwtSecretKey = _config["Jwt:SecretKey"]
+            ?? throw new InvalidOperationException("Jwt:SecretKey is not configured. Please set it in environment variables.");
+
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecretKey));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
 
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(claims),
-            Expires = DateTime.UtcNow.AddMinutes(15), 
+            Expires = DateTime.UtcNow.AddMinutes(15),
             SigningCredentials = creds
         };
 
@@ -60,12 +63,15 @@ public class JwtService : IJwtService
 
     public ClaimsPrincipal? GetPrincipalFromExpiredToken(string? token)
     {
+        var jwtSecretKey = _config["Jwt:SecretKey"]
+            ?? throw new InvalidOperationException("Jwt:SecretKey is not configured. Please set it in environment variables.");
+
         var tokenValidationParameters = new TokenValidationParameters
         {
             ValidateAudience = false,
             ValidateIssuer = false,
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:SecretKey"]!)),
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecretKey)),
             ValidateLifetime = false
         };
 
@@ -73,8 +79,8 @@ public class JwtService : IJwtService
         try
         {
             var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out SecurityToken securityToken);
-            
-            if (securityToken is not JwtSecurityToken jwtSecurityToken || 
+
+            if (securityToken is not JwtSecurityToken jwtSecurityToken ||
                 !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha512, StringComparison.InvariantCultureIgnoreCase))
             {
                 throw new SecurityTokenException("Invalid token");
