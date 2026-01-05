@@ -20,6 +20,7 @@ TemplateDeneme/
 ├── API/                      # Presentation Layer - Web API
 │   ├── Controllers/          # API Controller'ları
 │   │   ├── BaseApiController.cs
+│   │   ├── AuthController.cs
 │   │   └── SerhanKitaplarController.cs
 │   ├── Extensions/           # Extension Methods - Program.cs yapılandırması
 │   │   ├── ApiExtensions.cs           # Controller & ModelState config
@@ -50,11 +51,26 @@ TemplateDeneme/
         │   │   │   ├── LoginCommandHandler.cs
         │   │   │   ├── LoginCommandValidator.cs
         │   │   │   └── LoginDto.cs
-        │   │   └── Register/
-        │   │       ├── RegisterCommand.cs
-        │   │       ├── RegisterCommandHandler.cs
-        │   │       ├── RegisterCommandValidator.cs
-        │   │       └── RegisterDto.cs
+        │   │   ├── Register/
+        │   │   │   ├── RegisterCommand.cs
+        │   │   │   ├── RegisterCommandHandler.cs
+        │   │   │   ├── RegisterCommandValidator.cs
+        │   │   │   └── RegisterDto.cs
+        │   │   ├── RefreshToken/
+        │   │   │   ├── RefreshTokenCommand.cs
+        │   │   │   ├── RefreshTokenCommandHandler.cs
+        │   │   │   ├── RefreshTokenCommandValidator.cs
+        │   │   │   └── RefreshTokenDto.cs
+        │   │   └── UpdateUserProfile/
+        │   │       ├── UpdateUserProfileCommand.cs
+        │   │       ├── UpdateUserProfileCommandHandler.cs
+        │   │       ├── UpdateUserProfileCommandValidator.cs
+        │   │       └── UpdateUserProfileDto.cs
+        │   ├── Queries/
+        │   │   └── GetCurrentUser/
+        │   │       ├── GetCurrentUserQuery.cs
+        │   │       ├── GetCurrentUserQueryHandler.cs
+        │   │       └── CurrentUserDto.cs
         │   └── Common/
         │       └── DTOs/
         │           └── UserDto.cs
@@ -84,10 +100,13 @@ TemplateDeneme/
 │                   ├── GetSerhanKitapDetailsQuery.cs
 │                   └── GetSerhanKitapDetailsQueryHandler.cs
 ├── Domain/                   # Domain Layer - Domain modelleri
+│   └── ApplicationUser.cs    # Identity user entity (extended)
 │   └── SerhanKitap.cs        # Domain entity
 ├── Infrastructure/           # Infrastructure Layer - Dış servisler (JWT, Security)
 │   ├── Security/             # Güvenlik implementasyonları
 │   │   └── JwtService.cs
+│   ├── Services/             # Infrastructure servisleri
+│   │   └── CurrentUserService.cs
 │   └── InfrastructureServiceExtensions.cs
 ├── Persistence/              # Persistence Layer - Data erişimi
 │   ├── AppDbContext.cs       # Entity Framework DbContext
@@ -117,6 +136,7 @@ TemplateDeneme/
 
 - **.NET 9.0** - .NET framework versiyonu
 - **ASP.NET Core Web API** - RESTful API geliştirme
+- **ASP.NET Core Identity** - Kullanıcı kimlik doğrulama ve yönetimi
 - **Entity Framework Core 9.0** - ORM ve veritabanı işlemleri
 - **PostgreSQL** - Güçlü, açık kaynaklı ilişkisel veritabanı
 - **Docker & Docker Compose** - Container orchestration ve deployment
@@ -141,6 +161,9 @@ TemplateDeneme/
 | **AspNetCore.HealthChecks.NpgSql** | 9.0.0 | PostgreSQL health check |
 | **AspNetCore.HealthChecks.Network** | 9.0.0 | Network (TCP) health check |
 | **AspNetCore.HealthChecks.UI.Client** | 9.0.0 | Health check UI response writer |
+| **AspNetCore.HealthChecks.Uris** | 9.0.0 | URI health check |
+| **Microsoft.AspNetCore.Authentication.JwtBearer** | 9.0.0 | JWT bearer authentication |
+| **Microsoft.Extensions.Diagnostics.HealthChecks** | 9.0.9 | Health checks abstraction |
 
 ### Application Katmanı
 
@@ -149,6 +172,7 @@ TemplateDeneme/
 | **MediatR** | 12.4.1 | CQRS pattern implementasyonu |
 | **AutoMapper** | 13.0.1 | Object-to-object mapping |
 | **FluentValidation.DependencyInjectionExtensions** | 11.11.0 | Validation kuralları ve DI entegrasyonu |
+| **System.IdentityModel.Tokens.Jwt** | 8.15.0 | JWT token types ve claims |
 
 ### Infrastructure Katmanı
 
@@ -161,11 +185,14 @@ TemplateDeneme/
 
 | Kütüphane | Versiyon | Açıklama |
 | ----------- | ---------- | ---------- |
-| **Npgsql.EntityFrameworkCore.PostgreSQL** | 9.0.3 | PostgreSQL veritabanı sağlayıcısı |
+| **Npgsql.EntityFrameworkCore.PostgreSQL** | 9.0.4 | PostgreSQL veritabanı sağlayıcısı |
+| **Microsoft.AspNetCore.Identity.EntityFrameworkCore** | 9.0.0 | ASP.NET Core Identity entegrasyonu |
 
 ### Domain Katmanı
 
-- Harici bağımlılık içermez (Clean Architecture prensibi)
+| Kütüphane | Versiyon | Açıklama |
+| ----------- | ---------- | ---------- |
+| **Microsoft.Extensions.Identity.Stores** | 10.0.1 | Identity entity tanımları için |
 
 ### Tests Katmanı
 
@@ -176,7 +203,9 @@ TemplateDeneme/
 | **FluentAssertions** | 8.8.0 | Readable test assertions |
 | **Moq** | 4.20.72 | Mocking framework |
 | **Microsoft.EntityFrameworkCore.InMemory** | 9.0.0 | In-memory database for testing |
+| **Microsoft.AspNetCore.Mvc.Testing** | 9.0.0 | Integration test helpers |
 | **coverlet.collector** | 6.0.2 | Code coverage collection |
+| **coverlet.msbuild** | 6.0.2 | Code coverage MSBuild task |
 | **Microsoft.NET.Test.Sdk** | 17.12.0 | .NET Test SDK |
 
 ### Code Quality & Analyzers (Directory.Build.props)
@@ -323,6 +352,13 @@ POSTGRES_PORT=5432
 # Connection String (otomatik oluşur)
 DefaultConnection=Host=postgres;Port=${POSTGRES_PORT};Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
 
+# JWT Ayarları
+Jwt__SecretKey=<your-64-byte-secret-key>
+Jwt__Issuer=UniLostItemAPI
+Jwt__Audience=UniLostItemClient
+Jwt__AccessTokenExpirationMinutes=60
+Jwt__RefreshTokenExpirationDays=7
+
 # Seq Ayarları
 SeqServerUrl=http://seq:5341
 ACCEPT_EULA=Y
@@ -333,6 +369,16 @@ SEQ_FIRSTRUN_ADMINPASSWORD=admindev
 ## Kullanım
 
 ### API Endpoints
+
+#### Authentication Endpoints (`/api/v1/auth`)
+
+- **POST** `/api/v1/auth/register` - Yeni kullanıcı kaydı
+- **POST** `/api/v1/auth/login` - Kullanıcı girişi
+- **POST** `/api/v1/auth/refresh-token` - Access token yenileme
+- **GET** `/api/v1/auth/profile` - Mevcut kullanıcı profilini getir (JWT gerektirir)
+- **PUT** `/api/v1/auth/profile` - Mevcut kullanıcı profilini güncelle (JWT gerektirir)
+
+#### SerhanKitap Endpoints (`/api/serhankitaplar`)
 
 API, `SerhanKitap` (Kitap) entity'si üzerinde CRUD işlemleri gerçekleştirir:
 
@@ -411,6 +457,8 @@ API, `SerhanKitap` (Kitap) entity'si üzerinde CRUD işlemleri gerçekleştirir:
 - **FluentValidation** ile güçlü validation
 - **AutoMapper** ile nesne dönüşümleri
 - **Entity Framework Core** ile ORM
+- **ASP.NET Core Identity** ile kullanıcı kimlik yönetimi
+- **JWT Authentication** ile token-based authentication
 - **PostgreSQL** veritabanı desteği
 - **Docker & Docker Compose** ile containerization
 - **Seq** ile structured logging
@@ -418,7 +466,7 @@ API, `SerhanKitap` (Kitap) entity'si üzerinde CRUD işlemleri gerçekleştirir:
 - **Advanced Health Checks** - Liveness (`/health/api`) & Readiness (`/health/all`) endpoints with Seq integration
 - **Otomatik migration** ve seed data
 - **Custom Exception Middleware** ile merkezi hata yönetimi
-- **Swagger/OpenAPI** dokümantasyonu
+- **Swagger/OpenAPI** dokümantasyonu (JWT auth ile)
 - **CORS** desteği
 - **Standardize API Responses** yapısı
 - **Extension Methods** ile temiz ve modüler Program.cs yapısı

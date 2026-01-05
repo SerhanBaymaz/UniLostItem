@@ -32,9 +32,21 @@ public class UpdateUserProfileCommandHandler : IRequestHandler<UpdateUserProfile
             return Result<CurrentUserDto>.Failure("User not found.", 404);
         }
 
-        user.FirstName = request.UpdateUserProfileDto.FirstName;
-        user.LastName = request.UpdateUserProfileDto.LastName;
-        user.PhoneNumber = request.UpdateUserProfileDto.PhoneNumber;
+        // Sadece gönderilen alanları güncelle
+        if (!string.IsNullOrWhiteSpace(request.UpdateUserProfileDto.FirstName))
+        {
+            user.FirstName = request.UpdateUserProfileDto.FirstName;
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.UpdateUserProfileDto.LastName))
+        {
+            user.LastName = request.UpdateUserProfileDto.LastName;
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.UpdateUserProfileDto.PhoneNumber))
+        {
+            user.PhoneNumber = request.UpdateUserProfileDto.PhoneNumber;
+        }
 
         var result = await _userManager.UpdateAsync(user);
 

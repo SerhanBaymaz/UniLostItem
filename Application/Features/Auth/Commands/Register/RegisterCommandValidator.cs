@@ -30,5 +30,11 @@ public class RegisterCommandValidator : AbstractValidator<RegisterCommand>
         RuleFor(x => x.RegisterDto.LastName)
             .NotEmpty().WithMessage("Last name is required")
             .When(x => x.RegisterDto != null);
+
+        RuleFor(x => x.RegisterDto.PhoneNumber)
+            .NotEmpty().WithMessage("Phone number is required")
+            .Matches(@"^\+\d+$").WithMessage("Phone number must start with + and contain only digits after")
+            .MaximumLength(20).WithMessage("Phone number cannot exceed 20 characters")
+            .When(x => x.RegisterDto != null);
     }
 }

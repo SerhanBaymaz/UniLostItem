@@ -217,6 +217,190 @@ public class UpdateUserProfileCommandTests
 
     #endregion
 
+    #region Partial Update Tests
+
+    [Fact]
+    public async Task Handle_ShouldUpdateOnlyFirstName_WhenOnlyFirstNameIsProvided()
+    {
+        // Arrange
+        var userId = "user123";
+        var user = new ApplicationUser
+        {
+            Id = userId,
+            Email = "test@test.com",
+            FirstName = "OldFirstName",
+            LastName = "OldLastName",
+            PhoneNumber = "+1234567890"
+        };
+
+        var updateDto = new UpdateUserProfileDto
+        {
+            FirstName = "NewFirstName",
+            LastName = "",
+            PhoneNumber = ""
+        };
+
+        var command = new UpdateUserProfileCommand { UpdateUserProfileDto = updateDto };
+
+        _currentUserServiceMock.Setup(x => x.IsAuthenticated).Returns(true);
+        _currentUserServiceMock.Setup(x => x.UserId).Returns(userId);
+
+        _userManagerMock.Setup(x => x.FindByIdAsync(userId))
+            .ReturnsAsync(user);
+
+        _userManagerMock.Setup(x => x.UpdateAsync(user))
+            .ReturnsAsync(IdentityResult.Success);
+
+        _userManagerMock.Setup(x => x.GetRolesAsync(user))
+            .ReturnsAsync(new List<string> { "User" });
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        user.FirstName.Should().Be("NewFirstName");
+        user.LastName.Should().Be("OldLastName"); // Unchanged
+        user.PhoneNumber.Should().Be("+1234567890"); // Unchanged
+    }
+
+    [Fact]
+    public async Task Handle_ShouldUpdateOnlyLastName_WhenOnlyLastNameIsProvided()
+    {
+        // Arrange
+        var userId = "user123";
+        var user = new ApplicationUser
+        {
+            Id = userId,
+            Email = "test@test.com",
+            FirstName = "OldFirstName",
+            LastName = "OldLastName",
+            PhoneNumber = "+1234567890"
+        };
+
+        var updateDto = new UpdateUserProfileDto
+        {
+            FirstName = "",
+            LastName = "NewLastName",
+            PhoneNumber = ""
+        };
+
+        var command = new UpdateUserProfileCommand { UpdateUserProfileDto = updateDto };
+
+        _currentUserServiceMock.Setup(x => x.IsAuthenticated).Returns(true);
+        _currentUserServiceMock.Setup(x => x.UserId).Returns(userId);
+
+        _userManagerMock.Setup(x => x.FindByIdAsync(userId))
+            .ReturnsAsync(user);
+
+        _userManagerMock.Setup(x => x.UpdateAsync(user))
+            .ReturnsAsync(IdentityResult.Success);
+
+        _userManagerMock.Setup(x => x.GetRolesAsync(user))
+            .ReturnsAsync(new List<string> { "User" });
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        user.FirstName.Should().Be("OldFirstName"); // Unchanged
+        user.LastName.Should().Be("NewLastName");
+        user.PhoneNumber.Should().Be("+1234567890"); // Unchanged
+    }
+
+    [Fact]
+    public async Task Handle_ShouldUpdateOnlyPhoneNumber_WhenOnlyPhoneNumberIsProvided()
+    {
+        // Arrange
+        var userId = "user123";
+        var user = new ApplicationUser
+        {
+            Id = userId,
+            Email = "test@test.com",
+            FirstName = "OldFirstName",
+            LastName = "OldLastName",
+            PhoneNumber = "+1234567890"
+        };
+
+        var updateDto = new UpdateUserProfileDto
+        {
+            FirstName = "",
+            LastName = "",
+            PhoneNumber = "+9876543210"
+        };
+
+        var command = new UpdateUserProfileCommand { UpdateUserProfileDto = updateDto };
+
+        _currentUserServiceMock.Setup(x => x.IsAuthenticated).Returns(true);
+        _currentUserServiceMock.Setup(x => x.UserId).Returns(userId);
+
+        _userManagerMock.Setup(x => x.FindByIdAsync(userId))
+            .ReturnsAsync(user);
+
+        _userManagerMock.Setup(x => x.UpdateAsync(user))
+            .ReturnsAsync(IdentityResult.Success);
+
+        _userManagerMock.Setup(x => x.GetRolesAsync(user))
+            .ReturnsAsync(new List<string> { "User" });
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        user.FirstName.Should().Be("OldFirstName"); // Unchanged
+        user.LastName.Should().Be("OldLastName"); // Unchanged
+        user.PhoneNumber.Should().Be("+9876543210");
+    }
+
+    [Fact]
+    public async Task Handle_ShouldUpdateFirstNameAndLastName_WhenPhoneNumberIsEmpty()
+    {
+        // Arrange
+        var userId = "user123";
+        var user = new ApplicationUser
+        {
+            Id = userId,
+            Email = "test@test.com",
+            FirstName = "OldFirstName",
+            LastName = "OldLastName",
+            PhoneNumber = "+1234567890"
+        };
+
+        var updateDto = new UpdateUserProfileDto
+        {
+            FirstName = "NewFirstName",
+            LastName = "NewLastName",
+            PhoneNumber = ""
+        };
+
+        var command = new UpdateUserProfileCommand { UpdateUserProfileDto = updateDto };
+
+        _currentUserServiceMock.Setup(x => x.IsAuthenticated).Returns(true);
+        _currentUserServiceMock.Setup(x => x.UserId).Returns(userId);
+
+        _userManagerMock.Setup(x => x.FindByIdAsync(userId))
+            .ReturnsAsync(user);
+
+        _userManagerMock.Setup(x => x.UpdateAsync(user))
+            .ReturnsAsync(IdentityResult.Success);
+
+        _userManagerMock.Setup(x => x.GetRolesAsync(user))
+            .ReturnsAsync(new List<string> { "User" });
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        user.FirstName.Should().Be("NewFirstName");
+        user.LastName.Should().Be("NewLastName");
+        user.PhoneNumber.Should().Be("+1234567890"); // Unchanged
+    }
+
+    #endregion
+
     #region Update Failure Tests
 
     [Fact]

@@ -4,8 +4,10 @@
 
 - Clean Architecture with five layers: Domain (pure entities), Application (CQRS + MediatR), Infrastructure (External services, JWT, Auth), Persistence (EF Core + PostgreSQL), API (ASP.NET Core controllers, middleware, Swagger).
 - Feature slices under `Application/Features/SerhanKitaplar` and `Application/Features/Auth` use Commands/Queries folders with DTOs, validators, and handlers; mapping in `Application/Core/MappingProfiles.cs`; validation pipeline via `ValidationBehavior`.
-- Auth module (`Application/Features/Auth`) follows the same structure: `Commands/Login`, `Commands/Register` with corresponding DTOs and Validators.
-- Persistence layer uses `AppDbContext` implementing `IAppDbContext` and extends `IdentityDbContext<ApplicationUser>`; migrations live in `Persistence/Migrations`; database seeding in `DbInitializer` (called on startup).
+- Auth module (`Application/Features/Auth`) includes: `Commands/Login`, `Commands/Register`, `Commands/RefreshToken`, `Commands/UpdateUserProfile`, `Queries/GetCurrentUser` with corresponding DTOs and Validators.
+- Domain entity `ApplicationUser` extends `IdentityUser` with `FirstName`, `LastName`, `IsActive`, `RefreshToken`, `RefreshTokenExpiryTime`, `CreatedDate`, `LastLoginDate`, `ProfileImageUrl`.
+- Persistence layer uses `AppDbContext` implementing `IAppDbContext` and extends `IdentityDbContext<ApplicationUser>`; migrations live in `Persistence/Migrations`; database seeding in `DbInitializer` (called on startup) - seeds `BaseUser` role.
+- Infrastructure provides `IJwtService` (JWT generation/validation) and `ICurrentUserService` (access current authenticated user from claims).
 - API startup is extension-driven (`API/Extensions/*`) wired in `API/Program.cs`; custom error handling in `API/Middleware/ExceptionMiddleware.cs`; standardized responses in `API/Responses`.
 
 ## Build & Run
@@ -37,7 +39,11 @@
 - Controllers inherit `BaseApiController` to access `Mediator` and standardized responses; prefer MediatR requests over direct service calls.
 - Exception handling centralized via `ExceptionMiddleware`; rely on it instead of try/catch in controllers.
 - Logging uses Serilog (Seq sink); configuration in `LoggingExtensions`; enrich logs rather than Console.WriteLine.
-- **Identity & Auth:** Uses ASP.NET Core Identity (`ApplicationUser`); JWT for authentication (`IJwtService`). Secrets must be loaded from Environment Variables (not appsettings.json).
+- **Identity & Auth:** Uses ASP.NET Core Identity (`ApplicationUser` extends `IdentityUser` with custom properties); JWT bearer authentication for API security.
+- **JWT Configuration:** Loaded from environment variables (`Jwt__SecretKey`, `Jwt__Issuer`, `Jwt__Audience`, `Jwt__AccessTokenExpirationMinutes`, `Jwt__RefreshTokenExpirationDays`).
+- **JWT Service:** `IJwtService` in Infrastructure creates access tokens (short-lived, default 60 min) and refresh tokens (long-lived, default 7 days, stored in `ApplicationUser.RefreshToken` field).
+- **Current User Service:** `ICurrentUserService` provides access to current user's ID from HttpContext claims (`UserId` property).
+- **Auth Handlers:** All auth commands/queries use `UserManager<ApplicationUser>` and `SignInManager<ApplicationUser>` for identity operations.
 
 ## Data & Migrations
 
@@ -47,7 +53,12 @@
 ## API Surface
 
 - Primary resource: `SerhanKitap`; CRUD endpoints in `SerhanKitaplarController` (`/api/serhankitaplar`).
-- Authentication: `AuthController` (`/api/v1/auth/register`, `/api/v1/auth/login`).
+- Authentication: `AuthController` (`/api/v1/auth/`) endpoints:
+  - `POST /register` - User registration (AllowAnonymous)
+  - `POST /login` - User login (AllowAnonymous)
+  - `POST /refresh-token` - Refresh access token (AllowAnonymous)
+  - `GET /profile` - Get current user profile (Authorized)
+  - `PUT /profile` - Update current user profile (Authorized)
 - Health Checks: `/health/api` (liveness, no deps) and `/health/all` (readiness, includes DB/Seq); configured in `ApiExtensions`.
 - Standard API responses serialized via `StandardApiResponse`; model state errors use `ModelStateResponseFactory`.
 - Controllers and middleware wrap both success and error responses in `StandardApiResponse`; `BaseApiController.HandleResult` and `ExceptionMiddleware` enforce the envelope.
@@ -55,6 +66,7 @@
 ## How to Extend
 
 - New feature: create feature folder under `Application/Features/<Feature>` with Commands/Queries, DTOs, validators, handlers; add mappings; expose via controller; ensure tests in parallel `Tests/Features` path.
+- For features requiring authentication: inject `ICurrentUserService` in handlers to access current user; use `[Authorize]` attribute on controller or endpoint.
 - For cross-cutting concerns, prefer extension classes under `API/Extensions` or pipeline behaviors.
 
 ## Agentic Usage (Copilot, Gemini CLI, Claude Code)
@@ -72,3 +84,6 @@
 - Keep DTOs decoupled from EF entities; mapping handles transformations.
 - Ensure new configuration values are read from `.env` and bound via extension methods or `EnvLoader`.
 - Do NOT put secrets in `appsettings.json`; use `.env` files locally and Secrets in CI/CD.
+- **JWT Secret Key** must be at least 64 bytes for production; generate with: `openssl rand -base64 64`
+- Access tokens expire in 15 minutes; refresh tokens in 7 days (configurable via Jwt__* env vars).
+- Swagger UI includes "Authorize" button for testing authenticated endpoints; requires valid JWT token.
