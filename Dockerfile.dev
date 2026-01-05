@@ -16,6 +16,7 @@ COPY ["Directory.Build.props", "./"]
 COPY ["API/API.csproj", "API/"]
 COPY ["Application/Application.csproj", "Application/"]
 COPY ["Domain/Domain.csproj", "Domain/"]
+COPY ["Infrastructure/Infrastructure.csproj", "Infrastructure/"]
 COPY ["Persistence/Persistence.csproj", "Persistence/"]
 COPY ["Tests/Tests.csproj", "Tests/"]
 
