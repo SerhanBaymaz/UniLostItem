@@ -203,6 +203,90 @@ public class SwaggerExtensionsTests
         act.Should().NotThrow();
     }
 
+    [Fact]
+    public void AddSwaggerDocumentation_ShouldAddBearerSecurityDefinition()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+
+        // Act
+        services.AddSwaggerDocumentation();
+
+        // Assert
+        var serviceProvider = services.BuildServiceProvider();
+        var options = serviceProvider.GetService<Microsoft.Extensions.Options.IOptions<SwaggerGenOptions>>();
+
+        options.Should().NotBeNull();
+        var securityDefs = options!.Value.SwaggerGeneratorOptions.SecuritySchemes;
+
+        securityDefs.Should().ContainKey("Bearer");
+    }
+
+    [Fact]
+    public void AddSwaggerDocumentation_BearerSecurity_ShouldUseHttpScheme()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+
+        // Act
+        services.AddSwaggerDocumentation();
+
+        // Assert
+        var serviceProvider = services.BuildServiceProvider();
+        var options = serviceProvider.GetService<Microsoft.Extensions.Options.IOptions<SwaggerGenOptions>>();
+
+        var bearerScheme = options!.Value.SwaggerGeneratorOptions.SecuritySchemes["Bearer"];
+
+        bearerScheme.Type.Should().Be(SecuritySchemeType.Http);
+        bearerScheme.Scheme.Should().Be("Bearer");
+    }
+
+    [Fact]
+    public void AddSwaggerDocumentation_BearerSecurity_ShouldBeInHeader()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+
+        // Act
+        services.AddSwaggerDocumentation();
+
+        // Assert
+        var serviceProvider = services.BuildServiceProvider();
+        var options = serviceProvider.GetService<Microsoft.Extensions.Options.IOptions<SwaggerGenOptions>>();
+
+        var bearerScheme = options!.Value.SwaggerGeneratorOptions.SecuritySchemes["Bearer"];
+
+        bearerScheme.In.Should().Be(ParameterLocation.Header);
+        bearerScheme.Name.Should().Be("Authorization");
+    }
+
+    [Fact]
+    public void AddSwaggerDocumentation_ShouldAddBearerSecurityRequirement()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+
+        // Act
+        services.AddSwaggerDocumentation();
+
+        // Assert
+        var serviceProvider = services.BuildServiceProvider();
+        var options = serviceProvider.GetService<Microsoft.Extensions.Options.IOptions<SwaggerGenOptions>>();
+
+        var requirements = options!.Value.SwaggerGeneratorOptions.SecurityRequirements;
+
+        requirements.Should().NotBeEmpty();
+        requirements.Should().ContainSingle();
+        requirements[0].Should().ContainKey(new OpenApiSecurityScheme
+        {
+            Reference = new OpenApiReference
+            {
+                Type = ReferenceType.SecurityScheme,
+                Id = "Bearer"
+            }
+        });
+    }
+
     // Helper nested class for testing schema ID generation
 #pragma warning disable S1144 // Unused private types or members should be removed
     private class OuterClass
