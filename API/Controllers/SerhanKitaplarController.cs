@@ -7,7 +7,6 @@ using Application.Features.SerhanKitaplar.Commands.EditSerhanKitap;
 using Application.Features.SerhanKitaplar.Queries.Common.DTOs;
 using Application.Features.SerhanKitaplar.Queries.GetSerhanKitapDetails;
 using Application.Features.SerhanKitaplar.Queries.GetSerhanKitapList;
-using Application.Features.SerhanKitaplar.Queries.GetSerhanKitapPaginatedList;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,12 +15,6 @@ namespace API.Controllers;
 [Route("api/v1/serhan-kitaplar")]
 public class SerhanKitaplarController : BaseApiController
 {
-    [HttpGet]
-    public async Task<ActionResult<StandardApiResponse<List<GetSerhanKitapDto>>>> GetSerhanKitaplar()
-    {
-        return HandleResult(await Mediator.Send(new GetSerhanKitapListQuery()));
-    }
-
     /// <summary>
     /// Gets a paginated list of books with optional filtering and sorting
     /// </summary>
@@ -36,9 +29,9 @@ public class SerhanKitaplarController : BaseApiController
     /// <param name="maxPageCount">Maximum page count</param>
     /// <returns>Paginated list of books with metadata</returns>
     /// <response code="200">Returns the paginated list of books</response>
-    [HttpGet("paginated")]
+    [HttpGet]
     [ProducesResponseType(typeof(StandardApiResponse<PaginatedListDto<GetSerhanKitapDto>>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<StandardApiResponse<PaginatedListDto<GetSerhanKitapDto>>>> GetSerhanKitaplarPaginated(
+    public async Task<ActionResult<StandardApiResponse<PaginatedListDto<GetSerhanKitapDto>>>> GetSerhanKitaplar(
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 10,
         [FromQuery] string? sortBy = null,
@@ -49,7 +42,7 @@ public class SerhanKitaplarController : BaseApiController
         [FromQuery] int? minPageCount = null,
         [FromQuery] int? maxPageCount = null)
     {
-        var query = new GetSerhanKitapPaginatedListQuery
+        var query = new GetSerhanKitapListQuery
         {
             PageNumber = pageNumber,
             PageSize = pageSize,

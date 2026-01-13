@@ -1,23 +1,23 @@
-using Application.Features.SerhanKitaplar.Queries.GetSerhanKitapPaginatedList;
+using Application.Features.SerhanKitaplar.Queries.GetSerhanKitapList;
 using FluentAssertions;
 using FluentValidation.TestHelper;
 
-namespace Tests.Application_Tests.Features.SerhanKitaplar.Queries.GetSerhanKitapPaginatedList;
+namespace Tests.Application_Tests.Features.SerhanKitaplar.Queries.GetSerhanKitapList;
 
-public class GetSerhanKitapPaginatedListValidatorTests
+public class GetSerhanKitapListValidatorTests
 {
-    private readonly GetSerhanKitapPaginatedListValidator _validator;
+    private readonly GetSerhanKitapListValidator _validator;
 
-    public GetSerhanKitapPaginatedListValidatorTests()
+    public GetSerhanKitapListValidatorTests()
     {
-        _validator = new GetSerhanKitapPaginatedListValidator();
+        _validator = new GetSerhanKitapListValidator();
     }
 
     [Fact]
     public void ShouldHaveValidationError_WhenPageNumber_IsLessThan1()
     {
         // Arrange
-        var query = new GetSerhanKitapPaginatedListQuery { PageNumber = 0 };
+        var query = new GetSerhanKitapListQuery { PageNumber = 0 };
 
         // Act & Assert
         _validator.TestValidate(query)
@@ -32,7 +32,7 @@ public class GetSerhanKitapPaginatedListValidatorTests
     public void ShouldHaveValidationError_WhenPageNumber_IsNegative(int pageNumber)
     {
         // Arrange
-        var query = new GetSerhanKitapPaginatedListQuery { PageNumber = pageNumber };
+        var query = new GetSerhanKitapListQuery { PageNumber = pageNumber };
 
         // Act & Assert
         _validator.TestValidate(query)
@@ -47,7 +47,7 @@ public class GetSerhanKitapPaginatedListValidatorTests
     public void ShouldNotHaveValidationError_WhenPageNumber_IsValid(int pageNumber)
     {
         // Arrange
-        var query = new GetSerhanKitapPaginatedListQuery { PageNumber = pageNumber };
+        var query = new GetSerhanKitapListQuery { PageNumber = pageNumber };
 
         // Act & Assert
         _validator.TestValidate(query)
@@ -58,7 +58,7 @@ public class GetSerhanKitapPaginatedListValidatorTests
     public void ShouldHaveValidationError_WhenPageSize_IsLessThan1()
     {
         // Arrange
-        var query = new GetSerhanKitapPaginatedListQuery { PageSize = 0 };
+        var query = new GetSerhanKitapListQuery { PageSize = 0 };
 
         // Act & Assert
         _validator.TestValidate(query)
@@ -70,7 +70,7 @@ public class GetSerhanKitapPaginatedListValidatorTests
     public void ShouldHaveValidationError_WhenPageSize_IsGreaterThan100()
     {
         // Arrange
-        var query = new GetSerhanKitapPaginatedListQuery { PageSize = 101 };
+        var query = new GetSerhanKitapListQuery { PageSize = 101 };
 
         // Act & Assert
         _validator.TestValidate(query)
@@ -87,7 +87,7 @@ public class GetSerhanKitapPaginatedListValidatorTests
     public void ShouldHaveValidationError_WhenPageSize_IsOutOfRange(int pageSize)
     {
         // Arrange
-        var query = new GetSerhanKitapPaginatedListQuery { PageSize = pageSize };
+        var query = new GetSerhanKitapListQuery { PageSize = pageSize };
 
         // Act & Assert
         _validator.TestValidate(query)
@@ -102,7 +102,7 @@ public class GetSerhanKitapPaginatedListValidatorTests
     public void ShouldNotHaveValidationError_WhenPageSize_IsValid(int pageSize)
     {
         // Arrange
-        var query = new GetSerhanKitapPaginatedListQuery { PageSize = pageSize };
+        var query = new GetSerhanKitapListQuery { PageSize = pageSize };
 
         // Act & Assert
         _validator.TestValidate(query)
@@ -124,7 +124,7 @@ public class GetSerhanKitapPaginatedListValidatorTests
     public void ShouldNotHaveValidationError_WhenSortBy_IsValid(string sortBy)
     {
         // Arrange
-        var query = new GetSerhanKitapPaginatedListQuery { SortBy = sortBy };
+        var query = new GetSerhanKitapListQuery { SortBy = sortBy };
 
         // Act & Assert
         _validator.TestValidate(query)
@@ -139,7 +139,7 @@ public class GetSerhanKitapPaginatedListValidatorTests
     public void ShouldHaveValidationError_WhenSortBy_IsInvalid(string sortBy)
     {
         // Arrange
-        var query = new GetSerhanKitapPaginatedListQuery { SortBy = sortBy };
+        var query = new GetSerhanKitapListQuery { SortBy = sortBy };
 
         // Act & Assert
         _validator.TestValidate(query)
@@ -151,7 +151,7 @@ public class GetSerhanKitapPaginatedListValidatorTests
     public void ShouldNotHaveValidationError_WhenSortBy_IsEmpty()
     {
         // Arrange
-        var query = new GetSerhanKitapPaginatedListQuery { SortBy = null };
+        var query = new GetSerhanKitapListQuery { SortBy = null };
 
         // Act & Assert
         _validator.TestValidate(query)
@@ -162,7 +162,7 @@ public class GetSerhanKitapPaginatedListValidatorTests
     public void ShouldNotHaveValidationError_WhenAllValuesAreValid()
     {
         // Arrange
-        var query = new GetSerhanKitapPaginatedListQuery
+        var query = new GetSerhanKitapListQuery
         {
             PageNumber = 2,
             PageSize = 20,
@@ -179,7 +179,7 @@ public class GetSerhanKitapPaginatedListValidatorTests
     public void ShouldNotHaveValidationError_WhenUsingDefaults()
     {
         // Arrange
-        var query = new GetSerhanKitapPaginatedListQuery(); // Uses defaults
+        var query = new GetSerhanKitapListQuery(); // Uses defaults
 
         // Act & Assert
         var result = _validator.TestValidate(query);
@@ -190,7 +190,7 @@ public class GetSerhanKitapPaginatedListValidatorTests
     public void ShouldHaveMultipleValidationErrors_WhenMultipleValuesAreInvalid()
     {
         // Arrange
-        var query = new GetSerhanKitapPaginatedListQuery
+        var query = new GetSerhanKitapListQuery
         {
             PageNumber = 0,
             PageSize = 150,
@@ -213,7 +213,7 @@ public class GetSerhanKitapPaginatedListValidatorTests
     public void ShouldHaveValidationError_WhenMinPageCount_IsNegative(int minPageCount)
     {
         // Arrange
-        var query = new GetSerhanKitapPaginatedListQuery { MinPageCount = minPageCount };
+        var query = new GetSerhanKitapListQuery { MinPageCount = minPageCount };
 
         // Act & Assert
         _validator.TestValidate(query)
@@ -228,7 +228,7 @@ public class GetSerhanKitapPaginatedListValidatorTests
     public void ShouldHaveValidationError_WhenMaxPageCount_IsNegative(int maxPageCount)
     {
         // Arrange
-        var query = new GetSerhanKitapPaginatedListQuery { MaxPageCount = maxPageCount };
+        var query = new GetSerhanKitapListQuery { MaxPageCount = maxPageCount };
 
         // Act & Assert
         _validator.TestValidate(query)
@@ -244,7 +244,7 @@ public class GetSerhanKitapPaginatedListValidatorTests
     public void ShouldNotHaveValidationError_WhenMinPageCount_IsValid(int minPageCount)
     {
         // Arrange
-        var query = new GetSerhanKitapPaginatedListQuery { MinPageCount = minPageCount };
+        var query = new GetSerhanKitapListQuery { MinPageCount = minPageCount };
 
         // Act & Assert
         _validator.TestValidate(query)
@@ -259,7 +259,7 @@ public class GetSerhanKitapPaginatedListValidatorTests
     public void ShouldNotHaveValidationError_WhenMaxPageCount_IsValid(int maxPageCount)
     {
         // Arrange
-        var query = new GetSerhanKitapPaginatedListQuery { MaxPageCount = maxPageCount };
+        var query = new GetSerhanKitapListQuery { MaxPageCount = maxPageCount };
 
         // Act & Assert
         _validator.TestValidate(query)
@@ -270,7 +270,7 @@ public class GetSerhanKitapPaginatedListValidatorTests
     public void ShouldHaveValidationError_WhenMaxPageCount_IsLessThanMinPageCount()
     {
         // Arrange
-        var query = new GetSerhanKitapPaginatedListQuery
+        var query = new GetSerhanKitapListQuery
         {
             MinPageCount = 100,
             MaxPageCount = 50
@@ -291,7 +291,7 @@ public class GetSerhanKitapPaginatedListValidatorTests
     public void ShouldNotHaveValidationError_WhenMaxPageCount_IsGreaterOrEqualThanMinPageCount(int minPageCount, int maxPageCount)
     {
         // Arrange
-        var query = new GetSerhanKitapPaginatedListQuery
+        var query = new GetSerhanKitapListQuery
         {
             MinPageCount = minPageCount,
             MaxPageCount = maxPageCount
@@ -309,7 +309,7 @@ public class GetSerhanKitapPaginatedListValidatorTests
     public void ShouldNotHaveValidationError_WhenPageCount_IsPartiallyNull(int? minPageCount, int? maxPageCount)
     {
         // Arrange
-        var query = new GetSerhanKitapPaginatedListQuery
+        var query = new GetSerhanKitapListQuery
         {
             MinPageCount = minPageCount,
             MaxPageCount = maxPageCount
@@ -326,7 +326,7 @@ public class GetSerhanKitapPaginatedListValidatorTests
     public void ShouldNotHaveValidationError_WhenSearchTerm_IsProvided()
     {
         // Arrange
-        var query = new GetSerhanKitapPaginatedListQuery { SearchTerm = "test" };
+        var query = new GetSerhanKitapListQuery { SearchTerm = "test" };
 
         // Act & Assert
         _validator.TestValidate(query)
@@ -337,7 +337,7 @@ public class GetSerhanKitapPaginatedListValidatorTests
     public void ShouldNotHaveValidationError_WhenKitapName_IsProvided()
     {
         // Arrange
-        var query = new GetSerhanKitapPaginatedListQuery { KitapName = "Book" };
+        var query = new GetSerhanKitapListQuery { KitapName = "Book" };
 
         // Act & Assert
         _validator.TestValidate(query)
@@ -348,7 +348,7 @@ public class GetSerhanKitapPaginatedListValidatorTests
     public void ShouldNotHaveValidationError_WhenKitapYazar_IsProvided()
     {
         // Arrange
-        var query = new GetSerhanKitapPaginatedListQuery { KitapYazar = "Author" };
+        var query = new GetSerhanKitapListQuery { KitapYazar = "Author" };
 
         // Act & Assert
         _validator.TestValidate(query)
@@ -359,7 +359,7 @@ public class GetSerhanKitapPaginatedListValidatorTests
     public void ShouldNotHaveValidationError_WhenAllFiltersAreValid()
     {
         // Arrange
-        var query = new GetSerhanKitapPaginatedListQuery
+        var query = new GetSerhanKitapListQuery
         {
             PageNumber = 1,
             PageSize = 10,

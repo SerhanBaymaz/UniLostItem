@@ -1,10 +1,10 @@
 using FluentValidation;
 
-namespace Application.Features.SerhanKitaplar.Queries.GetSerhanKitapPaginatedList;
+namespace Application.Features.SerhanKitaplar.Queries.GetSerhanKitapList;
 
-public class GetSerhanKitapPaginatedListValidator : AbstractValidator<GetSerhanKitapPaginatedListQuery>
+public class GetSerhanKitapListValidator : AbstractValidator<GetSerhanKitapListQuery>
 {
-    public GetSerhanKitapPaginatedListValidator()
+    public GetSerhanKitapListValidator()
     {
         // Pagination and sorting validation
         RuleFor(x => x.PageNumber)
