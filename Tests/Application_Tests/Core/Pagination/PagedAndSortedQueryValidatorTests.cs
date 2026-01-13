@@ -6,7 +6,7 @@ namespace Tests.Application_Tests.Core.Pagination;
 
 public class PagedAndSortedQueryValidatorTests
 {
-    private record TestQuery : PagedAndSortedQueryBase
+    private sealed record TestQuery : PagedAndSortedQueryBase
     {
         // Test implementation of the abstract base record
     }

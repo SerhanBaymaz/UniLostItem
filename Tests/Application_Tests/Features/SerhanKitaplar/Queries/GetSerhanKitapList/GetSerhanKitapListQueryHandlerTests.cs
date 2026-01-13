@@ -16,6 +16,31 @@ namespace Tests.Application_Tests.Features.SerhanKitaplar.Queries.GetSerhanKitap
 
 public class GetSerhanKitapListQueryHandlerTests
 {
+    private const string VictorHugo = "Victor Hugo";
+    private const string FyodorDostoyevski = "Fyodor Dostoyevski";
+    private const string JRRTolkien = "J.R.R. Tolkien";
+    private const string JKRowling = "J.K. Rowling";
+    private const string SabahattinAli = "Sabahattin Ali";
+    private const string StephenKing = "Stephen King";
+    private const string GeorgeOrwell = "George Orwell";
+    private const string AminMaalouf = "Amin Maalouf";
+    private const string FalihRifkiAtay = "Falih Rıfkı Atay";
+    private const string AntoineDeSaintExupery = "Antoine de Saint-Exupéry";
+    private const string StefanZweig = "Stefan Zweig";
+    private const string JackLondon = "Jack London";
+    private const string PauloCoelho = "Paulo Coelho";
+    private const string AdaletAgaoglu = "Adalet Ağaoğlu";
+    private const string CahitZarifoglu = "Cahit Zarifoğlu";
+    private const string BedriRahmiEyuboglu = "Bedri Rahmi Eyüboğlu";
+    private const string JohnSteinbeck = "John Steinbeck";
+    private const string Zahir = "Zahir";
+    private const string AmokKosucusu = "Amok Koşucusu";
+    private const string BeyazDis = "Beyaz Diş";
+    private const string FikriminInceGulu = "Fikrimin İnce Gülü";
+    private const string YediGuzelAdam = "Yedi Güzel Adam";
+    private const string KucukPrens = "Küçük Prens";
+    private const string Sefiller = "Sefiller";
+
     private readonly IAppDbContext _context;
     private readonly Mock<IMapper> _mockMapper;
     private readonly GetSerhanKitapListQueryHandler _handler;
@@ -33,9 +58,9 @@ public class GetSerhanKitapListQueryHandlerTests
         // Arrange
         var kitaplar = new[]
         {
-            new SerhanKitap { Id = "1", KitapName = "Book A", KitapYazar = "Author 1", KitapSayfaSayisi = 100 },
-            new SerhanKitap { Id = "2", KitapName = "Book B", KitapYazar = "Author 2", KitapSayfaSayisi = 200 },
-            new SerhanKitap { Id = "3", KitapName = "Book C", KitapYazar = "Author 1", KitapSayfaSayisi = 150 }
+            new SerhanKitap { Id = "1", KitapName = Sefiller, KitapYazar = VictorHugo, KitapSayfaSayisi = 1232 },
+            new SerhanKitap { Id = "2", KitapName = "Suç ve Ceza", KitapYazar = FyodorDostoyevski, KitapSayfaSayisi = 687 },
+            new SerhanKitap { Id = "3", KitapName = "Notre Dame'ın Kamburu", KitapYazar = VictorHugo, KitapSayfaSayisi = 512 }
         };
 
         await (_context as AppDbContext)!.SerhanKitaplar.AddRangeAsync(kitaplar);
@@ -43,8 +68,8 @@ public class GetSerhanKitapListQueryHandlerTests
 
         var kitaplarDto = new[]
         {
-            new GetSerhanKitapDto { Id = "1", KitapName = "Book A", KitapYazar = "Author 1", KitapSayfaSayisi = 100 },
-            new GetSerhanKitapDto { Id = "2", KitapName = "Book B", KitapYazar = "Author 2", KitapSayfaSayisi = 200 }
+            new GetSerhanKitapDto { Id = "1", KitapName = Sefiller, KitapYazar = VictorHugo, KitapSayfaSayisi = 1232 },
+            new GetSerhanKitapDto { Id = "2", KitapName = "Suç ve Ceza", KitapYazar = FyodorDostoyevski, KitapSayfaSayisi = 687 }
         };
 
         _mockMapper.Setup(x => x.Map<List<GetSerhanKitapDto>>(It.IsAny<List<SerhanKitap>>()))
@@ -101,9 +126,9 @@ public class GetSerhanKitapListQueryHandlerTests
         // Arrange
         var kitaplar = new[]
         {
-            new SerhanKitap { Id = "1", KitapName = "Zebra", KitapYazar = "Author 1", KitapSayfaSayisi = 100 },
-            new SerhanKitap { Id = "2", KitapName = "Alpha", KitapYazar = "Author 2", KitapSayfaSayisi = 200 },
-            new SerhanKitap { Id = "3", KitapName = "Beta", KitapYazar = "Author 1", KitapSayfaSayisi = 150 }
+            new SerhanKitap { Id = "1", KitapName = Zahir, KitapYazar = PauloCoelho, KitapSayfaSayisi = 352 },
+            new SerhanKitap { Id = "2", KitapName = AmokKosucusu, KitapYazar = StefanZweig, KitapSayfaSayisi = 80 },
+            new SerhanKitap { Id = "3", KitapName = BeyazDis, KitapYazar = JackLondon, KitapSayfaSayisi = 240 }
         };
 
         await (_context as AppDbContext)!.SerhanKitaplar.AddRangeAsync(kitaplar);
@@ -111,9 +136,9 @@ public class GetSerhanKitapListQueryHandlerTests
 
         var kitaplarDto = new[]
         {
-            new GetSerhanKitapDto { Id = "2", KitapName = "Alpha", KitapYazar = "Author 2", KitapSayfaSayisi = 200 },
-            new GetSerhanKitapDto { Id = "3", KitapName = "Beta", KitapYazar = "Author 1", KitapSayfaSayisi = 150 },
-            new GetSerhanKitapDto { Id = "1", KitapName = "Zebra", KitapYazar = "Author 1", KitapSayfaSayisi = 100 }
+            new GetSerhanKitapDto { Id = "2", KitapName = AmokKosucusu, KitapYazar = StefanZweig, KitapSayfaSayisi = 80 },
+            new GetSerhanKitapDto { Id = "3", KitapName = BeyazDis, KitapYazar = JackLondon, KitapSayfaSayisi = 240 },
+            new GetSerhanKitapDto { Id = "1", KitapName = Zahir, KitapYazar = PauloCoelho, KitapSayfaSayisi = 352 }
         };
 
         _mockMapper.Setup(x => x.Map<List<GetSerhanKitapDto>>(It.IsAny<List<SerhanKitap>>()))
@@ -130,9 +155,9 @@ public class GetSerhanKitapListQueryHandlerTests
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        result.Value!.Items[0].KitapName.Should().Be("Alpha");
-        result.Value.Items[1].KitapName.Should().Be("Beta");
-        result.Value.Items[2].KitapName.Should().Be("Zebra");
+        result.Value!.Items[0].KitapName.Should().Be(AmokKosucusu);
+        result.Value.Items[1].KitapName.Should().Be(BeyazDis);
+        result.Value.Items[2].KitapName.Should().Be(Zahir);
     }
 
     [Fact]
@@ -141,9 +166,9 @@ public class GetSerhanKitapListQueryHandlerTests
         // Arrange
         var kitaplar = new[]
         {
-            new SerhanKitap { Id = "1", KitapName = "Zebra", KitapYazar = "Author 1", KitapSayfaSayisi = 100 },
-            new SerhanKitap { Id = "2", KitapName = "Alpha", KitapYazar = "Author 2", KitapSayfaSayisi = 200 },
-            new SerhanKitap { Id = "3", KitapName = "Beta", KitapYazar = "Author 1", KitapSayfaSayisi = 150 }
+            new SerhanKitap { Id = "1", KitapName = Zahir, KitapYazar = PauloCoelho, KitapSayfaSayisi = 352 },
+            new SerhanKitap { Id = "2", KitapName = AmokKosucusu, KitapYazar = StefanZweig, KitapSayfaSayisi = 80 },
+            new SerhanKitap { Id = "3", KitapName = BeyazDis, KitapYazar = JackLondon, KitapSayfaSayisi = 240 }
         };
 
         await (_context as AppDbContext)!.SerhanKitaplar.AddRangeAsync(kitaplar);
@@ -151,9 +176,9 @@ public class GetSerhanKitapListQueryHandlerTests
 
         var kitaplarDto = new[]
         {
-            new GetSerhanKitapDto { Id = "1", KitapName = "Zebra", KitapYazar = "Author 1", KitapSayfaSayisi = 100 },
-            new GetSerhanKitapDto { Id = "3", KitapName = "Beta", KitapYazar = "Author 1", KitapSayfaSayisi = 150 },
-            new GetSerhanKitapDto { Id = "2", KitapName = "Alpha", KitapYazar = "Author 2", KitapSayfaSayisi = 200 }
+            new GetSerhanKitapDto { Id = "1", KitapName = Zahir, KitapYazar = PauloCoelho, KitapSayfaSayisi = 352 },
+            new GetSerhanKitapDto { Id = "3", KitapName = BeyazDis, KitapYazar = JackLondon, KitapSayfaSayisi = 240 },
+            new GetSerhanKitapDto { Id = "2", KitapName = AmokKosucusu, KitapYazar = StefanZweig, KitapSayfaSayisi = 80 }
         };
 
         _mockMapper.Setup(x => x.Map<List<GetSerhanKitapDto>>(It.IsAny<List<SerhanKitap>>()))
@@ -170,9 +195,9 @@ public class GetSerhanKitapListQueryHandlerTests
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        result.Value!.Items[0].KitapName.Should().Be("Zebra");
-        result.Value.Items[1].KitapName.Should().Be("Beta");
-        result.Value.Items[2].KitapName.Should().Be("Alpha");
+        result.Value!.Items[0].KitapName.Should().Be(Zahir);
+        result.Value.Items[1].KitapName.Should().Be(BeyazDis);
+        result.Value.Items[2].KitapName.Should().Be(AmokKosucusu);
     }
 
     [Fact]
@@ -181,9 +206,9 @@ public class GetSerhanKitapListQueryHandlerTests
         // Arrange
         var kitaplar = new[]
         {
-            new SerhanKitap { Id = "1", KitapName = "Book A", KitapYazar = "Charlie", KitapSayfaSayisi = 100 },
-            new SerhanKitap { Id = "2", KitapName = "Book B", KitapYazar = "Alice", KitapSayfaSayisi = 200 },
-            new SerhanKitap { Id = "3", KitapName = "Book C", KitapYazar = "Bob", KitapSayfaSayisi = 150 }
+            new SerhanKitap { Id = "1", KitapName = YediGuzelAdam, KitapYazar = CahitZarifoglu, KitapSayfaSayisi = 200 },
+            new SerhanKitap { Id = "2", KitapName = FikriminInceGulu, KitapYazar = AdaletAgaoglu, KitapSayfaSayisi = 250 },
+            new SerhanKitap { Id = "3", KitapName = "Dol Karabakır Dol", KitapYazar = BedriRahmiEyuboglu, KitapSayfaSayisi = 180 }
         };
 
         await (_context as AppDbContext)!.SerhanKitaplar.AddRangeAsync(kitaplar);
@@ -191,9 +216,9 @@ public class GetSerhanKitapListQueryHandlerTests
 
         var kitaplarDto = new[]
         {
-            new GetSerhanKitapDto { Id = "2", KitapName = "Book B", KitapYazar = "Alice", KitapSayfaSayisi = 200 },
-            new GetSerhanKitapDto { Id = "3", KitapName = "Book C", KitapYazar = "Bob", KitapSayfaSayisi = 150 },
-            new GetSerhanKitapDto { Id = "1", KitapName = "Book A", KitapYazar = "Charlie", KitapSayfaSayisi = 100 }
+            new GetSerhanKitapDto { Id = "2", KitapName = FikriminInceGulu, KitapYazar = AdaletAgaoglu, KitapSayfaSayisi = 250 },
+            new GetSerhanKitapDto { Id = "3", KitapName = "Dol Karabakır Dol", KitapYazar = BedriRahmiEyuboglu, KitapSayfaSayisi = 180 },
+            new GetSerhanKitapDto { Id = "1", KitapName = YediGuzelAdam, KitapYazar = CahitZarifoglu, KitapSayfaSayisi = 200 }
         };
 
         _mockMapper.Setup(x => x.Map<List<GetSerhanKitapDto>>(It.IsAny<List<SerhanKitap>>()))
@@ -209,9 +234,9 @@ public class GetSerhanKitapListQueryHandlerTests
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        result.Value!.Items[0].KitapYazar.Should().Be("Alice");
-        result.Value.Items[1].KitapYazar.Should().Be("Bob");
-        result.Value.Items[2].KitapYazar.Should().Be("Charlie");
+        result.Value!.Items[0].KitapYazar.Should().Be(AdaletAgaoglu);
+        result.Value.Items[1].KitapYazar.Should().Be(BedriRahmiEyuboglu);
+        result.Value.Items[2].KitapYazar.Should().Be(CahitZarifoglu);
     }
 
     [Fact]
@@ -220,9 +245,9 @@ public class GetSerhanKitapListQueryHandlerTests
         // Arrange
         var kitaplar = new[]
         {
-            new SerhanKitap { Id = "1", KitapName = "Book A", KitapYazar = "Author 1", KitapSayfaSayisi = 300 },
-            new SerhanKitap { Id = "2", KitapName = "Book B", KitapYazar = "Author 2", KitapSayfaSayisi = 100 },
-            new SerhanKitap { Id = "3", KitapName = "Book C", KitapYazar = "Author 1", KitapSayfaSayisi = 200 }
+            new SerhanKitap { Id = "1", KitapName = "Devlet", KitapYazar = "Platon", KitapSayfaSayisi = 340 },
+            new SerhanKitap { Id = "2", KitapName = KucukPrens, KitapYazar = AntoineDeSaintExupery, KitapSayfaSayisi = 96 },
+            new SerhanKitap { Id = "3", KitapName = "Dönüşüm", KitapYazar = "Franz Kafka", KitapSayfaSayisi = 160 }
         };
 
         await (_context as AppDbContext)!.SerhanKitaplar.AddRangeAsync(kitaplar);
@@ -230,9 +255,9 @@ public class GetSerhanKitapListQueryHandlerTests
 
         var kitaplarDto = new[]
         {
-            new GetSerhanKitapDto { Id = "1", KitapName = "Book A", KitapYazar = "Author 1", KitapSayfaSayisi = 300 },
-            new GetSerhanKitapDto { Id = "3", KitapName = "Book C", KitapYazar = "Author 1", KitapSayfaSayisi = 200 },
-            new GetSerhanKitapDto { Id = "2", KitapName = "Book B", KitapYazar = "Author 2", KitapSayfaSayisi = 100 }
+            new GetSerhanKitapDto { Id = "1", KitapName = "Devlet", KitapYazar = "Platon", KitapSayfaSayisi = 340 },
+            new GetSerhanKitapDto { Id = "3", KitapName = "Dönüşüm", KitapYazar = "Franz Kafka", KitapSayfaSayisi = 160 },
+            new GetSerhanKitapDto { Id = "2", KitapName = KucukPrens, KitapYazar = AntoineDeSaintExupery, KitapSayfaSayisi = 96 }
         };
 
         _mockMapper.Setup(x => x.Map<List<GetSerhanKitapDto>>(It.IsAny<List<SerhanKitap>>()))
@@ -249,9 +274,9 @@ public class GetSerhanKitapListQueryHandlerTests
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        result.Value!.Items[0].KitapSayfaSayisi.Should().Be(300);
-        result.Value.Items[1].KitapSayfaSayisi.Should().Be(200);
-        result.Value.Items[2].KitapSayfaSayisi.Should().Be(100);
+        result.Value!.Items[0].KitapSayfaSayisi.Should().Be(340);
+        result.Value.Items[1].KitapSayfaSayisi.Should().Be(160);
+        result.Value.Items[2].KitapSayfaSayisi.Should().Be(96);
     }
 
     [Fact]
@@ -260,8 +285,8 @@ public class GetSerhanKitapListQueryHandlerTests
         // Arrange
         var kitaplar = new[]
         {
-            new SerhanKitap { Id = "1", KitapName = "Book A", KitapYazar = "Charlie", KitapSayfaSayisi = 100 },
-            new SerhanKitap { Id = "2", KitapName = "Book B", KitapYazar = "Alice", KitapSayfaSayisi = 200 }
+            new SerhanKitap { Id = "1", KitapName = YediGuzelAdam, KitapYazar = CahitZarifoglu, KitapSayfaSayisi = 200 },
+            new SerhanKitap { Id = "2", KitapName = FikriminInceGulu, KitapYazar = AdaletAgaoglu, KitapSayfaSayisi = 250 }
         };
 
         await (_context as AppDbContext)!.SerhanKitaplar.AddRangeAsync(kitaplar);
@@ -269,8 +294,8 @@ public class GetSerhanKitapListQueryHandlerTests
 
         var kitaplarDto = new[]
         {
-            new GetSerhanKitapDto { Id = "2", KitapName = "Book B", KitapYazar = "Alice", KitapSayfaSayisi = 200 },
-            new GetSerhanKitapDto { Id = "1", KitapName = "Book A", KitapYazar = "Charlie", KitapSayfaSayisi = 100 }
+            new GetSerhanKitapDto { Id = "2", KitapName = FikriminInceGulu, KitapYazar = AdaletAgaoglu, KitapSayfaSayisi = 250 },
+            new GetSerhanKitapDto { Id = "1", KitapName = YediGuzelAdam, KitapYazar = CahitZarifoglu, KitapSayfaSayisi = 200 }
         };
 
         _mockMapper.Setup(x => x.Map<List<GetSerhanKitapDto>>(It.IsAny<List<SerhanKitap>>()))
@@ -286,8 +311,8 @@ public class GetSerhanKitapListQueryHandlerTests
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        result.Value!.Items[0].KitapYazar.Should().Be("Alice");
-        result.Value.Items[1].KitapYazar.Should().Be("Charlie");
+        result.Value!.Items[0].KitapYazar.Should().Be(AdaletAgaoglu);
+        result.Value.Items[1].KitapYazar.Should().Be(CahitZarifoglu);
     }
 
     [Fact]
@@ -296,8 +321,8 @@ public class GetSerhanKitapListQueryHandlerTests
         // Arrange
         var kitaplar = new[]
         {
-            new SerhanKitap { Id = "1", KitapName = "Book B", KitapYazar = "Author 2", KitapSayfaSayisi = 100 },
-            new SerhanKitap { Id = "2", KitapName = "Book A", KitapYazar = "Author 1", KitapSayfaSayisi = 200 }
+            new SerhanKitap { Id = "1", KitapName = "Kuyucaklı Yusuf", KitapYazar = SabahattinAli, KitapSayfaSayisi = 220 },
+            new SerhanKitap { Id = "2", KitapName = "İçimizdeki Şeytan", KitapYazar = SabahattinAli, KitapSayfaSayisi = 250 }
         };
 
         await (_context as AppDbContext)!.SerhanKitaplar.AddRangeAsync(kitaplar);
@@ -305,8 +330,8 @@ public class GetSerhanKitapListQueryHandlerTests
 
         var kitaplarDto = new[]
         {
-            new GetSerhanKitapDto { Id = "2", KitapName = "Book A", KitapYazar = "Author 1", KitapSayfaSayisi = 200 },
-            new GetSerhanKitapDto { Id = "1", KitapName = "Book B", KitapYazar = "Author 2", KitapSayfaSayisi = 100 }
+            new GetSerhanKitapDto { Id = "2", KitapName = "İçimizdeki Şeytan", KitapYazar = SabahattinAli, KitapSayfaSayisi = 250 },
+            new GetSerhanKitapDto { Id = "1", KitapName = "Kuyucaklı Yusuf", KitapYazar = SabahattinAli, KitapSayfaSayisi = 220 }
         };
 
         _mockMapper.Setup(x => x.Map<List<GetSerhanKitapDto>>(It.IsAny<List<SerhanKitap>>()))
@@ -323,8 +348,8 @@ public class GetSerhanKitapListQueryHandlerTests
         // Assert
         result.IsSuccess.Should().BeTrue();
         // Should default to sorting by KitapName
-        result.Value!.Items[0].KitapName.Should().Be("Book A");
-        result.Value.Items[1].KitapName.Should().Be("Book B");
+        result.Value!.Items[0].KitapName.Should().Be("İçimizdeki Şeytan");
+        result.Value.Items[1].KitapName.Should().Be("Kuyucaklı Yusuf");
     }
 
     [Fact]
@@ -333,11 +358,11 @@ public class GetSerhanKitapListQueryHandlerTests
         // Arrange
         var kitaplar = new[]
         {
-            new SerhanKitap { Id = "1", KitapName = "Book A", KitapYazar = "Author 1", KitapSayfaSayisi = 100 },
-            new SerhanKitap { Id = "2", KitapName = "Book B", KitapYazar = "Author 2", KitapSayfaSayisi = 200 },
-            new SerhanKitap { Id = "3", KitapName = "Book C", KitapYazar = "Author 1", KitapSayfaSayisi = 150 },
-            new SerhanKitap { Id = "4", KitapName = "Book D", KitapYazar = "Author 3", KitapSayfaSayisi = 250 },
-            new SerhanKitap { Id = "5", KitapName = "Book E", KitapYazar = "Author 2", KitapSayfaSayisi = 180 }
+            new SerhanKitap { Id = "1", KitapName = "Hobbit", KitapYazar = JRRTolkien, KitapSayfaSayisi = 310 },
+            new SerhanKitap { Id = "2", KitapName = "Yüzüklerin Efendisi", KitapYazar = JRRTolkien, KitapSayfaSayisi = 1178 },
+            new SerhanKitap { Id = "3", KitapName = "Silmarillion", KitapYazar = JRRTolkien, KitapSayfaSayisi = 365 },
+            new SerhanKitap { Id = "4", KitapName = "Kayıp Öyküler Kitabı", KitapYazar = JRRTolkien, KitapSayfaSayisi = 450 },
+            new SerhanKitap { Id = "5", KitapName = "Hurin'in Çocukları", KitapYazar = JRRTolkien, KitapSayfaSayisi = 320 }
         };
 
         await (_context as AppDbContext)!.SerhanKitaplar.AddRangeAsync(kitaplar);
@@ -345,8 +370,8 @@ public class GetSerhanKitapListQueryHandlerTests
 
         var kitaplarDto = new[]
         {
-            new GetSerhanKitapDto { Id = "4", KitapName = "Book D", KitapYazar = "Author 3", KitapSayfaSayisi = 250 },
-            new GetSerhanKitapDto { Id = "5", KitapName = "Book E", KitapYazar = "Author 2", KitapSayfaSayisi = 180 }
+            new GetSerhanKitapDto { Id = "4", KitapName = "Kayıp Öyküler Kitabı", KitapYazar = JRRTolkien, KitapSayfaSayisi = 450 },
+            new GetSerhanKitapDto { Id = "5", KitapName = "Hurin'in Çocukları", KitapYazar = JRRTolkien, KitapSayfaSayisi = 320 }
         };
 
         _mockMapper.Setup(x => x.Map<List<GetSerhanKitapDto>>(It.IsAny<List<SerhanKitap>>()))
@@ -378,8 +403,8 @@ public class GetSerhanKitapListQueryHandlerTests
         // Arrange
         var kitaplar = new[]
         {
-            new SerhanKitap { Id = "1", KitapName = "Book B", KitapYazar = "Author 2", KitapSayfaSayisi = 100 },
-            new SerhanKitap { Id = "2", KitapName = "Book A", KitapYazar = "Author 1", KitapSayfaSayisi = 200 }
+            new SerhanKitap { Id = "1", KitapName = "Harry Potter ve Sırlar Odası", KitapYazar = JKRowling, KitapSayfaSayisi = 312 },
+            new SerhanKitap { Id = "2", KitapName = "Harry Potter ve Felsefe Taşı", KitapYazar = JKRowling, KitapSayfaSayisi = 276 }
         };
 
         await (_context as AppDbContext)!.SerhanKitaplar.AddRangeAsync(kitaplar);
@@ -387,8 +412,8 @@ public class GetSerhanKitapListQueryHandlerTests
 
         var kitaplarDto = new[]
         {
-            new GetSerhanKitapDto { Id = "2", KitapName = "Book A", KitapYazar = "Author 1", KitapSayfaSayisi = 200 },
-            new GetSerhanKitapDto { Id = "1", KitapName = "Book B", KitapYazar = "Author 2", KitapSayfaSayisi = 100 }
+            new GetSerhanKitapDto { Id = "2", KitapName = "Harry Potter ve Felsefe Taşı", KitapYazar = JKRowling, KitapSayfaSayisi = 276 },
+            new GetSerhanKitapDto { Id = "1", KitapName = "Harry Potter ve Sırlar Odası", KitapYazar = JKRowling, KitapSayfaSayisi = 312 }
         };
 
         _mockMapper.Setup(x => x.Map<List<GetSerhanKitapDto>>(It.IsAny<List<SerhanKitap>>()))
@@ -404,7 +429,7 @@ public class GetSerhanKitapListQueryHandlerTests
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        result.Value!.Items[0].KitapName.Should().Be("Book A");
+        result.Value!.Items[0].KitapName.Should().Be("Harry Potter ve Felsefe Taşı");
     }
 
     [Fact]
@@ -414,8 +439,8 @@ public class GetSerhanKitapListQueryHandlerTests
         var kitaplar = new[]
         {
             new SerhanKitap { Id = "1", KitapName = "Harry Potter", KitapYazar = "Rowling", KitapSayfaSayisi = 300 },
-            new SerhanKitap { Id = "2", KitapName = "Lord of Rings", KitapYazar = "Tolkien", KitapSayfaSayisi = 500 },
-            new SerhanKitap { Id = "3", KitapName = "The Hobbit", KitapYazar = "Tolkien", KitapSayfaSayisi = 250 }
+            new SerhanKitap { Id = "2", KitapName = "Lord of Rings", KitapYazar = JRRTolkien, KitapSayfaSayisi = 500 },
+            new SerhanKitap { Id = "3", KitapName = "The Hobbit", KitapYazar = JRRTolkien, KitapSayfaSayisi = 250 }
         };
 
         await (_context as AppDbContext)!.SerhanKitaplar.AddRangeAsync(kitaplar);
@@ -423,8 +448,8 @@ public class GetSerhanKitapListQueryHandlerTests
 
         var kitaplarDto = new[]
         {
-            new GetSerhanKitapDto { Id = "2", KitapName = "Lord of Rings", KitapYazar = "Tolkien", KitapSayfaSayisi = 500 },
-            new GetSerhanKitapDto { Id = "3", KitapName = "The Hobbit", KitapYazar = "Tolkien", KitapSayfaSayisi = 250 }
+            new GetSerhanKitapDto { Id = "2", KitapName = "Lord of Rings", KitapYazar = JRRTolkien, KitapSayfaSayisi = 500 },
+            new GetSerhanKitapDto { Id = "3", KitapName = "The Hobbit", KitapYazar = JRRTolkien, KitapSayfaSayisi = 250 }
         };
 
         _mockMapper.Setup(x => x.Map<List<GetSerhanKitapDto>>(It.IsAny<List<SerhanKitap>>()))
@@ -432,7 +457,7 @@ public class GetSerhanKitapListQueryHandlerTests
 
         var query = new GetSerhanKitapListQuery
         {
-            SearchTerm = "Tolkien"
+            SearchTerm = JRRTolkien
         };
 
         // Act
@@ -449,9 +474,9 @@ public class GetSerhanKitapListQueryHandlerTests
         // Arrange
         var kitaplar = new[]
         {
-            new SerhanKitap { Id = "1", KitapName = "Programming C#", KitapYazar = "Author 1", KitapSayfaSayisi = 400 },
-            new SerhanKitap { Id = "2", KitapName = "Programming Java", KitapYazar = "Author 2", KitapSayfaSayisi = 350 },
-            new SerhanKitap { Id = "3", KitapName = "Clean Code", KitapYazar = "Author 3", KitapSayfaSayisi = 300 }
+            new SerhanKitap { Id = "1", KitapName = "Sefiller - Cilt 1", KitapYazar = VictorHugo, KitapSayfaSayisi = 600 },
+            new SerhanKitap { Id = "2", KitapName = "Sefiller - Cilt 2", KitapYazar = VictorHugo, KitapSayfaSayisi = 632 },
+            new SerhanKitap { Id = "3", KitapName = "Notre Dame'ın Kamburu", KitapYazar = VictorHugo, KitapSayfaSayisi = 512 }
         };
 
         await (_context as AppDbContext)!.SerhanKitaplar.AddRangeAsync(kitaplar);
@@ -459,8 +484,8 @@ public class GetSerhanKitapListQueryHandlerTests
 
         var kitaplarDto = new[]
         {
-            new GetSerhanKitapDto { Id = "1", KitapName = "Programming C#", KitapYazar = "Author 1", KitapSayfaSayisi = 400 },
-            new GetSerhanKitapDto { Id = "2", KitapName = "Programming Java", KitapYazar = "Author 2", KitapSayfaSayisi = 350 }
+            new GetSerhanKitapDto { Id = "1", KitapName = "Sefiller - Cilt 1", KitapYazar = VictorHugo, KitapSayfaSayisi = 600 },
+            new GetSerhanKitapDto { Id = "2", KitapName = "Sefiller - Cilt 2", KitapYazar = VictorHugo, KitapSayfaSayisi = 632 }
         };
 
         _mockMapper.Setup(x => x.Map<List<GetSerhanKitapDto>>(It.IsAny<List<SerhanKitap>>()))
@@ -468,7 +493,7 @@ public class GetSerhanKitapListQueryHandlerTests
 
         var query = new GetSerhanKitapListQuery
         {
-            KitapName = "Programming"
+            KitapName = Sefiller
         };
 
         // Act
@@ -485,9 +510,9 @@ public class GetSerhanKitapListQueryHandlerTests
         // Arrange
         var kitaplar = new[]
         {
-            new SerhanKitap { Id = "1", KitapName = "Book 1", KitapYazar = "King", KitapSayfaSayisi = 200 },
-            new SerhanKitap { Id = "2", KitapName = "Book 2", KitapYazar = "King", KitapSayfaSayisi = 300 },
-            new SerhanKitap { Id = "3", KitapName = "Book 3", KitapYazar = "Martin", KitapSayfaSayisi = 400 }
+            new SerhanKitap { Id = "1", KitapName = "O", KitapYazar = StephenKing, KitapSayfaSayisi = 1104 },
+            new SerhanKitap { Id = "2", KitapName = "Medyum", KitapYazar = StephenKing, KitapSayfaSayisi = 448 },
+            new SerhanKitap { Id = "3", KitapName = "Taht Oyunları", KitapYazar = "George R.R. Martin", KitapSayfaSayisi = 850 }
         };
 
         await (_context as AppDbContext)!.SerhanKitaplar.AddRangeAsync(kitaplar);
@@ -495,8 +520,8 @@ public class GetSerhanKitapListQueryHandlerTests
 
         var kitaplarDto = new[]
         {
-            new GetSerhanKitapDto { Id = "1", KitapName = "Book 1", KitapYazar = "King", KitapSayfaSayisi = 200 },
-            new GetSerhanKitapDto { Id = "2", KitapName = "Book 2", KitapYazar = "King", KitapSayfaSayisi = 300 }
+            new GetSerhanKitapDto { Id = "1", KitapName = "O", KitapYazar = StephenKing, KitapSayfaSayisi = 1104 },
+            new GetSerhanKitapDto { Id = "2", KitapName = "Medyum", KitapYazar = StephenKing, KitapSayfaSayisi = 448 }
         };
 
         _mockMapper.Setup(x => x.Map<List<GetSerhanKitapDto>>(It.IsAny<List<SerhanKitap>>()))
@@ -504,7 +529,7 @@ public class GetSerhanKitapListQueryHandlerTests
 
         var query = new GetSerhanKitapListQuery
         {
-            KitapYazar = "King"
+            KitapYazar = StephenKing
         };
 
         // Act
@@ -521,9 +546,9 @@ public class GetSerhanKitapListQueryHandlerTests
         // Arrange
         var kitaplar = new[]
         {
-            new SerhanKitap { Id = "1", KitapName = "Book 1", KitapYazar = "Author 1", KitapSayfaSayisi = 100 },
-            new SerhanKitap { Id = "2", KitapName = "Book 2", KitapYazar = "Author 2", KitapSayfaSayisi = 250 },
-            new SerhanKitap { Id = "3", KitapName = "Book 3", KitapYazar = "Author 3", KitapSayfaSayisi = 400 }
+            new SerhanKitap { Id = "1", KitapName = "Babalar ve Oğullar", KitapYazar = "Ivan Turgenyev", KitapSayfaSayisi = 200 },
+            new SerhanKitap { Id = "2", KitapName = "Budala", KitapYazar = FyodorDostoyevski, KitapSayfaSayisi = 700 },
+            new SerhanKitap { Id = "3", KitapName = "Karamazov Kardeşler", KitapYazar = FyodorDostoyevski, KitapSayfaSayisi = 800 }
         };
 
         await (_context as AppDbContext)!.SerhanKitaplar.AddRangeAsync(kitaplar);
@@ -531,8 +556,8 @@ public class GetSerhanKitapListQueryHandlerTests
 
         var kitaplarDto = new[]
         {
-            new GetSerhanKitapDto { Id = "2", KitapName = "Book 2", KitapYazar = "Author 2", KitapSayfaSayisi = 250 },
-            new GetSerhanKitapDto { Id = "3", KitapName = "Book 3", KitapYazar = "Author 3", KitapSayfaSayisi = 400 }
+            new GetSerhanKitapDto { Id = "2", KitapName = "Budala", KitapYazar = FyodorDostoyevski, KitapSayfaSayisi = 700 },
+            new GetSerhanKitapDto { Id = "3", KitapName = "Karamazov Kardeşler", KitapYazar = FyodorDostoyevski, KitapSayfaSayisi = 800 }
         };
 
         _mockMapper.Setup(x => x.Map<List<GetSerhanKitapDto>>(It.IsAny<List<SerhanKitap>>()))
@@ -540,7 +565,7 @@ public class GetSerhanKitapListQueryHandlerTests
 
         var query = new GetSerhanKitapListQuery
         {
-            MinPageCount = 200
+            MinPageCount = 500
         };
 
         // Act
@@ -557,9 +582,9 @@ public class GetSerhanKitapListQueryHandlerTests
         // Arrange
         var kitaplar = new[]
         {
-            new SerhanKitap { Id = "1", KitapName = "Book 1", KitapYazar = "Author 1", KitapSayfaSayisi = 150 },
-            new SerhanKitap { Id = "2", KitapName = "Book 2", KitapYazar = "Author 2", KitapSayfaSayisi = 300 },
-            new SerhanKitap { Id = "3", KitapName = "Book 3", KitapYazar = "Author 3", KitapSayfaSayisi = 500 }
+            new SerhanKitap { Id = "1", KitapName = "Sırça Köşk", KitapYazar = SabahattinAli, KitapSayfaSayisi = 140 },
+            new SerhanKitap { Id = "2", KitapName = "Fareler ve İnsanlar", KitapYazar = JohnSteinbeck, KitapSayfaSayisi = 120 },
+            new SerhanKitap { Id = "3", KitapName = "Gazap Üzümleri", KitapYazar = JohnSteinbeck, KitapSayfaSayisi = 500 }
         };
 
         await (_context as AppDbContext)!.SerhanKitaplar.AddRangeAsync(kitaplar);
@@ -567,8 +592,8 @@ public class GetSerhanKitapListQueryHandlerTests
 
         var kitaplarDto = new[]
         {
-            new GetSerhanKitapDto { Id = "1", KitapName = "Book 1", KitapYazar = "Author 1", KitapSayfaSayisi = 150 },
-            new GetSerhanKitapDto { Id = "2", KitapName = "Book 2", KitapYazar = "Author 2", KitapSayfaSayisi = 300 }
+            new GetSerhanKitapDto { Id = "1", KitapName = "Sırça Köşk", KitapYazar = SabahattinAli, KitapSayfaSayisi = 140 },
+            new GetSerhanKitapDto { Id = "2", KitapName = "Fareler ve İnsanlar", KitapYazar = JohnSteinbeck, KitapSayfaSayisi = 120 }
         };
 
         _mockMapper.Setup(x => x.Map<List<GetSerhanKitapDto>>(It.IsAny<List<SerhanKitap>>()))
@@ -593,10 +618,10 @@ public class GetSerhanKitapListQueryHandlerTests
         // Arrange
         var kitaplar = new[]
         {
-            new SerhanKitap { Id = "1", KitapName = "Book 1", KitapYazar = "Author 1", KitapSayfaSayisi = 50 },
-            new SerhanKitap { Id = "2", KitapName = "Book 2", KitapYazar = "Author 2", KitapSayfaSayisi = 200 },
-            new SerhanKitap { Id = "3", KitapName = "Book 3", KitapYazar = "Author 3", KitapSayfaSayisi = 400 },
-            new SerhanKitap { Id = "4", KitapName = "Book 4", KitapYazar = "Author 4", KitapSayfaSayisi = 600 }
+            new SerhanKitap { Id = "1", KitapName = KucukPrens, KitapYazar = AntoineDeSaintExupery, KitapSayfaSayisi = 96 },
+            new SerhanKitap { Id = "2", KitapName = "Hayvan Çiftliği", KitapYazar = GeorgeOrwell, KitapSayfaSayisi = 152 },
+            new SerhanKitap { Id = "3", KitapName = "1984", KitapYazar = GeorgeOrwell, KitapSayfaSayisi = 352 },
+            new SerhanKitap { Id = "4", KitapName = "Don Kişot", KitapYazar = "Miguel de Cervantes", KitapSayfaSayisi = 1000 }
         };
 
         await (_context as AppDbContext)!.SerhanKitaplar.AddRangeAsync(kitaplar);
@@ -604,8 +629,8 @@ public class GetSerhanKitapListQueryHandlerTests
 
         var kitaplarDto = new[]
         {
-            new GetSerhanKitapDto { Id = "2", KitapName = "Book 2", KitapYazar = "Author 2", KitapSayfaSayisi = 200 },
-            new GetSerhanKitapDto { Id = "3", KitapName = "Book 3", KitapYazar = "Author 3", KitapSayfaSayisi = 400 }
+            new GetSerhanKitapDto { Id = "2", KitapName = "Hayvan Çiftliği", KitapYazar = GeorgeOrwell, KitapSayfaSayisi = 152 },
+            new GetSerhanKitapDto { Id = "3", KitapName = "1984", KitapYazar = GeorgeOrwell, KitapSayfaSayisi = 352 }
         };
 
         _mockMapper.Setup(x => x.Map<List<GetSerhanKitapDto>>(It.IsAny<List<SerhanKitap>>()))
@@ -631,9 +656,9 @@ public class GetSerhanKitapListQueryHandlerTests
         // Arrange
         var kitaplar = new[]
         {
-            new SerhanKitap { Id = "1", KitapName = "Programming C#", KitapYazar = "Smith", KitapSayfaSayisi = 150 },
-            new SerhanKitap { Id = "2", KitapName = "Programming Java", KitapYazar = "Johnson", KitapSayfaSayisi = 300 },
-            new SerhanKitap { Id = "3", KitapName = "Clean Code", KitapYazar = "Martin", KitapSayfaSayisi = 450 }
+            new SerhanKitap { Id = "1", KitapName = "Semerkant", KitapYazar = AminMaalouf, KitapSayfaSayisi = 320 },
+            new SerhanKitap { Id = "2", KitapName = "Afrikalı Leo", KitapYazar = AminMaalouf, KitapSayfaSayisi = 360 },
+            new SerhanKitap { Id = "3", KitapName = "İstanbul", KitapYazar = "Orhan Pamuk", KitapSayfaSayisi = 450 }
         };
 
         await (_context as AppDbContext)!.SerhanKitaplar.AddRangeAsync(kitaplar);
@@ -641,7 +666,7 @@ public class GetSerhanKitapListQueryHandlerTests
 
         var kitaplarDto = new[]
         {
-            new GetSerhanKitapDto { Id = "2", KitapName = "Programming Java", KitapYazar = "Johnson", KitapSayfaSayisi = 300 }
+            new GetSerhanKitapDto { Id = "1", KitapName = "Semerkant", KitapYazar = AminMaalouf, KitapSayfaSayisi = 320 }
         };
 
         _mockMapper.Setup(x => x.Map<List<GetSerhanKitapDto>>(It.IsAny<List<SerhanKitap>>()))
@@ -649,9 +674,9 @@ public class GetSerhanKitapListQueryHandlerTests
 
         var query = new GetSerhanKitapListQuery
         {
-            SearchTerm = "Programming",
-            MinPageCount = 200,
-            MaxPageCount = 400
+            SearchTerm = "Amin",
+            MinPageCount = 300,
+            MaxPageCount = 350
         };
 
         // Act
@@ -660,7 +685,7 @@ public class GetSerhanKitapListQueryHandlerTests
         // Assert
         result.IsSuccess.Should().BeTrue();
         result.Value!.TotalCount.Should().Be(1);
-        result.Value.Items[0].KitapName.Should().Be("Programming Java");
+        result.Value.Items[0].KitapName.Should().Be("Semerkant");
     }
 
     [Fact]
@@ -669,8 +694,8 @@ public class GetSerhanKitapListQueryHandlerTests
         // Arrange
         var kitaplar = new[]
         {
-            new SerhanKitap { Id = "1", KitapName = "HARRY POTTER", KitapYazar = "ROWLING", KitapSayfaSayisi = 300 },
-            new SerhanKitap { Id = "2", KitapName = "Lord of Rings", KitapYazar = "Tolkien", KitapSayfaSayisi = 500 }
+            new SerhanKitap { Id = "1", KitapName = "ZEYTİNDAĞI", KitapYazar = FalihRifkiAtay, KitapSayfaSayisi = 200 },
+            new SerhanKitap { Id = "2", KitapName = "Çankaya", KitapYazar = FalihRifkiAtay, KitapSayfaSayisi = 600 }
         };
 
         await (_context as AppDbContext)!.SerhanKitaplar.AddRangeAsync(kitaplar);
@@ -678,7 +703,7 @@ public class GetSerhanKitapListQueryHandlerTests
 
         var kitaplarDto = new[]
         {
-            new GetSerhanKitapDto { Id = "1", KitapName = "HARRY POTTER", KitapYazar = "ROWLING", KitapSayfaSayisi = 300 }
+            new GetSerhanKitapDto { Id = "1", KitapName = "ZEYTİNDAĞI", KitapYazar = FalihRifkiAtay, KitapSayfaSayisi = 200 }
         };
 
         _mockMapper.Setup(x => x.Map<List<GetSerhanKitapDto>>(It.IsAny<List<SerhanKitap>>()))
@@ -686,7 +711,7 @@ public class GetSerhanKitapListQueryHandlerTests
 
         var query = new GetSerhanKitapListQuery
         {
-            SearchTerm = "harry"
+            SearchTerm = "zeytindağ"
         };
 
         // Act
@@ -703,8 +728,8 @@ public class GetSerhanKitapListQueryHandlerTests
         // Arrange
         var kitaplar = new[]
         {
-            new SerhanKitap { Id = "1", KitapName = "Book 1", KitapYazar = "Author 1", KitapSayfaSayisi = 100 },
-            new SerhanKitap { Id = "2", KitapName = "Book 2", KitapYazar = "Author 2", KitapSayfaSayisi = 200 }
+            new SerhanKitap { Id = "1", KitapName = "Serenad", KitapYazar = "Zülfü Livaneli", KitapSayfaSayisi = 480 },
+            new SerhanKitap { Id = "2", KitapName = "Kardeşimin Hikayesi", KitapYazar = "Zülfü Livaneli", KitapSayfaSayisi = 320 }
         };
 
         await (_context as AppDbContext)!.SerhanKitaplar.AddRangeAsync(kitaplar);

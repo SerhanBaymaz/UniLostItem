@@ -22,6 +22,9 @@ namespace Tests.API_Tests.Controllers;
 
 public class SerhanKitaplarControllerTests
 {
+    private const string SuccessMessage = "Success";
+    private const string BookNotFoundMessage = "Book not found";
+    private const string DefaultAuthor = "Author";
     private readonly SerhanKitaplarController _controller;
     private readonly Mock<IMediator> _mediatorMock;
 
@@ -55,8 +58,8 @@ public class SerhanKitaplarControllerTests
         // Arrange
         var books = new List<GetSerhanKitapDto>
         {
-            new() { Id = "1", KitapName = "Book 1", KitapYazar = "Author 1", KitapSayfaSayisi = 100 },
-            new() { Id = "2", KitapName = "Book 2", KitapYazar = "Author 2", KitapSayfaSayisi = 200 }
+            new() { Id = "1", KitapName = "1984", KitapYazar = "George Orwell", KitapSayfaSayisi = 328 },
+            new() { Id = "2", KitapName = "Cesur Yeni Dünya", KitapYazar = "Aldous Huxley", KitapSayfaSayisi = 268 }
         };
         var paginatedList = new PaginatedListDto<GetSerhanKitapDto>
         {
@@ -119,7 +122,7 @@ public class SerhanKitaplarControllerTests
             PageNumber = 1,
             PageSize = 10
         };
-        var result = Result<PaginatedListDto<GetSerhanKitapDto>>.Success("Success", emptyPaginatedList);
+        var result = Result<PaginatedListDto<GetSerhanKitapDto>>.Success(SuccessMessage, emptyPaginatedList);
 
         GetSerhanKitapListQuery? capturedQuery = null;
         _mediatorMock.Setup(m => m.Send(It.IsAny<GetSerhanKitapListQuery>(), It.IsAny<CancellationToken>()))
@@ -149,7 +152,7 @@ public class SerhanKitaplarControllerTests
             PageNumber = 2,
             PageSize = 20
         };
-        var result = Result<PaginatedListDto<GetSerhanKitapDto>>.Success("Success", paginatedList);
+        var result = Result<PaginatedListDto<GetSerhanKitapDto>>.Success(SuccessMessage, paginatedList);
 
         GetSerhanKitapListQuery? capturedQuery = null;
         _mediatorMock.Setup(m => m.Send(It.IsAny<GetSerhanKitapListQuery>(), It.IsAny<CancellationToken>()))
@@ -223,7 +226,7 @@ public class SerhanKitaplarControllerTests
             PageNumber = 1,
             PageSize = 10
         };
-        var result = Result<PaginatedListDto<GetSerhanKitapDto>>.Success("Success", paginatedList);
+        var result = Result<PaginatedListDto<GetSerhanKitapDto>>.Success(SuccessMessage, paginatedList);
 
         _mediatorMock.Setup(m => m.Send(It.IsAny<GetSerhanKitapListQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(result);
@@ -249,7 +252,7 @@ public class SerhanKitaplarControllerTests
             PageNumber = pageNumber,
             PageSize = pageSize
         };
-        var result = Result<PaginatedListDto<GetSerhanKitapDto>>.Success("Success", paginatedList);
+        var result = Result<PaginatedListDto<GetSerhanKitapDto>>.Success(SuccessMessage, paginatedList);
 
         GetSerhanKitapListQuery? capturedQuery = null;
         _mediatorMock.Setup(m => m.Send(It.IsAny<GetSerhanKitapListQuery>(), It.IsAny<CancellationToken>()))
@@ -284,7 +287,7 @@ public class SerhanKitaplarControllerTests
             PageNumber = 1,
             PageSize = 10
         };
-        var result = Result<PaginatedListDto<GetSerhanKitapDto>>.Success("Success", paginatedList);
+        var result = Result<PaginatedListDto<GetSerhanKitapDto>>.Success(SuccessMessage, paginatedList);
 
         GetSerhanKitapListQuery? capturedQuery = null;
         _mediatorMock.Setup(m => m.Send(It.IsAny<GetSerhanKitapListQuery>(), It.IsAny<CancellationToken>()))
@@ -317,9 +320,9 @@ public class SerhanKitaplarControllerTests
         var book = new GetSerhanKitapDto
         {
             Id = bookId,
-            KitapName = "Test Book",
-            KitapYazar = "Test Author",
-            KitapSayfaSayisi = 150
+            KitapName = "Kürk Mantolu Madonna",
+            KitapYazar = "Sabahattin Ali",
+            KitapSayfaSayisi = 160
         };
         var result = Result<GetSerhanKitapDto>.Success("Book found", book);
 
@@ -346,7 +349,7 @@ public class SerhanKitaplarControllerTests
     {
         // Arrange
         var bookId = "non-existent-id";
-        var result = Result<GetSerhanKitapDto>.Failure("Book not found", 404);
+        var result = Result<GetSerhanKitapDto>.Failure(BookNotFoundMessage, 404);
 
         _mediatorMock.Setup(m => m.Send(It.Is<GetSerhanKitapDetailsQuery>(q => q.Id == bookId), It.IsAny<CancellationToken>()))
             .ReturnsAsync(result);
@@ -364,7 +367,7 @@ public class SerhanKitaplarControllerTests
         response.Should().NotBeNull();
         response!.Success.Should().BeFalse();
         response.StatusCode.Should().Be(404);
-        response.Message.Should().Be("Book not found");
+        response.Message.Should().Be(BookNotFoundMessage);
     }
 
     [Fact]
@@ -393,9 +396,9 @@ public class SerhanKitaplarControllerTests
         // Arrange
         var createDto = new CreateSerhanKitapDto
         {
-            KitapName = "New Book",
-            KitapYazar = "New Author",
-            KitapSayfaSayisi = 300
+            KitapName = "Tutunamayanlar",
+            KitapYazar = "Oğuz Atay",
+            KitapSayfaSayisi = 724
         };
         var createdId = "new-book-id";
         var result = Result<string>.Success("Book created successfully", createdId);
@@ -426,7 +429,7 @@ public class SerhanKitaplarControllerTests
         var createDto = new CreateSerhanKitapDto
         {
             KitapName = "",
-            KitapYazar = "Author",
+            KitapYazar = DefaultAuthor,
             KitapSayfaSayisi = -1
         };
         var result = Result<string>.Failure("Validation failed", 400);
@@ -456,10 +459,10 @@ public class SerhanKitaplarControllerTests
         var createDto = new CreateSerhanKitapDto
         {
             KitapName = "Test",
-            KitapYazar = "Author",
+            KitapYazar = DefaultAuthor,
             KitapSayfaSayisi = 100
         };
-        var result = Result<string>.Success("Success", "id");
+        var result = Result<string>.Success(SuccessMessage, "id");
 
         _mediatorMock.Setup(m => m.Send(It.IsAny<CreateSerhanKitapCommand>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(result);
@@ -485,9 +488,9 @@ public class SerhanKitaplarControllerTests
         var bookId = "existing-id";
         var editDto = new EditSerhanKitapDto
         {
-            KitapName = "Updated Book",
-            KitapYazar = "Updated Author",
-            KitapSayfaSayisi = 250
+            KitapName = "İnce Memed",
+            KitapYazar = "Yaşar Kemal",
+            KitapSayfaSayisi = 436
         };
         var result = Result<Unit>.Success("Book updated successfully", Unit.Value);
 
@@ -517,10 +520,10 @@ public class SerhanKitaplarControllerTests
         var editDto = new EditSerhanKitapDto
         {
             KitapName = "Book",
-            KitapYazar = "Author",
+            KitapYazar = DefaultAuthor,
             KitapSayfaSayisi = 100
         };
-        var result = Result<Unit>.Failure("Book not found", 404);
+        var result = Result<Unit>.Failure(BookNotFoundMessage, 404);
 
         _mediatorMock.Setup(m => m.Send(It.IsAny<EditSerhanKitapCommand>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(result);
@@ -548,10 +551,10 @@ public class SerhanKitaplarControllerTests
         var editDto = new EditSerhanKitapDto
         {
             KitapName = "Name",
-            KitapYazar = "Author",
+            KitapYazar = DefaultAuthor,
             KitapSayfaSayisi = 150
         };
-        var result = Result<Unit>.Success("Success", Unit.Value);
+        var result = Result<Unit>.Success(SuccessMessage, Unit.Value);
 
         _mediatorMock.Setup(m => m.Send(It.IsAny<EditSerhanKitapCommand>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(result);
@@ -623,7 +626,7 @@ public class SerhanKitaplarControllerTests
     {
         // Arrange
         var bookId = "non-existent";
-        var result = Result<Unit>.Failure("Book not found", 404);
+        var result = Result<Unit>.Failure(BookNotFoundMessage, 404);
 
         _mediatorMock.Setup(m => m.Send(It.IsAny<DeleteSerhanKitapCommand>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(result);
@@ -648,7 +651,7 @@ public class SerhanKitaplarControllerTests
     {
         // Arrange
         var bookId = "specific-book-id";
-        var result = Result<Unit>.Success("Success", Unit.Value);
+        var result = Result<Unit>.Success(SuccessMessage, Unit.Value);
 
         _mediatorMock.Setup(m => m.Send(It.IsAny<DeleteSerhanKitapCommand>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(result);

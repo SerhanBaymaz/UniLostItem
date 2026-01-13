@@ -16,12 +16,6 @@ namespace API.Controllers;
 [Route("api/v1/serhan-kitaplar")]
 public class SerhanKitaplarController : BaseApiController
 {
-    /// <summary>
-    /// Gets a paginated list of books with optional filtering and sorting
-    /// </summary>
-    /// <param name="request">Request parameters for pagination, filtering and sorting</param>
-    /// <returns>Paginated list of books with metadata</returns>
-    /// <response code="200">Returns the paginated list of books</response>
     [HttpGet]
     [ProducesResponseType(typeof(StandardApiResponse<PaginatedListDto<GetSerhanKitapDto>>), StatusCodes.Status200OK)]
     public async Task<ActionResult<StandardApiResponse<PaginatedListDto<GetSerhanKitapDto>>>> GetSerhanKitaplar(
