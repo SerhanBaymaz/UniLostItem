@@ -114,12 +114,6 @@ jobs:
           echo "  - ghcr.io/${{ steps.repo-owner.outputs.owner }}/prod-templatedeneme:latest"
           echo "  - ghcr.io/${{ steps.repo-owner.outputs.owner }}/prod-templatedeneme:sha-${{ steps.git-sha.outputs.sha }}"
 
-      - name: Push to GitHub Container Registry
-        run: |
-          docker push ghcr.io/${{ steps.repo-owner.outputs.owner }}/prod-templatedeneme:latest
-          docker push ghcr.io/${{ steps.repo-owner.outputs.owner }}/prod-templatedeneme:sha-${{ steps.git-sha.outputs.sha }}
-          echo "✅ Images pushed to GitHub Container Registry"
-
       - name: Test Docker container
         env:
           JWT_SECRET_KEY_PROD: ${{ secrets.JWT_SECRET_KEY_PROD }}
@@ -163,3 +157,9 @@ jobs:
           echo "✅ Health check passed"
           docker stop test-container
           echo "✅ Production image test completed"
+
+      - name: Push to GitHub Container Registry
+        run: |
+          docker push ghcr.io/${{ steps.repo-owner.outputs.owner }}/prod-templatedeneme:latest
+          docker push ghcr.io/${{ steps.repo-owner.outputs.owner }}/prod-templatedeneme:sha-${{ steps.git-sha.outputs.sha }}
+          echo "✅ Images pushed to GitHub Container Registry"

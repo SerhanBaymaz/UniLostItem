@@ -504,7 +504,8 @@ Tetikleyiciler:
 2. ✅ **Code Coverage** - Coverlet ile test coverage toplama (OpenCover format)
 3. ✅ **SonarCloud Analysis** - Kod kalitesi ve güvenlik analizi
 4. ✅ **Docker Build** - Development image build (`dev-templatedeneme`)
-5. ✅ **Docker Push** - GHCR'ye image push (sadece push event'lerinde)
+5. ✅ **Docker Test** - Container health check testi (`/health/api` endpoint)
+6. ✅ **Docker Push** - GHCR'ye image push (sadece push event'lerinde, test başarılı ise)
 
 **Docker Tags:**
 
@@ -515,10 +516,20 @@ ghcr.io/serhanbaymaz/dev-templatedeneme:sha-<git-sha>
 
 **Gerekli Secrets:**
 
+**SonarCloud:**
+
 - `SONAR_TOKEN_DEV` - SonarCloud authentication token
 - `SONAR_PROJECT_KEY_DEV` - SonarCloud project key
 - `SONAR_ORGANIZATION_DEV` - SonarCloud organization
 - `SONAR_HOST_URL_DEV` - SonarCloud URL (<https://sonarcloud.io>)
+
+**JWT Configuration:**
+
+- `JWT_SECRET_KEY_DEV` - JWT secret key (en az 64 byte, `openssl rand -base64 64` ile oluşturulabilir)
+- `JWT_ISSUER_DEV` - JWT issuer (örn: `UnilostitemApi`)
+- `JWT_AUDIENCE_DEV` - JWT audience (örn: `UnilostitemClient`)
+- `JWT_ACCESS_TOKEN_EXPIRATION_MINUTES_DEV` - Access token süresi (dakika, örn: `60`)
+- `JWT_REFRESH_TOKEN_EXPIRATION_DAYS_DEV` - Refresh token süresi (gün, örn: `7`)
 
 ### Production Pipeline (ci-prod.yml)
 
@@ -533,8 +544,8 @@ Tetikleyiciler:
 1. ✅ **Build & Test** - .NET 9 ile build ve test çalıştırma
 2. ✅ **Code Coverage** - Coverlet ile test coverage toplama (90 gün saklama)
 3. ✅ **Docker Build** - Production image build (`prod-templatedeneme`)
-4. ✅ **Docker Test** - Container smoke test
-5. ✅ **Docker Push** - GHCR'ye image push
+4. ✅ **Docker Test** - Container health check testi (`/health/api` endpoint)
+5. ✅ **Docker Push** - GHCR'ye image push (test başarılı ise)
 
 **Docker Tags:**
 
@@ -542,6 +553,26 @@ Tetikleyiciler:
 ghcr.io/serhanbaymaz/prod-templatedeneme:latest
 ghcr.io/serhanbaymaz/prod-templatedeneme:sha-<git-sha>
 ```
+
+**Gerekli Secrets:**
+
+**JWT Configuration:**
+
+- `JWT_SECRET_KEY_PROD` - JWT secret key (en az 64 byte, güçlü ve production-ready olmalı)
+- `JWT_ISSUER_PROD` - JWT issuer (örn: `UnilostitemApi`)
+- `JWT_AUDIENCE_PROD` - JWT audience (örn: `UnilostitemClient`)
+- `JWT_ACCESS_TOKEN_EXPIRATION_MINUTES_PROD` - Access token süresi (dakika, production için önerilen: `15`)
+- `JWT_REFRESH_TOKEN_EXPIRATION_DAYS_PROD` - Refresh token süresi (gün, örn: `7`)
+
+> **Önemli:** Production için JWT secret key oluşturmak:
+>
+> ```bash
+> # PowerShell
+> [Convert]::ToBase64String((1..64 | ForEach-Object { Get-Random -Minimum 0 -Maximum 256 }))
+>
+> # Linux/Mac
+> openssl rand -base64 64
+> ```
 
 ### Docker Image Kullanımı
 
@@ -558,7 +589,9 @@ docker pull ghcr.io/serhanbaymaz/dev-templatedeneme:sha-abc1234
 ```bash
 docker pull ghcr.io/serhanbaymaz/prod-templatedeneme:latest
 # veya specific version
-docker pull ghcr.io/serhanbaymaz/prod-templatedeneme:sha-xyz5678
+docker pull ghcr.io/serhanbaHealth check tests (`/health/api`)
+- 🔐 **JWT Secret Management** - GitHub Secrets ile güvenli ortam değişkenleri
+- 🛡️ **Test-before-push** - Sadece başarılı testler sonrası registry'ye pushemplatedeneme:sha-xyz5678
 ```
 
 **Image'ı çalıştırmak:**

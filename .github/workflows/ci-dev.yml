@@ -165,16 +165,53 @@ jobs:
           echo "  - ghcr.io/${{ steps.repo-owner.outputs.owner }}/dev-templatedeneme:latest"
           echo "  - ghcr.io/${{ steps.repo-owner.outputs.owner }}/dev-templatedeneme:sha-${{ steps.git-sha.outputs.sha }}"
 
+      - name: Test Docker container
+        env:
+          JWT_SECRET_KEY_DEV: ${{ secrets.JWT_SECRET_KEY_DEV }}
+          JWT_ISSUER_DEV: ${{ secrets.JWT_ISSUER_DEV }}
+          JWT_AUDIENCE_DEV: ${{ secrets.JWT_AUDIENCE_DEV }}
+          JWT_ACCESS_TOKEN_EXPIRATION_MINUTES_DEV: ${{ secrets.JWT_ACCESS_TOKEN_EXPIRATION_MINUTES_DEV }}
+          JWT_REFRESH_TOKEN_EXPIRATION_DAYS_DEV: ${{ secrets.JWT_REFRESH_TOKEN_EXPIRATION_DAYS_DEV }}
+        run: |
+          docker run --rm -d --name test-container -p 8089:8089 \
+            -e Jwt__SecretKey="${JWT_SECRET_KEY_DEV}" \
+            -e Jwt__Issuer="${JWT_ISSUER_DEV}" \
+            -e Jwt__Audience="${JWT_AUDIENCE_DEV}" \
+            -e Jwt__AccessTokenExpirationMinutes="${JWT_ACCESS_TOKEN_EXPIRATION_MINUTES_DEV}" \
+            -e Jwt__RefreshTokenExpirationDays="${JWT_REFRESH_TOKEN_EXPIRATION_DAYS_DEV}" \
+            ghcr.io/${{ steps.repo-owner.outputs.owner }}/dev-templatedeneme:latest
+
+          echo "⏳ Waiting for container to start..."
+          sleep 10
+
+          docker ps | grep test-container || exit 1
+          echo "✅ Container is running"
+
+          echo ""
+          echo "📋 Container logs:"
+          docker logs test-container
+
+          echo ""
+          echo "🏥 Testing health endpoint..."
+          HTTP_STATUS=$(curl -s -o /tmp/health-response.json -w "%{http_code}" http://localhost:8089/health/api)
+          echo "HTTP Status: $HTTP_STATUS"
+          echo "Response:"
+          cat /tmp/health-response.json | jq '.' || cat /tmp/health-response.json
+
+          if [ "$HTTP_STATUS" != "200" ]; then
+            echo "❌ Health check failed with status $HTTP_STATUS"
+            docker logs test-container
+            docker stop test-container
+            exit 1
+          fi
+
+          echo "✅ Health check passed"
+          docker stop test-container
+          echo "✅ Development image test completed"
+
       - name: Push to GitHub Container Registry
         if: github.event_name != 'pull_request'
         run: |
           docker push ghcr.io/${{ steps.repo-owner.outputs.owner }}/dev-templatedeneme:latest
           docker push ghcr.io/${{ steps.repo-owner.outputs.owner }}/dev-templatedeneme:sha-${{ steps.git-sha.outputs.sha }}
           echo "✅ Images pushed to GitHub Container Registry"
-
-      - name: Test Docker container
-        run: |
-          docker run -d --name test-container ghcr.io/${{ steps.repo-owner.outputs.owner }}/dev-templatedeneme:latest
-          sleep 5
-          docker ps | grep test-container || exit 1
-          docker stop test-container
