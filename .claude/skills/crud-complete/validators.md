@@ -84,17 +84,19 @@ public class Edit{EntityName}CommandValidator : AbstractValidator<Edit{EntityNam
 
 ---
 
-# Common Validation Patterns
+## Common Validation Patterns
 
 ## String Validations
 
 ### Required String
+
 ```csharp
 RuleFor(x => x.Property)
     .NotEmpty().WithMessage("Property is required");
 ```
 
 ### String Length
+
 ```csharp
 RuleFor(x => x.Property)
     .MaximumLength(100).WithMessage("Property cannot exceed 100 characters");
@@ -104,18 +106,21 @@ RuleFor(x => x.Property)
 ```
 
 ### Email Validation
+
 ```csharp
 RuleFor(x => x.Email)
     .EmailAddress().WithMessage("Invalid email format");
 ```
 
 ### Phone Number (Basic)
+
 ```csharp
 RuleFor(x => x.Phone)
     .Matches(@"^\+?[1-9]\d{1,14}$").WithMessage("Invalid phone number format");
 ```
 
 ### URL Validation
+
 ```csharp
 RuleFor(x => x.Website)
     .Must(BeAValidUrl).WithMessage("Invalid URL format");
@@ -130,6 +135,7 @@ private bool BeAValidUrl(string? url)
 ## Numeric Validations
 
 ### Required Number
+
 ```csharp
 RuleFor(x => x.Amount)
     .NotEmpty().WithMessage("Amount is required")
@@ -137,6 +143,7 @@ RuleFor(x => x.Amount)
 ```
 
 ### Range Validation
+
 ```csharp
 RuleFor(x => x.Rating)
     .InclusiveBetween(1, 5).WithMessage("Rating must be between 1 and 5");
@@ -146,6 +153,7 @@ RuleFor(x => x.Price)
 ```
 
 ### Decimal Precision
+
 ```csharp
 RuleFor(x => x.Price)
     .ScalePrecision(2, 10).WithMessage("Price cannot have more than 2 decimal places");
@@ -154,12 +162,14 @@ RuleFor(x => x.Price)
 ## Date/Time Validations
 
 ### Required Date
+
 ```csharp
 RuleFor(x => x.BirthDate)
     .NotEmpty().WithMessage("Birth date is required");
 ```
 
 ### Date Range
+
 ```csharp
 RuleFor(x => x.StartDate)
     .LessThan(x => x.EndDate).WithMessage("Start date must be before end date");
@@ -174,6 +184,7 @@ private bool BeAFutureDate(DateTime date)
 ```
 
 ### Age Validation
+
 ```csharp
 RuleFor(x => x.BirthDate)
     .Must(BeAtLeast18YearsOld).WithMessage("Must be at least 18 years old");
@@ -190,6 +201,7 @@ private bool BeAtLeast18YearsOld(DateTime birthDate)
 ## Boolean Validations
 
 ### Required Boolean
+
 ```csharp
 RuleFor(x => x.AcceptTerms)
     .Equal(true).WithMessage("You must accept the terms and conditions");
@@ -198,6 +210,7 @@ RuleFor(x => x.AcceptTerms)
 ## Enum Validations
 
 ### Required Enum
+
 ```csharp
 RuleFor(x => x.Status)
     .IsInEnum().WithMessage("Invalid status value")
@@ -207,6 +220,7 @@ RuleFor(x => x.Status)
 ## Collection Validations
 
 ### Required Collection
+
 ```csharp
 RuleFor(x => x.Items)
     .NotNull().WithMessage("Items are required")
@@ -214,6 +228,7 @@ RuleFor(x => x.Items)
 ```
 
 ### Collection Size
+
 ```csharp
 RuleFor(x => x.Tags)
     .Must(tags => tags == null || tags.Count <= 5).WithMessage("Cannot have more than 5 tags");
@@ -222,6 +237,7 @@ RuleFor(x => x.Tags)
 ## Conditional Validation
 
 ### Validate When Another Property Has Value
+
 ```csharp
 RuleFor(x => x.ShippingAddress)
     .NotEmpty().WithMessage("Shipping address is required")
@@ -230,6 +246,7 @@ RuleFor(x => x.ShippingAddress)
 ```
 
 ### Validate Based on Property Value
+
 ```csharp
 RuleFor(x => x.BusinessName)
     .NotEmpty().WithMessage("Business name is required")
@@ -240,6 +257,7 @@ RuleFor(x => x.BusinessName)
 ## Custom Validation
 
 ### Must Method
+
 ```csharp
 RuleFor(x => x.Username)
     .Must(BeUniqueUsername).WithMessage("Username already exists")
@@ -253,6 +271,7 @@ private bool BeUniqueUsername(string username)
 ```
 
 ### Custom Async Validation
+
 ```csharp
 RuleFor(x => x.Email)
     .MustAsync(BeUniqueEmail).WithMessage("Email already registered")
@@ -266,7 +285,7 @@ private async Task<bool> BeUniqueEmail(string email, CancellationToken cancellat
 
 ---
 
-# Validator Best Practices
+## Validator Best Practices
 
 1. **Always use `OverridePropertyName`**: This ensures the error response shows the correct field name
 2. **Use `.When()` for null checks**: Validate nested properties only when parent is not null
@@ -276,7 +295,7 @@ private async Task<bool> BeUniqueEmail(string email, CancellationToken cancellat
 
 ---
 
-# Common Validator Examples
+## Common Validator Examples
 
 ## Product Entity Validator
 

@@ -473,7 +473,7 @@ CreateMap<Edit{EntityName}Dto, {EntityName}>()
 Replace these placeholders when generating code:
 
 | Placeholder | Description | Example |
-|-------------|-------------|---------|
+| --- | --- | --- |
 | `{EntityName}` | PascalCase entity name (singular) | `Product`, `Customer` |
 | `{EntityName}Plural` | Plural form of entity name | `Products`, `Customers` |
 | `{entityNameLower}` | Lowercase entity name | `product`, `customer` |

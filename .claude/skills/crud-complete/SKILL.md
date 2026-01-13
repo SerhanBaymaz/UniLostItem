@@ -11,6 +11,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 This Skill generates complete CRUD operations for entities following the project's Clean Architecture pattern with CQRS and MediatR.
 
 **Generated files:**
+
 - Domain Entity
 - Persistence: DbContext registration
 - Application: Commands, Queries, Handlers, Validators, DTOs
@@ -23,6 +24,7 @@ This Skill generates complete CRUD operations for entities following the project
 ### Step 1: Ask for Entity Details
 
 Ask the user for:
+
 1. **Entity Name** (singular, PascalCase) - e.g., `Product`, `Customer`
 2. **Properties** with types - e.g., `Name (string), Price (decimal), IsActive (bool)`
 3. **API Route Prefix** (optional, defaults to kebab-case plural) - e.g., `api/v1/products`
@@ -46,6 +48,7 @@ public class {EntityName}
 ```
 
 **Rules:**
+
 - Id is always `string` with `Guid.NewGuid().ToString()` default
 - Use `required` for non-nullable reference types
 - Use appropriate .NET types
@@ -62,7 +65,7 @@ public DbSet<{EntityName}> {EntityName}Plural { get; set; } = null!;
 
 Create folder structure under `Application/Features/{EntityName}Plural/`:
 
-```
+```text
 Application/Features/{EntityName}Plural/
 ├── Commands/
 │   ├── Create{EntityName}/
@@ -125,7 +128,7 @@ public class {EntityName}PluralController : BaseApiController
 
 Create tests under `Tests/Application_Tests/Features/{EntityName}Plural/`:
 
-```
+```text
 Tests/Application_Tests/Features/{EntityName}Plural/
 ├── Commands/
 │   ├── Create{EntityName}/
@@ -159,6 +162,7 @@ dotnet test
 ## Validation Rules
 
 **See [validators.md](validators.md) for common validator patterns:**
+
 - Required fields: `NotEmpty()` or `NotNull()`
 - String length: `MaximumLength()`
 - Numeric ranges: `GreaterThan()`, `LessThan()`
@@ -180,6 +184,7 @@ dotnet test
 User input: "Create CRUD for Product with Name (string), Price (decimal), Stock (int)"
 
 Generated files:
+
 - `Domain/Product.cs`
 - `Application/Features/Products/...` (Commands, Queries, DTOs, Handlers, Validators)
 - `API/Controllers/ProductsController.cs`
@@ -188,7 +193,7 @@ Generated files:
 ## Quick Reference
 
 | File Pattern | Location |
-|-------------|----------|
+| --- | --- |
 | Entity | `Domain/{EntityName}.cs` |
 | DbContext | `Persistence/AppDbContext.cs` |
 | Commands | `Application/Features/{Feature}/Commands/{Operation}/` |

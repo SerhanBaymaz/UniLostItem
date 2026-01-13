@@ -19,6 +19,7 @@ This file contains unit test templates for all CRUD operations using xUnit, Moq,
 ### Common Test Base
 
 All tests use:
+
 - **xUnit** as test framework
 - **Moq** for mocking
 - **FluentAssertions** for assertions
@@ -44,7 +45,7 @@ using Xunit;
 
 ## Create Command Tests
 
-### Handler Tests
+### Create Handler Tests
 
 **File:** `Tests/Application_Tests/Features/{EntityName}Plural/Commands/Create{EntityName}/Create{EntityName}CommandHandlerTests.cs`
 
@@ -156,7 +157,7 @@ public class Create{EntityName}CommandHandlerTests : IDisposable
 
 ## Edit Command Tests
 
-### Handler Tests
+### Edit Handler Tests
 
 **File:** `Tests/Application_Tests/Features/{EntityName}Plural/Commands/Edit{EntityName}/Edit{EntityName}CommandHandlerTests.cs`
 
@@ -274,7 +275,7 @@ public class Edit{EntityName}CommandHandlerTests : IDisposable
 
 ## Delete Command Tests
 
-### Handler Tests
+### Delete Handler Tests
 
 **File:** `Tests/Application_Tests/Features/{EntityName}Plural/Commands/Delete{EntityName}/Delete{EntityName}CommandHandlerTests.cs`
 
@@ -362,7 +363,7 @@ public class Delete{EntityName}CommandHandlerTests : IDisposable
 
 ## Get List Query Tests
 
-### Handler Tests
+### Get List Handler Tests
 
 **File:** `Tests/Application_Tests/Features/{EntityName}Plural/Queries/Get{EntityName}List/Get{EntityName}ListQueryHandlerTests.cs`
 
@@ -455,7 +456,7 @@ public class Get{EntityName}ListQueryHandlerTests : IDisposable
 
 ## Get Details Query Tests
 
-### Handler Tests
+### Get Details Handler Tests
 
 **File:** `Tests/Application_Tests/Features/{EntityName}Plural/Queries/Get{EntityName}Details/Get{EntityName}DetailsQueryHandlerTests.cs`
 
@@ -704,7 +705,7 @@ public class Edit{EntityName}CommandValidatorTests
 
 ---
 
-# Test Best Practices
+## Test Best Practices
 
 1. **Dispose context properly**: Always implement `IDisposable` and dispose the in-memory context
 2. **Use unique database names**: Each test should use a unique in-memory database
@@ -717,7 +718,7 @@ public class Edit{EntityName}CommandValidatorTests
 
 ---
 
-# Running Tests
+## Running Tests
 
 ```bash
 # Run all tests
