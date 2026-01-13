@@ -203,4 +203,178 @@ public class GetSerhanKitapPaginatedListValidatorTests
         result.ShouldHaveValidationErrorFor(x => x.PageSize);
         result.ShouldHaveValidationErrorFor(x => x.SortBy);
     }
+
+    #region Filter Validation Tests
+
+    [Theory]
+    [InlineData(-1)]
+    [InlineData(-10)]
+    [InlineData(-100)]
+    public void ShouldHaveValidationError_WhenMinPageCount_IsNegative(int minPageCount)
+    {
+        // Arrange
+        var query = new GetSerhanKitapPaginatedListQuery { MinPageCount = minPageCount };
+
+        // Act & Assert
+        _validator.TestValidate(query)
+            .ShouldHaveValidationErrorFor(x => x.MinPageCount)
+            .WithErrorMessage("Minimum sayfa sayısı 0 veya daha büyük olmalıdır");
+    }
+
+    [Theory]
+    [InlineData(-1)]
+    [InlineData(-10)]
+    [InlineData(-100)]
+    public void ShouldHaveValidationError_WhenMaxPageCount_IsNegative(int maxPageCount)
+    {
+        // Arrange
+        var query = new GetSerhanKitapPaginatedListQuery { MaxPageCount = maxPageCount };
+
+        // Act & Assert
+        _validator.TestValidate(query)
+            .ShouldHaveValidationErrorFor(x => x.MaxPageCount)
+            .WithErrorMessage("Maksimum sayfa sayısı 0 veya daha büyük olmalıdır");
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(100)]
+    [InlineData(1000)]
+    public void ShouldNotHaveValidationError_WhenMinPageCount_IsValid(int minPageCount)
+    {
+        // Arrange
+        var query = new GetSerhanKitapPaginatedListQuery { MinPageCount = minPageCount };
+
+        // Act & Assert
+        _validator.TestValidate(query)
+            .ShouldNotHaveValidationErrorFor(x => x.MinPageCount);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(100)]
+    [InlineData(1000)]
+    public void ShouldNotHaveValidationError_WhenMaxPageCount_IsValid(int maxPageCount)
+    {
+        // Arrange
+        var query = new GetSerhanKitapPaginatedListQuery { MaxPageCount = maxPageCount };
+
+        // Act & Assert
+        _validator.TestValidate(query)
+            .ShouldNotHaveValidationErrorFor(x => x.MaxPageCount);
+    }
+
+    [Fact]
+    public void ShouldHaveValidationError_WhenMaxPageCount_IsLessThanMinPageCount()
+    {
+        // Arrange
+        var query = new GetSerhanKitapPaginatedListQuery
+        {
+            MinPageCount = 100,
+            MaxPageCount = 50
+        };
+
+        // Act & Assert
+        _validator.TestValidate(query)
+            .ShouldHaveValidationErrorFor(x => x.MaxPageCount)
+            .WithErrorMessage("Maksimum sayfa sayısı minimum sayfa sayısından büyük veya eşit olmalıdır");
+    }
+
+    [Theory]
+    [InlineData(100, 100)]
+    [InlineData(100, 150)]
+    [InlineData(100, 200)]
+    [InlineData(0, 0)]
+    [InlineData(0, 1000)]
+    public void ShouldNotHaveValidationError_WhenMaxPageCount_IsGreaterOrEqualThanMinPageCount(int minPageCount, int maxPageCount)
+    {
+        // Arrange
+        var query = new GetSerhanKitapPaginatedListQuery
+        {
+            MinPageCount = minPageCount,
+            MaxPageCount = maxPageCount
+        };
+
+        // Act & Assert
+        _validator.TestValidate(query)
+            .ShouldNotHaveValidationErrorFor(x => x.MaxPageCount);
+    }
+
+    [Theory]
+    [InlineData(null, null)]
+    [InlineData(100, null)]
+    [InlineData(null, 500)]
+    public void ShouldNotHaveValidationError_WhenPageCount_IsPartiallyNull(int? minPageCount, int? maxPageCount)
+    {
+        // Arrange
+        var query = new GetSerhanKitapPaginatedListQuery
+        {
+            MinPageCount = minPageCount,
+            MaxPageCount = maxPageCount
+        };
+
+        // Act & Assert
+        _validator.TestValidate(query)
+            .ShouldNotHaveValidationErrorFor(x => x.MinPageCount);
+        _validator.TestValidate(query)
+            .ShouldNotHaveValidationErrorFor(x => x.MaxPageCount);
+    }
+
+    [Fact]
+    public void ShouldNotHaveValidationError_WhenSearchTerm_IsProvided()
+    {
+        // Arrange
+        var query = new GetSerhanKitapPaginatedListQuery { SearchTerm = "test" };
+
+        // Act & Assert
+        _validator.TestValidate(query)
+            .ShouldNotHaveValidationErrorFor(x => x.SearchTerm);
+    }
+
+    [Fact]
+    public void ShouldNotHaveValidationError_WhenKitapName_IsProvided()
+    {
+        // Arrange
+        var query = new GetSerhanKitapPaginatedListQuery { KitapName = "Book" };
+
+        // Act & Assert
+        _validator.TestValidate(query)
+            .ShouldNotHaveValidationErrorFor(x => x.KitapName);
+    }
+
+    [Fact]
+    public void ShouldNotHaveValidationError_WhenKitapYazar_IsProvided()
+    {
+        // Arrange
+        var query = new GetSerhanKitapPaginatedListQuery { KitapYazar = "Author" };
+
+        // Act & Assert
+        _validator.TestValidate(query)
+            .ShouldNotHaveValidationErrorFor(x => x.KitapYazar);
+    }
+
+    [Fact]
+    public void ShouldNotHaveValidationError_WhenAllFiltersAreValid()
+    {
+        // Arrange
+        var query = new GetSerhanKitapPaginatedListQuery
+        {
+            PageNumber = 1,
+            PageSize = 10,
+            SortBy = "kitapname",
+            SearchTerm = "test",
+            KitapName = "Book",
+            KitapYazar = "Author",
+            MinPageCount = 100,
+            MaxPageCount = 500
+        };
+
+        // Act & Assert
+        _validator.TestValidate(query)
+            .ShouldNotHaveAnyValidationErrors();
+    }
+
+    #endregion
 }

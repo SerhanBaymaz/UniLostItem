@@ -23,12 +23,17 @@ public class SerhanKitaplarController : BaseApiController
     }
 
     /// <summary>
-    /// Gets a paginated list of books with optional sorting
+    /// Gets a paginated list of books with optional filtering and sorting
     /// </summary>
     /// <param name="pageNumber">Page number (default: 1, min: 1)</param>
     /// <param name="pageSize">Page size (default: 10, min: 1, max: 100)</param>
     /// <param name="sortBy">Sort field: kitapname/name/ad, kitapyazar/yazar/author, kitapsayfasayisi/sayfasayisi/pagecount (default: kitapname)</param>
     /// <param name="sortDescending">Sort descending (default: false)</param>
+    /// <param name="searchTerm">Search in both book name and author</param>
+    /// <param name="kitapName">Filter by book name (contains)</param>
+    /// <param name="kitapYazar">Filter by author (contains)</param>
+    /// <param name="minPageCount">Minimum page count</param>
+    /// <param name="maxPageCount">Maximum page count</param>
     /// <returns>Paginated list of books with metadata</returns>
     /// <response code="200">Returns the paginated list of books</response>
     [HttpGet("paginated")]
@@ -37,14 +42,24 @@ public class SerhanKitaplarController : BaseApiController
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 10,
         [FromQuery] string? sortBy = null,
-        [FromQuery] bool sortDescending = false)
+        [FromQuery] bool sortDescending = false,
+        [FromQuery] string? searchTerm = null,
+        [FromQuery] string? kitapName = null,
+        [FromQuery] string? kitapYazar = null,
+        [FromQuery] int? minPageCount = null,
+        [FromQuery] int? maxPageCount = null)
     {
         var query = new GetSerhanKitapPaginatedListQuery
         {
             PageNumber = pageNumber,
             PageSize = pageSize,
             SortBy = sortBy,
-            SortDescending = sortDescending
+            SortDescending = sortDescending,
+            SearchTerm = searchTerm,
+            KitapName = kitapName,
+            KitapYazar = kitapYazar,
+            MinPageCount = minPageCount,
+            MaxPageCount = maxPageCount
         };
         return HandleResult(await Mediator.Send(query));
     }

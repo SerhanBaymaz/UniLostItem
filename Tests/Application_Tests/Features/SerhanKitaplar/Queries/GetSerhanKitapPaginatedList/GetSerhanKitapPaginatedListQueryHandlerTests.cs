@@ -406,4 +406,324 @@ public class GetSerhanKitapPaginatedListQueryHandlerTests
         result.IsSuccess.Should().BeTrue();
         result.Value!.Items[0].KitapName.Should().Be("Book A");
     }
+
+    [Fact]
+    public async Task Handle_WithSearchTerm_ShouldFilterByBothNameAndAuthor()
+    {
+        // Arrange
+        var kitaplar = new[]
+        {
+            new SerhanKitap { Id = "1", KitapName = "Harry Potter", KitapYazar = "Rowling", KitapSayfaSayisi = 300 },
+            new SerhanKitap { Id = "2", KitapName = "Lord of Rings", KitapYazar = "Tolkien", KitapSayfaSayisi = 500 },
+            new SerhanKitap { Id = "3", KitapName = "The Hobbit", KitapYazar = "Tolkien", KitapSayfaSayisi = 250 }
+        };
+
+        await (_context as AppDbContext)!.SerhanKitaplar.AddRangeAsync(kitaplar);
+        await (_context as AppDbContext)!.SaveChangesAsync();
+
+        var kitaplarDto = new[]
+        {
+            new GetSerhanKitapDto { Id = "2", KitapName = "Lord of Rings", KitapYazar = "Tolkien", KitapSayfaSayisi = 500 },
+            new GetSerhanKitapDto { Id = "3", KitapName = "The Hobbit", KitapYazar = "Tolkien", KitapSayfaSayisi = 250 }
+        };
+
+        _mockMapper.Setup(x => x.Map<List<GetSerhanKitapDto>>(It.IsAny<List<SerhanKitap>>()))
+            .Returns(kitaplarDto.ToList());
+
+        var query = new GetSerhanKitapPaginatedListQuery
+        {
+            SearchTerm = "Tolkien"
+        };
+
+        // Act
+        var result = await _handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Value!.TotalCount.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task Handle_WithKitapNameFilter_ShouldFilterByBookName()
+    {
+        // Arrange
+        var kitaplar = new[]
+        {
+            new SerhanKitap { Id = "1", KitapName = "Programming C#", KitapYazar = "Author 1", KitapSayfaSayisi = 400 },
+            new SerhanKitap { Id = "2", KitapName = "Programming Java", KitapYazar = "Author 2", KitapSayfaSayisi = 350 },
+            new SerhanKitap { Id = "3", KitapName = "Clean Code", KitapYazar = "Author 3", KitapSayfaSayisi = 300 }
+        };
+
+        await (_context as AppDbContext)!.SerhanKitaplar.AddRangeAsync(kitaplar);
+        await (_context as AppDbContext)!.SaveChangesAsync();
+
+        var kitaplarDto = new[]
+        {
+            new GetSerhanKitapDto { Id = "1", KitapName = "Programming C#", KitapYazar = "Author 1", KitapSayfaSayisi = 400 },
+            new GetSerhanKitapDto { Id = "2", KitapName = "Programming Java", KitapYazar = "Author 2", KitapSayfaSayisi = 350 }
+        };
+
+        _mockMapper.Setup(x => x.Map<List<GetSerhanKitapDto>>(It.IsAny<List<SerhanKitap>>()))
+            .Returns(kitaplarDto.ToList());
+
+        var query = new GetSerhanKitapPaginatedListQuery
+        {
+            KitapName = "Programming"
+        };
+
+        // Act
+        var result = await _handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Value!.TotalCount.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task Handle_WithKitapYazarFilter_ShouldFilterByAuthor()
+    {
+        // Arrange
+        var kitaplar = new[]
+        {
+            new SerhanKitap { Id = "1", KitapName = "Book 1", KitapYazar = "King", KitapSayfaSayisi = 200 },
+            new SerhanKitap { Id = "2", KitapName = "Book 2", KitapYazar = "King", KitapSayfaSayisi = 300 },
+            new SerhanKitap { Id = "3", KitapName = "Book 3", KitapYazar = "Martin", KitapSayfaSayisi = 400 }
+        };
+
+        await (_context as AppDbContext)!.SerhanKitaplar.AddRangeAsync(kitaplar);
+        await (_context as AppDbContext)!.SaveChangesAsync();
+
+        var kitaplarDto = new[]
+        {
+            new GetSerhanKitapDto { Id = "1", KitapName = "Book 1", KitapYazar = "King", KitapSayfaSayisi = 200 },
+            new GetSerhanKitapDto { Id = "2", KitapName = "Book 2", KitapYazar = "King", KitapSayfaSayisi = 300 }
+        };
+
+        _mockMapper.Setup(x => x.Map<List<GetSerhanKitapDto>>(It.IsAny<List<SerhanKitap>>()))
+            .Returns(kitaplarDto.ToList());
+
+        var query = new GetSerhanKitapPaginatedListQuery
+        {
+            KitapYazar = "King"
+        };
+
+        // Act
+        var result = await _handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Value!.TotalCount.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task Handle_WithMinPageCount_ShouldFilterByMinimumPages()
+    {
+        // Arrange
+        var kitaplar = new[]
+        {
+            new SerhanKitap { Id = "1", KitapName = "Book 1", KitapYazar = "Author 1", KitapSayfaSayisi = 100 },
+            new SerhanKitap { Id = "2", KitapName = "Book 2", KitapYazar = "Author 2", KitapSayfaSayisi = 250 },
+            new SerhanKitap { Id = "3", KitapName = "Book 3", KitapYazar = "Author 3", KitapSayfaSayisi = 400 }
+        };
+
+        await (_context as AppDbContext)!.SerhanKitaplar.AddRangeAsync(kitaplar);
+        await (_context as AppDbContext)!.SaveChangesAsync();
+
+        var kitaplarDto = new[]
+        {
+            new GetSerhanKitapDto { Id = "2", KitapName = "Book 2", KitapYazar = "Author 2", KitapSayfaSayisi = 250 },
+            new GetSerhanKitapDto { Id = "3", KitapName = "Book 3", KitapYazar = "Author 3", KitapSayfaSayisi = 400 }
+        };
+
+        _mockMapper.Setup(x => x.Map<List<GetSerhanKitapDto>>(It.IsAny<List<SerhanKitap>>()))
+            .Returns(kitaplarDto.ToList());
+
+        var query = new GetSerhanKitapPaginatedListQuery
+        {
+            MinPageCount = 200
+        };
+
+        // Act
+        var result = await _handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Value!.TotalCount.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task Handle_WithMaxPageCount_ShouldFilterByMaximumPages()
+    {
+        // Arrange
+        var kitaplar = new[]
+        {
+            new SerhanKitap { Id = "1", KitapName = "Book 1", KitapYazar = "Author 1", KitapSayfaSayisi = 150 },
+            new SerhanKitap { Id = "2", KitapName = "Book 2", KitapYazar = "Author 2", KitapSayfaSayisi = 300 },
+            new SerhanKitap { Id = "3", KitapName = "Book 3", KitapYazar = "Author 3", KitapSayfaSayisi = 500 }
+        };
+
+        await (_context as AppDbContext)!.SerhanKitaplar.AddRangeAsync(kitaplar);
+        await (_context as AppDbContext)!.SaveChangesAsync();
+
+        var kitaplarDto = new[]
+        {
+            new GetSerhanKitapDto { Id = "1", KitapName = "Book 1", KitapYazar = "Author 1", KitapSayfaSayisi = 150 },
+            new GetSerhanKitapDto { Id = "2", KitapName = "Book 2", KitapYazar = "Author 2", KitapSayfaSayisi = 300 }
+        };
+
+        _mockMapper.Setup(x => x.Map<List<GetSerhanKitapDto>>(It.IsAny<List<SerhanKitap>>()))
+            .Returns(kitaplarDto.ToList());
+
+        var query = new GetSerhanKitapPaginatedListQuery
+        {
+            MaxPageCount = 300
+        };
+
+        // Act
+        var result = await _handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Value!.TotalCount.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task Handle_WithPageCountRange_ShouldFilterByBothMinAndMax()
+    {
+        // Arrange
+        var kitaplar = new[]
+        {
+            new SerhanKitap { Id = "1", KitapName = "Book 1", KitapYazar = "Author 1", KitapSayfaSayisi = 50 },
+            new SerhanKitap { Id = "2", KitapName = "Book 2", KitapYazar = "Author 2", KitapSayfaSayisi = 200 },
+            new SerhanKitap { Id = "3", KitapName = "Book 3", KitapYazar = "Author 3", KitapSayfaSayisi = 400 },
+            new SerhanKitap { Id = "4", KitapName = "Book 4", KitapYazar = "Author 4", KitapSayfaSayisi = 600 }
+        };
+
+        await (_context as AppDbContext)!.SerhanKitaplar.AddRangeAsync(kitaplar);
+        await (_context as AppDbContext)!.SaveChangesAsync();
+
+        var kitaplarDto = new[]
+        {
+            new GetSerhanKitapDto { Id = "2", KitapName = "Book 2", KitapYazar = "Author 2", KitapSayfaSayisi = 200 },
+            new GetSerhanKitapDto { Id = "3", KitapName = "Book 3", KitapYazar = "Author 3", KitapSayfaSayisi = 400 }
+        };
+
+        _mockMapper.Setup(x => x.Map<List<GetSerhanKitapDto>>(It.IsAny<List<SerhanKitap>>()))
+            .Returns(kitaplarDto.ToList());
+
+        var query = new GetSerhanKitapPaginatedListQuery
+        {
+            MinPageCount = 100,
+            MaxPageCount = 500
+        };
+
+        // Act
+        var result = await _handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Value!.TotalCount.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task Handle_WithAllFilters_ShouldApplyAllFilters()
+    {
+        // Arrange
+        var kitaplar = new[]
+        {
+            new SerhanKitap { Id = "1", KitapName = "Programming C#", KitapYazar = "Smith", KitapSayfaSayisi = 150 },
+            new SerhanKitap { Id = "2", KitapName = "Programming Java", KitapYazar = "Johnson", KitapSayfaSayisi = 300 },
+            new SerhanKitap { Id = "3", KitapName = "Clean Code", KitapYazar = "Martin", KitapSayfaSayisi = 450 }
+        };
+
+        await (_context as AppDbContext)!.SerhanKitaplar.AddRangeAsync(kitaplar);
+        await (_context as AppDbContext)!.SaveChangesAsync();
+
+        var kitaplarDto = new[]
+        {
+            new GetSerhanKitapDto { Id = "2", KitapName = "Programming Java", KitapYazar = "Johnson", KitapSayfaSayisi = 300 }
+        };
+
+        _mockMapper.Setup(x => x.Map<List<GetSerhanKitapDto>>(It.IsAny<List<SerhanKitap>>()))
+            .Returns(kitaplarDto.ToList());
+
+        var query = new GetSerhanKitapPaginatedListQuery
+        {
+            SearchTerm = "Programming",
+            MinPageCount = 200,
+            MaxPageCount = 400
+        };
+
+        // Act
+        var result = await _handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Value!.TotalCount.Should().Be(1);
+        result.Value.Items[0].KitapName.Should().Be("Programming Java");
+    }
+
+    [Fact]
+    public async Task Handle_WithCaseInsensitiveSearch_ShouldFindIgnoreCase()
+    {
+        // Arrange
+        var kitaplar = new[]
+        {
+            new SerhanKitap { Id = "1", KitapName = "HARRY POTTER", KitapYazar = "ROWLING", KitapSayfaSayisi = 300 },
+            new SerhanKitap { Id = "2", KitapName = "Lord of Rings", KitapYazar = "Tolkien", KitapSayfaSayisi = 500 }
+        };
+
+        await (_context as AppDbContext)!.SerhanKitaplar.AddRangeAsync(kitaplar);
+        await (_context as AppDbContext)!.SaveChangesAsync();
+
+        var kitaplarDto = new[]
+        {
+            new GetSerhanKitapDto { Id = "1", KitapName = "HARRY POTTER", KitapYazar = "ROWLING", KitapSayfaSayisi = 300 }
+        };
+
+        _mockMapper.Setup(x => x.Map<List<GetSerhanKitapDto>>(It.IsAny<List<SerhanKitap>>()))
+            .Returns(kitaplarDto.ToList());
+
+        var query = new GetSerhanKitapPaginatedListQuery
+        {
+            SearchTerm = "harry"
+        };
+
+        // Act
+        var result = await _handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Value!.TotalCount.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task Handle_WithNoMatchingFilters_ShouldReturnEmptyList()
+    {
+        // Arrange
+        var kitaplar = new[]
+        {
+            new SerhanKitap { Id = "1", KitapName = "Book 1", KitapYazar = "Author 1", KitapSayfaSayisi = 100 },
+            new SerhanKitap { Id = "2", KitapName = "Book 2", KitapYazar = "Author 2", KitapSayfaSayisi = 200 }
+        };
+
+        await (_context as AppDbContext)!.SerhanKitaplar.AddRangeAsync(kitaplar);
+        await (_context as AppDbContext)!.SaveChangesAsync();
+
+        _mockMapper.Setup(x => x.Map<List<GetSerhanKitapDto>>(It.IsAny<List<SerhanKitap>>()))
+            .Returns(new List<GetSerhanKitapDto>());
+
+        var query = new GetSerhanKitapPaginatedListQuery
+        {
+            SearchTerm = "NonExistent"
+        };
+
+        // Act
+        var result = await _handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Value!.Items.Should().BeEmpty();
+        result.Value.TotalCount.Should().Be(0);
+    }
 }

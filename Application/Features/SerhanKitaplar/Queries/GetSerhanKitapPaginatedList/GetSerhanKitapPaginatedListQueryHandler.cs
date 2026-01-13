@@ -27,6 +27,9 @@ public class GetSerhanKitapPaginatedListQueryHandler :
     {
         var query = _context.SerhanKitaplar.AsQueryable();
 
+        // Filtering
+        query = ApplyFiltering(query, request);
+
         // Sorting (with whitelist for security)
         query = ApplySorting(query, request);
 
@@ -68,5 +71,38 @@ public class GetSerhanKitapPaginatedListQueryHandler :
                 : query.OrderBy(x => x.KitapSayfaSayisi),
             _ => query.OrderBy(x => x.KitapName) // default sort
         };
+    }
+
+    private static IQueryable<SerhanKitap> ApplyFiltering(IQueryable<SerhanKitap> query, GetSerhanKitapPaginatedListQuery request)
+    {
+        // Null-safe filtering
+        if (!string.IsNullOrWhiteSpace(request.SearchTerm))
+        {
+            query = query.Where(x =>
+                x.KitapName.ToLower().Contains(request.SearchTerm.ToLower()) ||
+                x.KitapYazar.ToLower().Contains(request.SearchTerm.ToLower()));
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.KitapName))
+        {
+            query = query.Where(x => x.KitapName.ToLower().Contains(request.KitapName.ToLower()));
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.KitapYazar))
+        {
+            query = query.Where(x => x.KitapYazar.ToLower().Contains(request.KitapYazar.ToLower()));
+        }
+
+        if (request.MinPageCount.HasValue)
+        {
+            query = query.Where(x => x.KitapSayfaSayisi >= request.MinPageCount.Value);
+        }
+
+        if (request.MaxPageCount.HasValue)
+        {
+            query = query.Where(x => x.KitapSayfaSayisi <= request.MaxPageCount.Value);
+        }
+
+        return query;
     }
 }
