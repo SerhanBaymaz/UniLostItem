@@ -121,8 +121,45 @@ jobs:
           echo "✅ Images pushed to GitHub Container Registry"
 
       - name: Test Docker container
+        env:
+          JWT_SECRET_KEY_PROD: ${{ secrets.JWT_SECRET_KEY_PROD }}
+          JWT_ISSUER_PROD: ${{ secrets.JWT_ISSUER_PROD }}
+          JWT_AUDIENCE_PROD: ${{ secrets.JWT_AUDIENCE_PROD }}
+          JWT_ACCESS_TOKEN_EXPIRATION_MINUTES_PROD: ${{ secrets.JWT_ACCESS_TOKEN_EXPIRATION_MINUTES_PROD }}
+          JWT_REFRESH_TOKEN_EXPIRATION_DAYS_PROD: ${{ secrets.JWT_REFRESH_TOKEN_EXPIRATION_DAYS_PROD }}
         run: |
-          docker run --rm -d --name test-container -p 8080:8080 ghcr.io/${{ steps.repo-owner.outputs.owner }}/prod-templatedeneme:latest
-          sleep 5
+          docker run --rm -d --name test-container -p 8080:8080 \
+            -e Jwt__SecretKey="${JWT_SECRET_KEY_PROD}" \
+            -e Jwt__Issuer="${JWT_ISSUER_PROD}" \
+            -e Jwt__Audience="${JWT_AUDIENCE_PROD}" \
+            -e Jwt__AccessTokenExpirationMinutes="${JWT_ACCESS_TOKEN_EXPIRATION_MINUTES_PROD}" \
+            -e Jwt__RefreshTokenExpirationDays="${JWT_REFRESH_TOKEN_EXPIRATION_DAYS_PROD}" \
+            ghcr.io/${{ steps.repo-owner.outputs.owner }}/prod-templatedeneme:latest
+
+          echo "⏳ Waiting for container to start..."
+          sleep 10
+
           docker ps | grep test-container || exit 1
+          echo "✅ Container is running"
+
+          echo ""
+          echo "📋 Container logs:"
+          docker logs test-container
+
+          echo ""
+          echo "🏥 Testing health endpoint..."
+          HTTP_STATUS=$(curl -s -o /tmp/health-response.json -w "%{http_code}" http://localhost:8080/health/api)
+          echo "HTTP Status: $HTTP_STATUS"
+          echo "Response:"
+          cat /tmp/health-response.json | jq '.' || cat /tmp/health-response.json
+
+          if [ "$HTTP_STATUS" != "200" ]; then
+            echo "❌ Health check failed with status $HTTP_STATUS"
+            docker logs test-container
+            docker stop test-container
+            exit 1
+          fi
+
+          echo "✅ Health check passed"
           docker stop test-container
+          echo "✅ Production image test completed"
