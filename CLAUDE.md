@@ -174,7 +174,48 @@ All responses use `StandardApiResponse<T>` with:
 
 **Primary Resources:**
 
-- `SerhanKitap` - CRUD endpoints in `SerhanKitaplarController` (`/api/serhankitaplar`)
+- `SerhanKitap` - CRUD endpoints in `SerhanKitaplarController` (`/api/v1/serhan-kitaplar`)
+
+#### Pagination, Filtering & Sorting
+
+The `GET /api/v1/serhan-kitaplar` endpoint supports advanced querying:
+
+**Request DTO Pattern:**
+- Controllers use dedicated Request DTOs (e.g., `GetSerhanKitaplarRequest`) with Data Annotations validation
+- Parameters are bound via `[FromQuery]` and validated at the API layer
+
+**Enum-Based Sorting:**
+- Sort fields are defined as enums (e.g., `KitapSortField`) with Description attributes mapping to database field names
+- This provides type safety and better Swagger/OpenAPI documentation
+
+**Query Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `pageNumber` | int | Page number (min: 1, default: 1) |
+| `pageSize` | int | Page size (min: 1, max: 100, default: 10) |
+| `sortBy` | enum? | Sort field (KitapName, KitapYazar, KitapSayfaSayisi) |
+| `sortDescending` | bool | Sort descending (default: false) |
+| `searchTerm` | string? | Search in both name and author fields |
+| `kitapName` | string? | Filter by book name (contains) |
+| `kitapYazar` | string? | Filter by author (contains) |
+| `minPageCount` | int? | Minimum page count filter |
+| `maxPageCount` | int? | Maximum page count filter |
+
+**Response Metadata:**
+```json
+{
+  "data": [...],
+  "metadata": {
+    "totalCount": 100,
+    "pageNumber": 1,
+    "pageSize": 10,
+    "totalPages": 10,
+    "hasNext": true,
+    "hasPrevious": false
+  }
+}
+```
 
 **Swagger UI:**
 
@@ -195,6 +236,70 @@ All responses use `StandardApiResponse<T>` with:
 7. Create Controller inheriting from `BaseApiController`
 8. Inject handlers via MediatR in controller actions
 9. Add parallel tests in `Tests/Features/<Feature>/`
+
+#### Implementing Paginated List Queries with Filtering & Sorting
+
+For list endpoints with pagination, filtering, and sorting:
+
+1. **Create Sort Field Enum** (e.g., `KitapSortField.cs`):
+   ```csharp
+   public enum KitapSortField
+   {
+       [Description("fieldname")]
+       FieldName
+   }
+   ```
+
+2. **Create Request DTO** (e.g., `GetItemsRequest.cs` in `API/Controllers/Requests/`):
+   ```csharp
+   public class GetItemsRequest
+   {
+       [Range(1, int.MaxValue)]
+       public int PageNumber { get; set; } = 1;
+
+       [Range(1, 100)]
+       public int PageSize { get; set; } = 10;
+
+       public KitapSortField? SortBy { get; set; }
+       public bool SortDescending { get; set; } = false;
+
+       // Add filter properties...
+   }
+   ```
+
+3. **Create Query** inheriting from `PagedAndSortedQueryBase`:
+   ```csharp
+   public record GetItemListQuery : PagedAndSortedQueryBase,
+       IRequest<Result<PaginatedListDto<GetItemDto>>>
+   {
+       public string? SearchTerm { get; init; }
+       // Add filter properties...
+   }
+   ```
+
+4. **Create Validator** with pagination and filter rules
+
+5. **Create Handler** that:
+   - Builds `IQueryable` with filters
+   - Applies sorting based on `SortBy` value (whitelist validated)
+   - Uses pagination helper to create `PaginatedListDto<T>`
+
+6. **Controller Action**:
+   ```csharp
+   [HttpGet]
+   public async Task<ActionResult<StandardApiResponse<PaginatedListDto<GetItemDto>>>> GetItems(
+       [FromQuery] GetItemsRequest request)
+   {
+       var query = new GetItemListQuery
+       {
+           PageNumber = request.PageNumber,
+           PageSize = request.PageSize,
+           SortBy = request.SortBy?.GetDescription(),
+           // ... map other properties
+       };
+       return HandleResult(await Mediator.Send(query));
+   }
+   ```
 
 **For features requiring authentication:**
 
@@ -249,7 +354,11 @@ All responses use `StandardApiResponse<T>` with:
 - `Application/Core/Result.cs` - Result pattern implementation
 - `Application/Core/MappingProfiles.cs` - AutoMapper profiles for DTO mapping
 - `Application/Core/ValidationBehavior.cs` - MediatR validation pipeline
+- `Application/Core/Pagination/PagedAndSortedQueryBase.cs` - Base class for paginated queries
+- `Application/Core/Pagination/PaginatedListDto.cs` - Pagination response DTO with metadata
+- `Application/Core/Extensions/EnumExtensions.cs` - Extension methods for enum Description attribute
 - `API/Controllers/BaseApiController.cs` - Base controller with MediatR and Result handling
+- `API/Controllers/Requests/` - Request DTOs for API endpoints with Data Annotations
 - `API/Middleware/ExceptionMiddleware.cs` - Centralized exception handling
 - `Persistence/AppDbContext.cs` - EF Core DbContext (extends `IdentityDbContext<ApplicationUser>`)
 - `Persistence/IAppDbContext.cs` - DbContext interface for mocking
@@ -268,6 +377,9 @@ All responses use `StandardApiResponse<T>` with:
 - **Swagger UI** includes "Authorize" button for testing authenticated endpoints; requires valid JWT token
 - **Exception handling** is centralized via `ExceptionMiddleware` - rely on it instead of try/catch in controllers
 - **Logging** uses Serilog with Seq sink - enrich logs rather than `Console.WriteLine`
+- **Pagination sorting** - Always whitelist sort fields at the handler level to prevent SQL injection, even when using enums
+- **Request DTO validation** - Data Annotations validate at API layer, FluentValidation at Application layer (defense in depth)
+- **SortBy null handling** - When `SortBy` is null, handlers should apply a default sort order (usually by name or ID)
 
 ## Agentic Workflow
 

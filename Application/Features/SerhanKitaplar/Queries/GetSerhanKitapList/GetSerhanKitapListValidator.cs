@@ -1,3 +1,5 @@
+using Application.Core.Extensions;
+using Application.Features.SerhanKitaplar;
 using FluentValidation;
 
 namespace Application.Features.SerhanKitaplar.Queries.GetSerhanKitapList;
@@ -6,15 +8,17 @@ public class GetSerhanKitapListValidator : AbstractValidator<GetSerhanKitapListQ
 {
     public GetSerhanKitapListValidator()
     {
-        // Pagination and sorting validation
+        // Pagination validation
         RuleFor(x => x.PageNumber)
             .GreaterThanOrEqualTo(1).WithMessage("Sayfa numarası en az 1 olmalıdır");
 
         RuleFor(x => x.PageSize)
             .InclusiveBetween(1, 100).WithMessage("Sayfa boyutu 1 ile 100 arasında olmalıdır");
 
+        // SortBy validation - only validate enum description values (null is allowed for default)
+        // Note: The API layer uses KitapSortField enum, so only valid descriptions reach here
         RuleFor(x => x.SortBy)
-            .Must(BeAValidSortField)
+            .Must(BeAValidSortFieldDescription)
             .When(x => !string.IsNullOrEmpty(x.SortBy))
             .WithMessage("Geçersiz sıralama alanı");
 
@@ -35,14 +39,14 @@ public class GetSerhanKitapListValidator : AbstractValidator<GetSerhanKitapListQ
             .WithMessage("Maksimum sayfa sayısı minimum sayfa sayısından büyük veya eşit olmalıdır");
     }
 
-    private static bool BeAValidSortField(string? sortBy)
+    private static bool BeAValidSortFieldDescription(string? sortBy)
     {
-        var validFields = new[]
-        {
-            "kitapname", "name", "ad",
-            "kitapyazar", "yazar", "author",
-            "kitapsayfasayisi", "sayfasayisi", "pagecount"
-        };
-        return validFields.Contains(sortBy?.ToLowerInvariant());
+        // Get all KitapSortField enum values and their descriptions
+        var validFields = Enum.GetValues<KitapSortField>()
+            .Select(e => e.GetDescription())
+            .Where(d => !string.IsNullOrEmpty(d))
+            .ToHashSet()!;
+
+        return validFields.Contains(sortBy);
     }
 }

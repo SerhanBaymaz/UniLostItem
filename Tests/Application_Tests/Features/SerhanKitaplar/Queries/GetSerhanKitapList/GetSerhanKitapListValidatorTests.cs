@@ -111,16 +111,8 @@ public class GetSerhanKitapListValidatorTests
 
     [Theory]
     [InlineData("kitapname")]
-    [InlineData("name")]
-    [InlineData("ad")]
     [InlineData("kitapyazar")]
-    [InlineData("yazar")]
-    [InlineData("author")]
     [InlineData("kitapsayfasayisi")]
-    [InlineData("sayfasayisi")]
-    [InlineData("pagecount")]
-    [InlineData("KITAPNAME")]
-    [InlineData("KitapName")]
     public void ShouldNotHaveValidationError_WhenSortBy_IsValid(string sortBy)
     {
         // Arrange
@@ -132,6 +124,14 @@ public class GetSerhanKitapListValidatorTests
     }
 
     [Theory]
+    [InlineData("name")]
+    [InlineData("ad")]
+    [InlineData("yazar")]
+    [InlineData("author")]
+    [InlineData("sayfasayisi")]
+    [InlineData("pagecount")]
+    [InlineData("KITAPNAME")]
+    [InlineData("KitapName")]
     [InlineData("invalidfield")]
     [InlineData("xyz")]
     [InlineData("description")]

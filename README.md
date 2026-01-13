@@ -95,7 +95,8 @@ TemplateDeneme/
 │               │       └── GetSerhanKitapDto.cs
 │               ├── GetSerhanKitapList/
 │               │   ├── GetSerhanKitapListQuery.cs
-│               │   └── GetSerhanKitapListQueryHandler.cs
+│               │   ├── GetSerhanKitapListQueryHandler.cs
+│               │   └── GetSerhanKitapListValidator.cs
 │               └── GetSerhanKitapDetails/
 │                   ├── GetSerhanKitapDetailsQuery.cs
 │                   └── GetSerhanKitapDetailsQueryHandler.cs
@@ -378,15 +379,73 @@ SEQ_FIRSTRUN_ADMINPASSWORD=admindev
 - **GET** `/api/v1/auth/profile` - Mevcut kullanıcı profilini getir (JWT gerektirir)
 - **PUT** `/api/v1/auth/profile` - Mevcut kullanıcı profilini güncelle (JWT gerektirir)
 
-#### SerhanKitap Endpoints (`/api/serhankitaplar`)
+#### SerhanKitap Endpoints (`/api/v1/serhan-kitaplar`)
 
 API, `SerhanKitap` (Kitap) entity'si üzerinde CRUD işlemleri gerçekleştirir:
 
-- **GET** `/api/serhankitaplar` - Tüm kitapları listele
-- **GET** `/api/serhankitaplar/{id}` - Belirli bir kitabı getir
-- **POST** `/api/serhankitaplar` - Yeni kitap ekle
-- **PUT** `/api/serhankitaplar/{id}` - Kitap bilgilerini güncelle
-- **DELETE** `/api/serhankitaplar/{id}` - Kitap sil
+- **GET** `/api/v1/serhan-kitaplar` - Kitapları listele (Pagination, Filtering, Sorting desteği)
+- **GET** `/api/v1/serhan-kitaplar/{id}` - Belirli bir kitabı getir
+- **POST** `/api/v1/serhan-kitaplar` - Yeni kitap ekle
+- **PUT** `/api/v1/serhan-kitaplar/{id}` - Kitap bilgilerini güncelle
+- **DELETE** `/api/v1/serhan-kitaplar/{id}` - Kitap sil
+
+##### Pagination, Filtering & Sorting
+
+GET `/api/v1/serhan-kitaplar` endpoint'i gelişmiş sorgulama özellikleri sunar:
+
+**Query Parameters:**
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `pageNumber` | int | 1 | Sayfa numarası (min: 1) |
+| `pageSize` | int | 10 | Sayfa boyutu (min: 1, max: 100) |
+| `sortBy` | enum | null | Sıralama alanı (KitapName, KitapYazar, KitapSayfaSayisi) |
+| `sortDescending` | bool | false | Azalan sıralama |
+| `searchTerm` | string? | null | Kitap adı ve yazarında arama |
+| `kitapName` | string? | null | Kitap adına göre filtrele (contains) |
+| `kitapYazar` | string? | null | Yazar adına göre filtrele (contains) |
+| `minPageCount` | int? | null | Minimum sayfa sayısı |
+| `maxPageCount` | int? | null | Maksimum sayfa sayısı |
+
+**Örnek Request'ler:**
+
+```bash
+# İlk 10 kitap (default)
+GET /api/v1/serhan-kitaplar
+
+# 2. sayfa, 20 kayıt
+GET /api/v1/serhan-kitaplar?pageNumber=2&pageSize=20
+
+# "Orwell" içeren kitapları ara, sayfa sayısına göre sırala
+GET /api/v1/serhan-kitaplar?searchTerm=Orwell&sortBy=2&sortDescending=true
+
+# 100-500 sayfa aralığındaki kitapları filtrele
+GET /api/v1/serhan-kitaplar?minPageCount=100&maxPageCount=500
+
+# Kitap adına göre filtrele ve yazar adına göre sırala
+GET /api/v1/serhan-kitaplar?kitapName=1984&sortBy=1
+```
+
+**Response Format:**
+
+```json
+{
+  "success": true,
+  "message": "Books retrieved successfully",
+  "data": [
+    { "id": "1", "kitapName": "1984", "kitapYazar": "George Orwell", "kitapSayfaSayisi": 328 },
+    { "id": "2", "kitapName": "Animal Farm", "kitapYazar": "George Orwell", "kitapSayfaSayisi": 112 }
+  ],
+  "metadata": {
+    "totalCount": 5,
+    "pageNumber": 1,
+    "pageSize": 10,
+    "totalPages": 1,
+    "hasNext": false,
+    "hasPrevious": false
+  }
+}
+```
 
 ### Health Check Endpoints
 
@@ -474,17 +533,10 @@ API, `SerhanKitap` (Kitap) entity'si üzerinde CRUD işlemleri gerçekleştirir:
 - **TreatWarningsAsErrors** ile sıkı kod standartları
 - **Hot reload** desteği (development ortamında)
 - **CI/CD Pipelines** (GitHub Actions)
-
-  - Development pipeline: Build, test, SonarCloud analysis, Docker build & push
-  - Production pipeline: Build, test, Docker build & push to GHCR
-- **Test Coverage** with Coverlet (OpenCover format)
-- **Docker Image Registry** - GitHub Container Registry entegrasyonu
-- **Automated Docker Tagging** - Git SHA ve latest tags
-- **CI/CD Pipelines** (GitHub Actions)
-
-  - Development pipeline: Build, test, SonarCloud analysis, Docker build & push
-  - Production pipeline: Build, test, Docker build & push to GHCR
-- **Test Coverage** with Coverlet (OpenCover format)
+- **Pagination** - Sayfalı listeler için `PaginatedListDto<T>` ile metadata desteği
+- **Filtering** - Esnek filtreleme (arama, aralık filtreleri, contains vb.)
+- **Sorting** - Enum tabanlı type-safe sıralama desteği
+- **Request DTO Pattern** - Controller tarafında temiz parametre yönetimi için Data Annotations
 - **Docker Image Registry** - GitHub Container Registry entegrasyonu
 - **Automated Docker Tagging** - Git SHA ve latest tags
 

@@ -1,7 +1,10 @@
 using API.Controllers;
+using API.Controllers.Requests;
 using API.Responses;
 using Application.Core;
+using Application.Core.Extensions;
 using Application.Core.Pagination;
+using Application.Features.SerhanKitaplar;
 using Application.Features.SerhanKitaplar.Commands.CreateSerhanKitap;
 using Application.Features.SerhanKitaplar.Commands.DeleteSerhanKitap;
 using Application.Features.SerhanKitaplar.Commands.EditSerhanKitap;
@@ -68,7 +71,7 @@ public class SerhanKitaplarControllerTests
             .ReturnsAsync(result);
 
         // Act
-        var actionResult = await _controller.GetSerhanKitaplar();
+        var actionResult = await _controller.GetSerhanKitaplar(new GetSerhanKitaplarRequest());
 
         // Assert
         actionResult.Should().NotBeNull();
@@ -125,7 +128,7 @@ public class SerhanKitaplarControllerTests
             .ReturnsAsync(result);
 
         // Act
-        await _controller.GetSerhanKitaplar();
+        await _controller.GetSerhanKitaplar(new GetSerhanKitaplarRequest());
 
         // Assert
         capturedQuery.Should().NotBeNull();
@@ -155,12 +158,13 @@ public class SerhanKitaplarControllerTests
             .ReturnsAsync(result);
 
         // Act
-        await _controller.GetSerhanKitaplar(
-            pageNumber: 2,
-            pageSize: 20,
-            sortBy: "kitapname",
-            sortDescending: true
-        );
+        await _controller.GetSerhanKitaplar(new GetSerhanKitaplarRequest
+        {
+            PageNumber = 2,
+            PageSize = 20,
+            SortBy = KitapSortField.KitapName,
+            SortDescending = true
+        });
 
         // Assert
         capturedQuery.Should().NotBeNull();
@@ -187,7 +191,7 @@ public class SerhanKitaplarControllerTests
             .ReturnsAsync(result);
 
         // Act
-        var actionResult = await _controller.GetSerhanKitaplar();
+        var actionResult = await _controller.GetSerhanKitaplar(new GetSerhanKitaplarRequest());
 
         // Assert
         actionResult.Result.Should().BeOfType<OkObjectResult>();
@@ -225,7 +229,7 @@ public class SerhanKitaplarControllerTests
             .ReturnsAsync(result);
 
         // Act
-        await _controller.GetSerhanKitaplar();
+        await _controller.GetSerhanKitaplar(new GetSerhanKitaplarRequest());
 
         // Assert
         _mediatorMock.Verify(m => m.Send(It.IsAny<GetSerhanKitapListQuery>(), It.IsAny<CancellationToken>()), Times.Once);
@@ -254,7 +258,11 @@ public class SerhanKitaplarControllerTests
             .ReturnsAsync(result);
 
         // Act
-        await _controller.GetSerhanKitaplar(pageNumber: pageNumber, pageSize: pageSize);
+        await _controller.GetSerhanKitaplar(new GetSerhanKitaplarRequest
+        {
+            PageNumber = pageNumber,
+            PageSize = pageSize
+        });
 
         // Assert
         capturedQuery.Should().NotBeNull();
@@ -263,10 +271,10 @@ public class SerhanKitaplarControllerTests
     }
 
     [Theory]
-    [InlineData("kitapname", false)]
-    [InlineData("kitapyazar", true)]
-    [InlineData("kitapsayfasayisi", false)]
-    public async Task GetSerhanKitaplarPaginated_ShouldPassSortingParameters(string sortBy, bool sortDescending)
+    [InlineData(KitapSortField.KitapName, false)]
+    [InlineData(KitapSortField.KitapYazar, true)]
+    [InlineData(KitapSortField.KitapSayfaSayisi, false)]
+    public async Task GetSerhanKitaplarPaginated_ShouldPassSortingParameters(KitapSortField sortBy, bool sortDescending)
     {
         // Arrange
         var paginatedList = new PaginatedListDto<GetSerhanKitapDto>
@@ -285,11 +293,15 @@ public class SerhanKitaplarControllerTests
             .ReturnsAsync(result);
 
         // Act
-        await _controller.GetSerhanKitaplar(sortBy: sortBy, sortDescending: sortDescending);
+        await _controller.GetSerhanKitaplar(new GetSerhanKitaplarRequest
+        {
+            SortBy = sortBy,
+            SortDescending = sortDescending
+        });
 
         // Assert
         capturedQuery.Should().NotBeNull();
-        capturedQuery!.SortBy.Should().Be(sortBy);
+        capturedQuery!.SortBy.Should().Be(sortBy.GetDescription());
         capturedQuery.SortDescending.Should().Be(sortDescending);
     }
 
