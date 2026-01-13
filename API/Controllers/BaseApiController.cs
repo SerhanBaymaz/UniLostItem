@@ -1,5 +1,6 @@
 using API.Responses;
 using Application.Core;
+using Application.Core.Pagination;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -42,10 +43,35 @@ namespace API.Controllers
                 return NotFound(notFoundResponse);
             }
 
-            if (result.IsSuccess)
+            if (result.IsSuccess && result.Value is not null)
             {
+                // Check if result contains PaginatedListDto
+                if (result.Value is IPaginatedList paginated)
+                {
+                    var metadata = new Dictionary<string, object?>
+                    {
+                        ["totalCount"] = paginated.TotalCount,
+                        ["pageNumber"] = paginated.PageNumber,
+                        ["pageSize"] = paginated.PageSize,
+                        ["totalPages"] = paginated.TotalPages,
+                        ["hasPrevious"] = paginated.HasPrevious,
+                        ["hasNext"] = paginated.HasNext
+                    };
+
+                    // Get the Items from the paginated list
+                    var items = paginated.GetItems();
+                    var response = StandardApiResponse<object>.SuccessResponse(
+                        items!,
+                        result.Message,
+                        statusCode: 200,
+                        metadata: metadata);
+
+                    return Ok(response);
+                }
+
+                // Non-paginated result (existing behavior)
                 var successResponse = StandardApiResponse<T>.SuccessResponse(
-                    result.Value!,
+                    result.Value,
                     result.Message ?? "Request completed successfully"
                 );
                 return Ok(successResponse);
