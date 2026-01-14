@@ -1,3 +1,4 @@
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
 
@@ -7,8 +8,11 @@ public static class TestDbContextFactory
 {
     public static AppDbContext CreateInMemoryDbContext()
     {
+        var connection = new SqliteConnection("DataSource=:memory:");
+        connection.Open();
+
         var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+            .UseSqlite(connection)
             .Options;
 
         var context = new AppDbContext(options);
@@ -21,15 +25,8 @@ public static class TestDbContextFactory
 
     public static AppDbContext CreateInMemoryDbContext(string databaseName)
     {
-        var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseInMemoryDatabase(databaseName: databaseName)
-            .Options;
-
-        var context = new AppDbContext(options);
-
-        // Ensure the database is created
-        context.Database.EnsureCreated();
-
-        return context;
+        // For Sqlite in-memory, a new connection means a new database, 
+        // effectively providing the same isolation as a unique database name.
+        return CreateInMemoryDbContext();
     }
 }
