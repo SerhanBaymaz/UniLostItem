@@ -1,3 +1,4 @@
+using Application.Features.SerhanKitaplar.Queries.Common.Enums;
 using Application.Features.SerhanKitaplar.Queries.GetSerhanKitapList;
 using FluentAssertions;
 using FluentValidation.TestHelper;
@@ -110,10 +111,10 @@ public class GetSerhanKitapListValidatorTests
     }
 
     [Theory]
-    [InlineData("kitapname")]
-    [InlineData("kitapyazar")]
-    [InlineData("kitapsayfasayisi")]
-    public void ShouldNotHaveValidationError_WhenSortBy_IsValid(string sortBy)
+    [InlineData(KitapSortField.KitapName)]
+    [InlineData(KitapSortField.KitapYazar)]
+    [InlineData(KitapSortField.KitapSayfaSayisi)]
+    public void ShouldNotHaveValidationError_WhenSortBy_IsValid(KitapSortField sortBy)
     {
         // Arrange
         var query = new GetSerhanKitapListQuery { SortBy = sortBy };
@@ -121,30 +122,6 @@ public class GetSerhanKitapListValidatorTests
         // Act & Assert
         _validator.TestValidate(query)
             .ShouldNotHaveValidationErrorFor(x => x.SortBy);
-    }
-
-    [Theory]
-    [InlineData("name")]
-    [InlineData("ad")]
-    [InlineData("yazar")]
-    [InlineData("author")]
-    [InlineData("sayfasayisi")]
-    [InlineData("pagecount")]
-    [InlineData("KITAPNAME")]
-    [InlineData("KitapName")]
-    [InlineData("invalidfield")]
-    [InlineData("xyz")]
-    [InlineData("description")]
-    [InlineData("price")]
-    public void ShouldHaveValidationError_WhenSortBy_IsInvalid(string sortBy)
-    {
-        // Arrange
-        var query = new GetSerhanKitapListQuery { SortBy = sortBy };
-
-        // Act & Assert
-        _validator.TestValidate(query)
-            .ShouldHaveValidationErrorFor(x => x.SortBy)
-            .WithErrorMessage("Geçersiz sıralama alanı");
     }
 
     [Fact]
@@ -166,7 +143,7 @@ public class GetSerhanKitapListValidatorTests
         {
             PageNumber = 2,
             PageSize = 20,
-            SortBy = "kitapname",
+            SortBy = KitapSortField.KitapName,
             SortDescending = true
         };
 
@@ -193,15 +170,13 @@ public class GetSerhanKitapListValidatorTests
         var query = new GetSerhanKitapListQuery
         {
             PageNumber = 0,
-            PageSize = 150,
-            SortBy = "invalidfield"
+            PageSize = 150
         };
 
         // Act & Assert
         var result = _validator.TestValidate(query);
         result.ShouldHaveValidationErrorFor(x => x.PageNumber);
         result.ShouldHaveValidationErrorFor(x => x.PageSize);
-        result.ShouldHaveValidationErrorFor(x => x.SortBy);
     }
 
     #region Filter Validation Tests
@@ -363,7 +338,7 @@ public class GetSerhanKitapListValidatorTests
         {
             PageNumber = 1,
             PageSize = 10,
-            SortBy = "kitapname",
+            SortBy = KitapSortField.KitapName,
             SearchTerm = "test",
             KitapName = "Book",
             KitapYazar = "Author",

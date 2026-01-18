@@ -1,6 +1,6 @@
 using System.ComponentModel;
 
-namespace Application.Features.SerhanKitaplar;
+namespace Application.Features.SerhanKitaplar.Queries.Common.Enums;
 
 /// <summary>
 /// Defines valid sort fields for SerhanKitap queries with corresponding database field names

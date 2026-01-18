@@ -4,10 +4,10 @@ using API.Responses;
 using Application.Core;
 using Application.Core.Extensions;
 using Application.Core.Pagination;
-using Application.Features.SerhanKitaplar;
 using Application.Features.SerhanKitaplar.Commands.CreateSerhanKitap;
 using Application.Features.SerhanKitaplar.Commands.DeleteSerhanKitap;
 using Application.Features.SerhanKitaplar.Commands.EditSerhanKitap;
+using Application.Features.SerhanKitaplar.Queries.Common.Enums;
 using Application.Features.SerhanKitaplar.Queries.Common.DTOs;
 using Application.Features.SerhanKitaplar.Queries.GetSerhanKitapDetails;
 using Application.Features.SerhanKitaplar.Queries.GetSerhanKitapList;
@@ -173,8 +173,8 @@ public class SerhanKitaplarControllerTests
         capturedQuery.Should().NotBeNull();
         capturedQuery!.PageNumber.Should().Be(2);
         capturedQuery.PageSize.Should().Be(20);
-        capturedQuery.SortBy.Should().Be("kitapname");
-        capturedQuery.SortDescending.Should().BeTrue();
+        capturedQuery.SortBy.Should().Be(KitapSortField.KitapName);
+        capturedQuery.SortDescending.Should().Be(true);
     }
 
     [Fact]
@@ -304,7 +304,7 @@ public class SerhanKitaplarControllerTests
 
         // Assert
         capturedQuery.Should().NotBeNull();
-        capturedQuery!.SortBy.Should().Be(sortBy.GetDescription());
+        capturedQuery!.SortBy.Should().Be(sortBy);
         capturedQuery.SortDescending.Should().Be(sortDescending);
     }
 

@@ -5,7 +5,9 @@ namespace Tests.Application_Tests.Core.Pagination;
 
 public class PagedAndSortedQueryBaseTests
 {
-    private sealed record TestQuery : PagedAndSortedQueryBase
+    public enum TestSortField { Name, CreatedDate, Price }
+
+    private sealed record TestQuery : PagedAndSortedQueryBase<TestSortField>
     {
         // Test implementation of the abstract base record
     }
@@ -31,14 +33,14 @@ public class PagedAndSortedQueryBaseTests
         {
             PageNumber = 3,
             PageSize = 25,
-            SortBy = "name",
+            SortBy = TestSortField.Name,
             SortDescending = true
         };
 
         // Assert
         query.PageNumber.Should().Be(3);
         query.PageSize.Should().Be(25);
-        query.SortBy.Should().Be("name");
+        query.SortBy.Should().Be(TestSortField.Name);
         query.SortDescending.Should().BeTrue();
     }
 
@@ -62,11 +64,11 @@ public class PagedAndSortedQueryBaseTests
     }
 
     [Theory]
-    [InlineData("name")]
-    [InlineData("createdDate")]
-    [InlineData("price")]
+    [InlineData(TestSortField.Name)]
+    [InlineData(TestSortField.CreatedDate)]
+    [InlineData(TestSortField.Price)]
     [InlineData(null)]
-    public void CanSetVariousSortByValues(string? sortBy)
+    public void CanSetVariousSortByValues(TestSortField? sortBy)
     {
         // Arrange & Act
         var query = new TestQuery
@@ -86,7 +88,7 @@ public class PagedAndSortedQueryBaseTests
         {
             PageNumber = 2,
             PageSize = 20,
-            SortBy = "name",
+            SortBy = TestSortField.Name,
             SortDescending = true
         };
 
@@ -94,7 +96,7 @@ public class PagedAndSortedQueryBaseTests
         {
             PageNumber = 2,
             PageSize = 20,
-            SortBy = "name",
+            SortBy = TestSortField.Name,
             SortDescending = true
         };
 
@@ -102,7 +104,7 @@ public class PagedAndSortedQueryBaseTests
         {
             PageNumber = 3,
             PageSize = 20,
-            SortBy = "name",
+            SortBy = TestSortField.Name,
             SortDescending = true
         };
 
@@ -119,14 +121,14 @@ public class PagedAndSortedQueryBaseTests
         {
             PageNumber = 5,
             PageSize = 15,
-            SortBy = "createdAt",
+            SortBy = TestSortField.CreatedDate,
             SortDescending = false
         };
 
         // Assert
         query.PageNumber.Should().Be(5);
         query.PageSize.Should().Be(15);
-        query.SortBy.Should().Be("createdAt");
+        query.SortBy.Should().Be(TestSortField.CreatedDate);
         query.SortDescending.Should().BeFalse();
     }
 }

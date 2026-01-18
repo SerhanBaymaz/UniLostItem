@@ -267,9 +267,9 @@ For list endpoints with pagination, filtering, and sorting:
    }
    ```
 
-3. **Create Query** inheriting from `PagedAndSortedQueryBase`:
+3. **Create Query** inheriting from `PagedAndSortedQueryBase<T>`:
    ```csharp
-   public record GetItemListQuery : PagedAndSortedQueryBase,
+   public record GetItemListQuery : PagedAndSortedQueryBase<KitapSortField>,
        IRequest<Result<PaginatedListDto<GetItemDto>>>
    {
        public string? SearchTerm { get; init; }
@@ -277,11 +277,20 @@ For list endpoints with pagination, filtering, and sorting:
    }
    ```
 
-4. **Create Validator** with pagination and filter rules
+4. **Create Validator** inheriting from `PagedAndSortedQueryValidator<TQuery, TSortEnum>`:
+   ```csharp
+   public class GetItemListValidator : PagedAndSortedQueryValidator<GetItemListQuery, KitapSortField>
+   {
+       public GetItemListValidator()
+       {
+           // Add feature-specific validation rules here
+       }
+   }
+   ```
 
 5. **Create Handler** that:
    - Builds `IQueryable` with filters
-   - Applies sorting based on `SortBy` value (whitelist validated)
+   - Applies sorting based on `SortBy` enum value using a switch expression (defaulting to a primary key or name if null)
    - Uses pagination helper to create `PaginatedListDto<T>`
 
 6. **Controller Action**:
@@ -294,7 +303,7 @@ For list endpoints with pagination, filtering, and sorting:
        {
            PageNumber = request.PageNumber,
            PageSize = request.PageSize,
-           SortBy = request.SortBy?.GetDescription(),
+           SortBy = request.SortBy, // Direct enum assignment
            // ... map other properties
        };
        return HandleResult(await Mediator.Send(query));

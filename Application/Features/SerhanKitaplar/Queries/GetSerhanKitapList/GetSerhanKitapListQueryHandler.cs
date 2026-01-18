@@ -1,6 +1,8 @@
 using Application.Core;
+using Application.Core.Extensions;
 using Application.Core.Pagination;
 using Application.Features.SerhanKitaplar.Queries.Common.DTOs;
+using Application.Features.SerhanKitaplar.Queries.Common.Enums;
 using AutoMapper;
 using Domain;
 using MediatR;
@@ -57,16 +59,15 @@ public class GetSerhanKitapListQueryHandler :
 
     private static IQueryable<SerhanKitap> ApplySorting(IQueryable<SerhanKitap> query, GetSerhanKitapListQuery request)
     {
-        // WHITELIST approach - prevents SQL injection
-        return request.SortBy?.ToLowerInvariant() switch
+        return request.SortBy switch
         {
-            "kitapname" or "name" or "ad" => request.SortDescending
+            KitapSortField.KitapName => request.SortDescending
                 ? query.OrderByDescending(x => x.KitapName)
                 : query.OrderBy(x => x.KitapName),
-            "kitapyazar" or "yazar" or "author" => request.SortDescending
+            KitapSortField.KitapYazar => request.SortDescending
                 ? query.OrderByDescending(x => x.KitapYazar)
                 : query.OrderBy(x => x.KitapYazar),
-            "kitapsayfasayisi" or "sayfasayisi" or "pagecount" => request.SortDescending
+            KitapSortField.KitapSayfaSayisi => request.SortDescending
                 ? query.OrderByDescending(x => x.KitapSayfaSayisi)
                 : query.OrderBy(x => x.KitapSayfaSayisi),
             _ => query.OrderBy(x => x.KitapName) // default sort

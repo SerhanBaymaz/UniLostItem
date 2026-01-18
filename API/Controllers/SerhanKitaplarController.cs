@@ -25,7 +25,7 @@ public class SerhanKitaplarController : BaseApiController
         {
             PageNumber = request.PageNumber,
             PageSize = request.PageSize,
-            SortBy = request.SortBy?.GetDescription(),
+            SortBy = request.SortBy,
             SortDescending = request.SortDescending,
             SearchTerm = request.SearchTerm,
             KitapName = request.KitapName,

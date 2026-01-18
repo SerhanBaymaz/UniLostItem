@@ -6,16 +6,18 @@ namespace Tests.Application_Tests.Core.Pagination;
 
 public class PagedAndSortedQueryValidatorTests
 {
-    private sealed record TestQuery : PagedAndSortedQueryBase
+    private enum TestSortField { Name, CreatedDate, Price }
+
+    private sealed record TestQuery : PagedAndSortedQueryBase<TestSortField>
     {
         // Test implementation of the abstract base record
     }
 
-    private readonly PagedAndSortedQueryValidator _validator;
+    private readonly PagedAndSortedQueryValidator<TestQuery, TestSortField> _validator;
 
     public PagedAndSortedQueryValidatorTests()
     {
-        _validator = new PagedAndSortedQueryValidator();
+        _validator = new PagedAndSortedQueryValidator<TestQuery, TestSortField>();
     }
 
     [Fact]
@@ -129,7 +131,7 @@ public class PagedAndSortedQueryValidatorTests
     public void ShouldNotHaveValidationError_WhenSortBy_HasValue()
     {
         // Arrange
-        var query = new TestQuery { SortBy = "name" };
+        var query = new TestQuery { SortBy = TestSortField.Name };
 
         // Act & Assert
         _validator.TestValidate(query)
@@ -144,7 +146,7 @@ public class PagedAndSortedQueryValidatorTests
         {
             PageNumber = 2,
             PageSize = 20,
-            SortBy = "name",
+            SortBy = TestSortField.Name,
             SortDescending = true
         };
 
@@ -178,17 +180,5 @@ public class PagedAndSortedQueryValidatorTests
         var result = _validator.TestValidate(query);
         result.ShouldHaveValidationErrorFor(x => x.PageNumber);
         result.ShouldHaveValidationErrorFor(x => x.PageSize);
-    }
-
-    [Fact]
-    public void VirtualBeAValidSortField_ReturnsTrue_ByDefault()
-    {
-        // Arrange
-        var query = new TestQuery { SortBy = "anyField" };
-
-        // Act & Assert
-        // The virtual method in base class returns true by default
-        _validator.TestValidate(query)
-            .ShouldNotHaveValidationErrorFor(x => x.SortBy);
     }
 }

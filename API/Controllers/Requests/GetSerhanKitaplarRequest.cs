@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-using Application.Features.SerhanKitaplar;
+using Application.Features.SerhanKitaplar.Queries.Common.Enums;
 
 namespace API.Controllers.Requests;
 

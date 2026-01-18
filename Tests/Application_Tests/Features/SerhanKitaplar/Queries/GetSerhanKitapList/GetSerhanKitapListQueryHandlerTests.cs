@@ -2,6 +2,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Application.Core.Pagination;
 using Application.Features.SerhanKitaplar.Queries.Common.DTOs;
+using Application.Features.SerhanKitaplar.Queries.Common.Enums;
 using Application.Features.SerhanKitaplar.Queries.GetSerhanKitapList;
 using AutoMapper;
 using Domain;
@@ -146,7 +147,7 @@ public class GetSerhanKitapListQueryHandlerTests
 
         var query = new GetSerhanKitapListQuery
         {
-            SortBy = "kitapname",
+            SortBy = KitapSortField.KitapName,
             SortDescending = false
         };
 
@@ -186,7 +187,7 @@ public class GetSerhanKitapListQueryHandlerTests
 
         var query = new GetSerhanKitapListQuery
         {
-            SortBy = "kitapname",
+            SortBy = KitapSortField.KitapName,
             SortDescending = true
         };
 
@@ -226,7 +227,7 @@ public class GetSerhanKitapListQueryHandlerTests
 
         var query = new GetSerhanKitapListQuery
         {
-            SortBy = "kitapyazar"
+            SortBy = KitapSortField.KitapYazar
         };
 
         // Act
@@ -265,7 +266,7 @@ public class GetSerhanKitapListQueryHandlerTests
 
         var query = new GetSerhanKitapListQuery
         {
-            SortBy = "kitapsayfasayisi",
+            SortBy = KitapSortField.KitapSayfaSayisi,
             SortDescending = true
         };
 
@@ -303,7 +304,7 @@ public class GetSerhanKitapListQueryHandlerTests
 
         var query = new GetSerhanKitapListQuery
         {
-            SortBy = "yazar"
+            SortBy = KitapSortField.KitapYazar
         };
 
         // Act
@@ -339,7 +340,7 @@ public class GetSerhanKitapListQueryHandlerTests
 
         var query = new GetSerhanKitapListQuery
         {
-            SortBy = "invalidfield"
+            SortBy = (KitapSortField)999
         };
 
         // Act
@@ -421,7 +422,7 @@ public class GetSerhanKitapListQueryHandlerTests
 
         var query = new GetSerhanKitapListQuery
         {
-            SortBy = "KITAPNAME" // Uppercase
+            SortBy = KitapSortField.KitapName
         };
 
         // Act
@@ -694,7 +695,7 @@ public class GetSerhanKitapListQueryHandlerTests
         // Arrange
         var kitaplar = new[]
         {
-            new SerhanKitap { Id = "1", KitapName = "ZEYTİNDAĞI", KitapYazar = FalihRifkiAtay, KitapSayfaSayisi = 200 },
+            new SerhanKitap { Id = "1", KitapName = "OLIVER TWIST", KitapYazar = "Charles Dickens", KitapSayfaSayisi = 200 },
             new SerhanKitap { Id = "2", KitapName = "Çankaya", KitapYazar = FalihRifkiAtay, KitapSayfaSayisi = 600 }
         };
 
@@ -703,7 +704,7 @@ public class GetSerhanKitapListQueryHandlerTests
 
         var kitaplarDto = new[]
         {
-            new GetSerhanKitapDto { Id = "1", KitapName = "ZEYTİNDAĞI", KitapYazar = FalihRifkiAtay, KitapSayfaSayisi = 200 }
+            new GetSerhanKitapDto { Id = "1", KitapName = "OLIVER TWIST", KitapYazar = "Charles Dickens", KitapSayfaSayisi = 200 }
         };
 
         _mockMapper.Setup(x => x.Map<List<GetSerhanKitapDto>>(It.IsAny<List<SerhanKitap>>()))
@@ -711,7 +712,7 @@ public class GetSerhanKitapListQueryHandlerTests
 
         var query = new GetSerhanKitapListQuery
         {
-            SearchTerm = "zeytindağ"
+            SearchTerm = "oliver"
         };
 
         // Act

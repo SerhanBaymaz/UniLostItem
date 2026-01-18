@@ -1,14 +1,16 @@
 using Application.Core;
 using Application.Core.Pagination;
 using Application.Features.SerhanKitaplar.Queries.Common.DTOs;
+using Application.Features.SerhanKitaplar.Queries.Common.Enums;
+using Domain;
 using MediatR;
 
 namespace Application.Features.SerhanKitaplar.Queries.GetSerhanKitapList;
 
-public record GetSerhanKitapListQuery : PagedAndSortedQueryBase,
+public record GetSerhanKitapListQuery : PagedAndSortedQueryBase<KitapSortField>,
     IRequest<Result<PaginatedListDto<GetSerhanKitapDto>>>
 {
-    // PageNumber, PageSize, SortBy, SortDescending are inherited from PagedAndSortedQueryBase
+    // PageNumber, PageSize, SortBy, SortDescending are inherited from PagedAndSortedQueryBase<KitapSortField>
 
     // Filter properties
     public string? SearchTerm { get; init; }
