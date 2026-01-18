@@ -91,11 +91,14 @@ TemplateDeneme/
 │           │       └── DeleteSerhanKitapCommandHandler.cs
 │           └── Queries/
 │               ├── Common/
-│               │   └── DTOs/
-│               │       └── GetSerhanKitapDto.cs
+│               │   ├── DTOs/
+│               │   │   └── GetSerhanKitapDto.cs
+│               │   └── Enums/
+│               │       └── KitapSortField.cs
 │               ├── GetSerhanKitapList/
 │               │   ├── GetSerhanKitapListQuery.cs
-│               │   └── GetSerhanKitapListQueryHandler.cs
+│               │   ├── GetSerhanKitapListQueryHandler.cs
+│               │   └── GetSerhanKitapListValidator.cs
 │               └── GetSerhanKitapDetails/
 │                   ├── GetSerhanKitapDetailsQuery.cs
 │                   └── GetSerhanKitapDetailsQueryHandler.cs
@@ -150,71 +153,71 @@ TemplateDeneme/
 
 ### API Katmanı
 
-| Kütüphane | Versiyon | Açıklama |
-| ----------- | ---------- | ---------- |
-| **Swashbuckle.AspNetCore** | 6.5.0 | Swagger/OpenAPI dokümantasyonu |
-| **DotNetEnv** | 3.1.1 | Loads environment variables from .env files |
-| **Microsoft.EntityFrameworkCore.Design** | 9.0.0 | EF Core design-time araçları |
-| **Ben.Demystifier** | 0.4.1 | Gelişmiş exception stack trace formatlaması |
-| **Serilog** | 4.3.0 | Structured logging and enrichment |
-| **Serilog.Sinks.Seq** | 9.0.0 | Seq sink for centralized structured logging |
-| **AspNetCore.HealthChecks.NpgSql** | 9.0.0 | PostgreSQL health check |
-| **AspNetCore.HealthChecks.Network** | 9.0.0 | Network (TCP) health check |
-| **AspNetCore.HealthChecks.UI.Client** | 9.0.0 | Health check UI response writer |
-| **AspNetCore.HealthChecks.Uris** | 9.0.0 | URI health check |
-| **Microsoft.AspNetCore.Authentication.JwtBearer** | 9.0.0 | JWT bearer authentication |
-| **Microsoft.Extensions.Diagnostics.HealthChecks** | 9.0.9 | Health checks abstraction |
+| Kütüphane                                         | Versiyon | Açıklama                                    |
+| ------------------------------------------------- | -------- | ------------------------------------------- |
+| **Swashbuckle.AspNetCore**                        | 6.5.0    | Swagger/OpenAPI dokümantasyonu              |
+| **DotNetEnv**                                     | 3.1.1    | Loads environment variables from .env files |
+| **Microsoft.EntityFrameworkCore.Design**          | 9.0.0    | EF Core design-time araçları                |
+| **Ben.Demystifier**                               | 0.4.1    | Gelişmiş exception stack trace formatlaması |
+| **Serilog**                                       | 4.3.0    | Structured logging and enrichment           |
+| **Serilog.Sinks.Seq**                             | 9.0.0    | Seq sink for centralized structured logging |
+| **AspNetCore.HealthChecks.NpgSql**                | 9.0.0    | PostgreSQL health check                     |
+| **AspNetCore.HealthChecks.Network**               | 9.0.0    | Network (TCP) health check                  |
+| **AspNetCore.HealthChecks.UI.Client**             | 9.0.0    | Health check UI response writer             |
+| **AspNetCore.HealthChecks.Uris**                  | 9.0.0    | URI health check                            |
+| **Microsoft.AspNetCore.Authentication.JwtBearer** | 9.0.0    | JWT bearer authentication                   |
+| **Microsoft.Extensions.Diagnostics.HealthChecks** | 9.0.9    | Health checks abstraction                   |
 
 ### Application Katmanı
 
-| Kütüphane | Versiyon | Açıklama |
-| ----------- | ---------- | ---------- |
-| **MediatR** | 12.4.1 | CQRS pattern implementasyonu |
-| **AutoMapper** | 13.0.1 | Object-to-object mapping |
-| **FluentValidation.DependencyInjectionExtensions** | 11.11.0 | Validation kuralları ve DI entegrasyonu |
-| **System.IdentityModel.Tokens.Jwt** | 8.15.0 | JWT token types ve claims |
+| Kütüphane                                          | Versiyon | Açıklama                                |
+| -------------------------------------------------- | -------- | --------------------------------------- |
+| **MediatR**                                        | 12.4.1   | CQRS pattern implementasyonu            |
+| **AutoMapper**                                     | 13.0.1   | Object-to-object mapping                |
+| **FluentValidation.DependencyInjectionExtensions** | 11.11.0  | Validation kuralları ve DI entegrasyonu |
+| **System.IdentityModel.Tokens.Jwt**                | 8.15.0   | JWT token types ve claims               |
 
 ### Infrastructure Katmanı
 
-| Kütüphane | Versiyon | Açıklama |
-| ----------- | ---------- | ---------- |
-| **System.IdentityModel.Tokens.Jwt** | 8.15.0 | JWT oluşturma ve doğrulama |
-| **Microsoft.Extensions.Configuration.Abstractions** | 10.0.1 | Konfigürasyon okuma arayüzleri |
+| Kütüphane                                           | Versiyon | Açıklama                       |
+| --------------------------------------------------- | -------- | ------------------------------ |
+| **System.IdentityModel.Tokens.Jwt**                 | 8.15.0   | JWT oluşturma ve doğrulama     |
+| **Microsoft.Extensions.Configuration.Abstractions** | 10.0.1   | Konfigürasyon okuma arayüzleri |
 
 ### Persistence Katmanı
 
-| Kütüphane | Versiyon | Açıklama |
-| ----------- | ---------- | ---------- |
-| **Npgsql.EntityFrameworkCore.PostgreSQL** | 9.0.4 | PostgreSQL veritabanı sağlayıcısı |
-| **Microsoft.AspNetCore.Identity.EntityFrameworkCore** | 9.0.0 | ASP.NET Core Identity entegrasyonu |
+| Kütüphane                                             | Versiyon | Açıklama                           |
+| ----------------------------------------------------- | -------- | ---------------------------------- |
+| **Npgsql.EntityFrameworkCore.PostgreSQL**             | 9.0.4    | PostgreSQL veritabanı sağlayıcısı  |
+| **Microsoft.AspNetCore.Identity.EntityFrameworkCore** | 9.0.0    | ASP.NET Core Identity entegrasyonu |
 
 ### Domain Katmanı
 
-| Kütüphane | Versiyon | Açıklama |
-| ----------- | ---------- | ---------- |
-| **Microsoft.Extensions.Identity.Stores** | 10.0.1 | Identity entity tanımları için |
+| Kütüphane                                | Versiyon | Açıklama                       |
+| ---------------------------------------- | -------- | ------------------------------ |
+| **Microsoft.Extensions.Identity.Stores** | 10.0.1   | Identity entity tanımları için |
 
 ### Tests Katmanı
 
-| Kütüphane | Versiyon | Açıklama |
-| ----------- | ---------- | ---------- |
-| **xUnit** | 2.9.2 | Test framework |
-| **xunit.runner.visualstudio** | 2.8.2 | Visual Studio test runner |
-| **FluentAssertions** | 8.8.0 | Readable test assertions |
-| **Moq** | 4.20.72 | Mocking framework |
-| **Microsoft.EntityFrameworkCore.InMemory** | 9.0.0 | In-memory database for testing |
-| **Microsoft.AspNetCore.Mvc.Testing** | 9.0.0 | Integration test helpers |
-| **coverlet.collector** | 6.0.2 | Code coverage collection |
-| **coverlet.msbuild** | 6.0.2 | Code coverage MSBuild task |
-| **Microsoft.NET.Test.Sdk** | 17.12.0 | .NET Test SDK |
+| Kütüphane                                  | Versiyon | Açıklama                       |
+| ------------------------------------------ | -------- | ------------------------------ |
+| **xUnit**                                  | 2.9.2    | Test framework                 |
+| **xunit.runner.visualstudio**              | 2.8.2    | Visual Studio test runner      |
+| **FluentAssertions**                       | 8.8.0    | Readable test assertions       |
+| **Moq**                                    | 4.20.72  | Mocking framework              |
+| **Microsoft.EntityFrameworkCore.InMemory** | 9.0.0    | In-memory database for testing |
+| **Microsoft.AspNetCore.Mvc.Testing**       | 9.0.0    | Integration test helpers       |
+| **coverlet.collector**                     | 6.0.2    | Code coverage collection       |
+| **coverlet.msbuild**                       | 6.0.2    | Code coverage MSBuild task     |
+| **Microsoft.NET.Test.Sdk**                 | 17.12.0  | .NET Test SDK                  |
 
 ### Code Quality & Analyzers (Directory.Build.props)
 
-| Kütüphane | Versiyon | Açıklama |
-| ----------- | ---------- | ---------- |
-| **Microsoft.CodeAnalysis.NetAnalyzers** | 9.0.0 | .NET kod analizi ve best practice kuralları |
-| **SonarAnalyzer.CSharp** | 10.16.1.129956 | SonarQube/SonarCloud kod kalitesi analizi |
-| **SonarLint** | - | IDE-level static analysis (recommended for developers) |
+| Kütüphane                               | Versiyon       | Açıklama                                               |
+| --------------------------------------- | -------------- | ------------------------------------------------------ |
+| **Microsoft.CodeAnalysis.NetAnalyzers** | 9.0.0          | .NET kod analizi ve best practice kuralları            |
+| **SonarAnalyzer.CSharp**                | 10.16.1.129956 | SonarQube/SonarCloud kod kalitesi analizi              |
+| **SonarLint**                           | -              | IDE-level static analysis (recommended for developers) |
 
 Bu projede ayrıca SonarQube ile merkezi kod kalite taramaları entegre edilebilir; `SonarAnalyzer.CSharp` sunucu/CI analizleri için yapılandırılmıştır.
 
@@ -315,7 +318,7 @@ cp example.dev.env dev.env
 ```
 
 1. **Connection string'i güncelleyin:**
-`dev.env` dosyasında PostgreSQL bağlantı bilgilerinizi düzenleyin.
+   `dev.env` dosyasında PostgreSQL bağlantı bilgilerinizi düzenleyin.
 
 2. **Veritabanı migration'larını uygulayın:**
 
@@ -378,15 +381,83 @@ SEQ_FIRSTRUN_ADMINPASSWORD=admindev
 - **GET** `/api/v1/auth/profile` - Mevcut kullanıcı profilini getir (JWT gerektirir)
 - **PUT** `/api/v1/auth/profile` - Mevcut kullanıcı profilini güncelle (JWT gerektirir)
 
-#### SerhanKitap Endpoints (`/api/serhankitaplar`)
+#### SerhanKitap Endpoints (`/api/v1/serhan-kitaplar`)
 
 API, `SerhanKitap` (Kitap) entity'si üzerinde CRUD işlemleri gerçekleştirir:
 
-- **GET** `/api/serhankitaplar` - Tüm kitapları listele
-- **GET** `/api/serhankitaplar/{id}` - Belirli bir kitabı getir
-- **POST** `/api/serhankitaplar` - Yeni kitap ekle
-- **PUT** `/api/serhankitaplar/{id}` - Kitap bilgilerini güncelle
-- **DELETE** `/api/serhankitaplar/{id}` - Kitap sil
+- **GET** `/api/v1/serhan-kitaplar` - Kitapları listele (Pagination, Filtering, Sorting desteği)
+- **GET** `/api/v1/serhan-kitaplar/{id}` - Belirli bir kitabı getir
+- **POST** `/api/v1/serhan-kitaplar` - Yeni kitap ekle
+- **PUT** `/api/v1/serhan-kitaplar/{id}` - Kitap bilgilerini güncelle
+- **DELETE** `/api/v1/serhan-kitaplar/{id}` - Kitap sil
+
+##### Pagination, Filtering & Sorting
+
+GET `/api/v1/serhan-kitaplar` endpoint'i gelişmiş sorgulama özellikleri sunar:
+
+**Query Parameters:**
+
+| Parameter        | Type    | Default | Description                                              |
+| ---------------- | ------- | ------- | -------------------------------------------------------- |
+| `pageNumber`     | int     | 1       | Sayfa numarası (min: 1)                                  |
+| `pageSize`       | int     | 10      | Sayfa boyutu (min: 1, max: 100)                          |
+| `sortBy`         | enum    | null    | Sıralama alanı (KitapName, KitapYazar, KitapSayfaSayisi) |
+| `sortDescending` | bool    | false   | Azalan sıralama                                          |
+| `searchTerm`     | string? | null    | Kitap adı ve yazarında arama                             |
+| `kitapName`      | string? | null    | Kitap adına göre filtrele (contains)                     |
+| `kitapYazar`     | string? | null    | Yazar adına göre filtrele (contains)                     |
+| `minPageCount`   | int?    | null    | Minimum sayfa sayısı                                     |
+| `maxPageCount`   | int?    | null    | Maksimum sayfa sayısı                                    |
+
+**Örnek Request'ler:**
+
+```bash
+# İlk 10 kitap (default)
+GET /api/v1/serhan-kitaplar
+
+# 2. sayfa, 20 kayıt
+GET /api/v1/serhan-kitaplar?pageNumber=2&pageSize=20
+
+# "Orwell" içeren kitapları ara, sayfa sayısına göre sırala
+GET /api/v1/serhan-kitaplar?searchTerm=Orwell&sortBy=2&sortDescending=true
+
+# 100-500 sayfa aralığındaki kitapları filtrele
+GET /api/v1/serhan-kitaplar?minPageCount=100&maxPageCount=500
+
+# Kitap adına göre filtrele ve yazar adına göre sırala
+GET /api/v1/serhan-kitaplar?kitapName=1984&sortBy=1
+```
+
+**Response Format:**
+
+```json
+{
+  "success": true,
+  "message": "Books retrieved successfully",
+  "data": [
+    {
+      "id": "1",
+      "kitapName": "1984",
+      "kitapYazar": "George Orwell",
+      "kitapSayfaSayisi": 328
+    },
+    {
+      "id": "2",
+      "kitapName": "Animal Farm",
+      "kitapYazar": "George Orwell",
+      "kitapSayfaSayisi": 112
+    }
+  ],
+  "metadata": {
+    "totalCount": 5,
+    "pageNumber": 1,
+    "pageSize": 10,
+    "totalPages": 1,
+    "hasNext": false,
+    "hasPrevious": false
+  }
+}
+```
 
 ### Health Check Endpoints
 
@@ -474,17 +545,10 @@ API, `SerhanKitap` (Kitap) entity'si üzerinde CRUD işlemleri gerçekleştirir:
 - **TreatWarningsAsErrors** ile sıkı kod standartları
 - **Hot reload** desteği (development ortamında)
 - **CI/CD Pipelines** (GitHub Actions)
-
-  - Development pipeline: Build, test, SonarCloud analysis, Docker build & push
-  - Production pipeline: Build, test, Docker build & push to GHCR
-- **Test Coverage** with Coverlet (OpenCover format)
-- **Docker Image Registry** - GitHub Container Registry entegrasyonu
-- **Automated Docker Tagging** - Git SHA ve latest tags
-- **CI/CD Pipelines** (GitHub Actions)
-
-  - Development pipeline: Build, test, SonarCloud analysis, Docker build & push
-  - Production pipeline: Build, test, Docker build & push to GHCR
-- **Test Coverage** with Coverlet (OpenCover format)
+- **Pagination** - Sayfalı listeler için `PaginatedListDto<T>` ile metadata desteği
+- **Filtering** - Esnek filtreleme (arama, aralık filtreleri, contains vb.)
+- **Sorting** - Enum tabanlı type-safe sıralama desteği
+- **Request DTO Pattern** - Controller tarafında temiz parametre yönetimi için Data Annotations
 - **Docker Image Registry** - GitHub Container Registry entegrasyonu
 - **Automated Docker Tagging** - Git SHA ve latest tags
 

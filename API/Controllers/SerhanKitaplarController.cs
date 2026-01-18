@@ -1,5 +1,7 @@
 using System;
 using API.Responses;
+using Application.Core.Extensions;
+using Application.Core.Pagination;
 using Application.Features.SerhanKitaplar.Commands.CreateSerhanKitap;
 using Application.Features.SerhanKitaplar.Commands.DeleteSerhanKitap;
 using Application.Features.SerhanKitaplar.Commands.EditSerhanKitap;
@@ -15,9 +17,23 @@ namespace API.Controllers;
 public class SerhanKitaplarController : BaseApiController
 {
     [HttpGet]
-    public async Task<ActionResult<StandardApiResponse<List<GetSerhanKitapDto>>>> GetSerhanKitaplar()
+    [ProducesResponseType(typeof(StandardApiResponse<PaginatedListDto<GetSerhanKitapDto>>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<StandardApiResponse<PaginatedListDto<GetSerhanKitapDto>>>> GetSerhanKitaplar(
+        [FromQuery] Requests.GetSerhanKitaplarRequest request)
     {
-        return HandleResult(await Mediator.Send(new GetSerhanKitapListQuery()));
+        var query = new GetSerhanKitapListQuery
+        {
+            PageNumber = request.PageNumber,
+            PageSize = request.PageSize,
+            SortBy = request.SortBy,
+            SortDescending = request.SortDescending,
+            SearchTerm = request.SearchTerm,
+            KitapName = request.KitapName,
+            KitapYazar = request.KitapYazar,
+            MinPageCount = request.MinPageCount,
+            MaxPageCount = request.MaxPageCount
+        };
+        return HandleResult(await Mediator.Send(query));
     }
 
     [HttpGet("{id}")]

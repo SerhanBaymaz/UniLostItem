@@ -33,7 +33,7 @@ public static class EnvLoader
         if (File.Exists(envPath))
         {
             Env.Load(envPath);
-            Console.WriteLine($"Loaded environment variables from: {envPath}");
+            Console.WriteLine($" ---> Loaded environment variables from: {envPath}");
         }
     }
 }

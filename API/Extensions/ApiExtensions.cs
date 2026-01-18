@@ -3,6 +3,7 @@ using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using System.Text.Json.Serialization;
 
 namespace API.Extensions;
 
@@ -11,7 +12,8 @@ public static class ApiExtensions
     public static void AddApiConfiguration(this IServiceCollection services)
     {
         // Add services to the container.
-        services.AddControllers();
+        services.AddControllers()
+            .AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
         // Convert model state / input formatter errors into StandardApiResponse
         services.Configure<ApiBehaviorOptions>(options =>

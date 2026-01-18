@@ -1,9 +1,13 @@
 using API.Controllers;
+using API.Controllers.Requests;
 using API.Responses;
 using Application.Core;
+using Application.Core.Extensions;
+using Application.Core.Pagination;
 using Application.Features.SerhanKitaplar.Commands.CreateSerhanKitap;
 using Application.Features.SerhanKitaplar.Commands.DeleteSerhanKitap;
 using Application.Features.SerhanKitaplar.Commands.EditSerhanKitap;
+using Application.Features.SerhanKitaplar.Queries.Common.Enums;
 using Application.Features.SerhanKitaplar.Queries.Common.DTOs;
 using Application.Features.SerhanKitaplar.Queries.GetSerhanKitapDetails;
 using Application.Features.SerhanKitaplar.Queries.GetSerhanKitapList;
@@ -18,6 +22,9 @@ namespace Tests.API_Tests.Controllers;
 
 public class SerhanKitaplarControllerTests
 {
+    private const string SuccessMessage = "Success";
+    private const string BookNotFoundMessage = "Book not found";
+    private const string DefaultAuthor = "Author";
     private readonly SerhanKitaplarController _controller;
     private readonly Mock<IMediator> _mediatorMock;
 
@@ -43,77 +50,262 @@ public class SerhanKitaplarControllerTests
         };
     }
 
-    #region GetSerhanKitaplar Tests
+    #region GetSerhanKitaplar Tests (Paginated)
 
     [Fact]
-    public async Task GetSerhanKitaplar_ShouldReturnOk_WhenBooksExist()
+    public async Task GetSerhanKitaplarPaginated_ShouldReturnOk_WithPaginatedResult()
     {
         // Arrange
         var books = new List<GetSerhanKitapDto>
         {
-            new() { Id = "1", KitapName = "Book 1", KitapYazar = "Author 1", KitapSayfaSayisi = 100 },
-            new() { Id = "2", KitapName = "Book 2", KitapYazar = "Author 2", KitapSayfaSayisi = 200 }
+            new() { Id = "1", KitapName = "1984", KitapYazar = "George Orwell", KitapSayfaSayisi = 328 },
+            new() { Id = "2", KitapName = "Cesur Yeni Dünya", KitapYazar = "Aldous Huxley", KitapSayfaSayisi = 268 }
         };
-        var result = Result<List<GetSerhanKitapDto>>.Success("Books retrieved successfully", books);
+        var paginatedList = new PaginatedListDto<GetSerhanKitapDto>
+        {
+            Items = books,
+            TotalCount = 5,
+            PageNumber = 1,
+            PageSize = 2
+        };
+        var result = Result<PaginatedListDto<GetSerhanKitapDto>>.Success("Books retrieved successfully", paginatedList);
 
         _mediatorMock.Setup(m => m.Send(It.IsAny<GetSerhanKitapListQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(result);
 
         // Act
-        var actionResult = await _controller.GetSerhanKitaplar();
+        var actionResult = await _controller.GetSerhanKitaplar(new GetSerhanKitaplarRequest());
 
         // Assert
         actionResult.Should().NotBeNull();
         actionResult.Result.Should().BeOfType<OkObjectResult>();
 
         var okResult = actionResult.Result as OkObjectResult;
-        var response = okResult!.Value as StandardApiResponse<List<GetSerhanKitapDto>>;
+        var response = okResult!.Value as StandardApiResponse<object>;
 
         response.Should().NotBeNull();
         response!.Success.Should().BeTrue();
-        response.Data.Should().HaveCount(2);
-        response.Data.Should().BeEquivalentTo(books);
+        response.Data.Should().NotBeNull();
+        response.Metadata.Should().NotBeNull();
+
+        // Data should be the list of items
+        var items = response.Data as List<GetSerhanKitapDto>;
+        items.Should().NotBeNull();
+        items.Should().HaveCount(2);
+
+        // Metadata should contain pagination info
+        response.Metadata!.TryGetValue("totalCount", out var totalCount).Should().BeTrue();
+        response.Metadata.TryGetValue("pageNumber", out var pageNumber).Should().BeTrue();
+        response.Metadata.TryGetValue("pageSize", out var pageSize).Should().BeTrue();
+        response.Metadata.TryGetValue("totalPages", out var totalPages).Should().BeTrue();
+        response.Metadata.TryGetValue("hasNext", out var hasNext).Should().BeTrue();
+        response.Metadata.TryGetValue("hasPrevious", out var hasPrevious).Should().BeTrue();
+
+        totalCount.Should().Be(5);
+        pageNumber.Should().Be(1);
+        pageSize.Should().Be(2);
+        totalPages.Should().Be(3);
+        hasNext.Should().Be(true);
+        hasPrevious.Should().Be(false);
+
         response.StatusCode.Should().Be(200);
     }
 
     [Fact]
-    public async Task GetSerhanKitaplar_ShouldReturnOk_WhenNoBooksExist()
+    public async Task GetSerhanKitaplarPaginated_ShouldPassDefaultParameters_WhenNotProvided()
     {
         // Arrange
-        var emptyList = new List<GetSerhanKitapDto>();
-        var result = Result<List<GetSerhanKitapDto>>.Success("No books found", emptyList);
+        var emptyPaginatedList = new PaginatedListDto<GetSerhanKitapDto>
+        {
+            Items = new List<GetSerhanKitapDto>(),
+            TotalCount = 0,
+            PageNumber = 1,
+            PageSize = 10
+        };
+        var result = Result<PaginatedListDto<GetSerhanKitapDto>>.Success(SuccessMessage, emptyPaginatedList);
 
+        GetSerhanKitapListQuery? capturedQuery = null;
         _mediatorMock.Setup(m => m.Send(It.IsAny<GetSerhanKitapListQuery>(), It.IsAny<CancellationToken>()))
+            .Callback<IRequest<Result<PaginatedListDto<GetSerhanKitapDto>>>, CancellationToken>((q, _) =>
+                capturedQuery = q as GetSerhanKitapListQuery)
             .ReturnsAsync(result);
 
         // Act
-        var actionResult = await _controller.GetSerhanKitaplar();
+        await _controller.GetSerhanKitaplar(new GetSerhanKitaplarRequest());
 
         // Assert
-        actionResult.Should().NotBeNull();
-        actionResult.Result.Should().BeOfType<OkObjectResult>();
-
-        var okResult = actionResult.Result as OkObjectResult;
-        var response = okResult!.Value as StandardApiResponse<List<GetSerhanKitapDto>>;
-
-        response.Should().NotBeNull();
-        response!.Success.Should().BeTrue();
-        response.Data.Should().BeEmpty();
+        capturedQuery.Should().NotBeNull();
+        capturedQuery!.PageNumber.Should().Be(1);
+        capturedQuery.PageSize.Should().Be(10);
+        capturedQuery.SortBy.Should().BeNull();
+        capturedQuery.SortDescending.Should().BeFalse();
     }
 
     [Fact]
-    public async Task GetSerhanKitaplar_ShouldCallMediator()
+    public async Task GetSerhanKitaplarPaginated_ShouldPassCustomParameters_WhenProvided()
     {
         // Arrange
-        var result = Result<List<GetSerhanKitapDto>>.Success("Success", new List<GetSerhanKitapDto>());
+        var paginatedList = new PaginatedListDto<GetSerhanKitapDto>
+        {
+            Items = new List<GetSerhanKitapDto>(),
+            TotalCount = 0,
+            PageNumber = 2,
+            PageSize = 20
+        };
+        var result = Result<PaginatedListDto<GetSerhanKitapDto>>.Success(SuccessMessage, paginatedList);
+
+        GetSerhanKitapListQuery? capturedQuery = null;
+        _mediatorMock.Setup(m => m.Send(It.IsAny<GetSerhanKitapListQuery>(), It.IsAny<CancellationToken>()))
+            .Callback<IRequest<Result<PaginatedListDto<GetSerhanKitapDto>>>, CancellationToken>((q, _) =>
+                capturedQuery = q as GetSerhanKitapListQuery)
+            .ReturnsAsync(result);
+
+        // Act
+        await _controller.GetSerhanKitaplar(new GetSerhanKitaplarRequest
+        {
+            PageNumber = 2,
+            PageSize = 20,
+            SortBy = KitapSortField.KitapName,
+            SortDescending = true
+        });
+
+        // Assert
+        capturedQuery.Should().NotBeNull();
+        capturedQuery!.PageNumber.Should().Be(2);
+        capturedQuery.PageSize.Should().Be(20);
+        capturedQuery.SortBy.Should().Be(KitapSortField.KitapName);
+        capturedQuery.SortDescending.Should().Be(true);
+    }
+
+    [Fact]
+    public async Task GetSerhanKitaplarPaginated_ShouldReturnOk_WhenNoBooksExist()
+    {
+        // Arrange
+        var emptyPaginatedList = new PaginatedListDto<GetSerhanKitapDto>
+        {
+            Items = new List<GetSerhanKitapDto>(),
+            TotalCount = 0,
+            PageNumber = 1,
+            PageSize = 10
+        };
+        var result = Result<PaginatedListDto<GetSerhanKitapDto>>.Success("No books found", emptyPaginatedList);
+
         _mediatorMock.Setup(m => m.Send(It.IsAny<GetSerhanKitapListQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(result);
 
         // Act
-        await _controller.GetSerhanKitaplar();
+        var actionResult = await _controller.GetSerhanKitaplar(new GetSerhanKitaplarRequest());
+
+        // Assert
+        actionResult.Result.Should().BeOfType<OkObjectResult>();
+
+        var okResult = actionResult.Result as OkObjectResult;
+        var response = okResult!.Value as StandardApiResponse<object>;
+
+        response.Should().NotBeNull();
+        response!.Success.Should().BeTrue();
+        response.Data.Should().NotBeNull();
+
+        var items = response.Data as List<GetSerhanKitapDto>;
+        items.Should().NotBeNull();
+        items.Should().BeEmpty();
+
+        response.Metadata.Should().NotBeNull();
+        response.Metadata!.TryGetValue("totalCount", out var totalCount).Should().BeTrue();
+        totalCount.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task GetSerhanKitaplarPaginated_ShouldCallMediator_Once()
+    {
+        // Arrange
+        var paginatedList = new PaginatedListDto<GetSerhanKitapDto>
+        {
+            Items = new List<GetSerhanKitapDto>(),
+            TotalCount = 0,
+            PageNumber = 1,
+            PageSize = 10
+        };
+        var result = Result<PaginatedListDto<GetSerhanKitapDto>>.Success(SuccessMessage, paginatedList);
+
+        _mediatorMock.Setup(m => m.Send(It.IsAny<GetSerhanKitapListQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(result);
+
+        // Act
+        await _controller.GetSerhanKitaplar(new GetSerhanKitaplarRequest());
 
         // Assert
         _mediatorMock.Verify(m => m.Send(It.IsAny<GetSerhanKitapListQuery>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Theory]
+    [InlineData(1, 10)]
+    [InlineData(5, 25)]
+    [InlineData(10, 50)]
+    public async Task GetSerhanKitaplarPaginated_ShouldPassPaginationParameters(int pageNumber, int pageSize)
+    {
+        // Arrange
+        var paginatedList = new PaginatedListDto<GetSerhanKitapDto>
+        {
+            Items = new List<GetSerhanKitapDto>(),
+            TotalCount = 0,
+            PageNumber = pageNumber,
+            PageSize = pageSize
+        };
+        var result = Result<PaginatedListDto<GetSerhanKitapDto>>.Success(SuccessMessage, paginatedList);
+
+        GetSerhanKitapListQuery? capturedQuery = null;
+        _mediatorMock.Setup(m => m.Send(It.IsAny<GetSerhanKitapListQuery>(), It.IsAny<CancellationToken>()))
+            .Callback<IRequest<Result<PaginatedListDto<GetSerhanKitapDto>>>, CancellationToken>((q, _) =>
+                capturedQuery = q as GetSerhanKitapListQuery)
+            .ReturnsAsync(result);
+
+        // Act
+        await _controller.GetSerhanKitaplar(new GetSerhanKitaplarRequest
+        {
+            PageNumber = pageNumber,
+            PageSize = pageSize
+        });
+
+        // Assert
+        capturedQuery.Should().NotBeNull();
+        capturedQuery!.PageNumber.Should().Be(pageNumber);
+        capturedQuery.PageSize.Should().Be(pageSize);
+    }
+
+    [Theory]
+    [InlineData(KitapSortField.KitapName, false)]
+    [InlineData(KitapSortField.KitapYazar, true)]
+    [InlineData(KitapSortField.KitapSayfaSayisi, false)]
+    public async Task GetSerhanKitaplarPaginated_ShouldPassSortingParameters(KitapSortField sortBy, bool sortDescending)
+    {
+        // Arrange
+        var paginatedList = new PaginatedListDto<GetSerhanKitapDto>
+        {
+            Items = new List<GetSerhanKitapDto>(),
+            TotalCount = 0,
+            PageNumber = 1,
+            PageSize = 10
+        };
+        var result = Result<PaginatedListDto<GetSerhanKitapDto>>.Success(SuccessMessage, paginatedList);
+
+        GetSerhanKitapListQuery? capturedQuery = null;
+        _mediatorMock.Setup(m => m.Send(It.IsAny<GetSerhanKitapListQuery>(), It.IsAny<CancellationToken>()))
+            .Callback<IRequest<Result<PaginatedListDto<GetSerhanKitapDto>>>, CancellationToken>((q, _) =>
+                capturedQuery = q as GetSerhanKitapListQuery)
+            .ReturnsAsync(result);
+
+        // Act
+        await _controller.GetSerhanKitaplar(new GetSerhanKitaplarRequest
+        {
+            SortBy = sortBy,
+            SortDescending = sortDescending
+        });
+
+        // Assert
+        capturedQuery.Should().NotBeNull();
+        capturedQuery!.SortBy.Should().Be(sortBy);
+        capturedQuery.SortDescending.Should().Be(sortDescending);
     }
 
     #endregion
@@ -128,9 +320,9 @@ public class SerhanKitaplarControllerTests
         var book = new GetSerhanKitapDto
         {
             Id = bookId,
-            KitapName = "Test Book",
-            KitapYazar = "Test Author",
-            KitapSayfaSayisi = 150
+            KitapName = "Kürk Mantolu Madonna",
+            KitapYazar = "Sabahattin Ali",
+            KitapSayfaSayisi = 160
         };
         var result = Result<GetSerhanKitapDto>.Success("Book found", book);
 
@@ -157,7 +349,7 @@ public class SerhanKitaplarControllerTests
     {
         // Arrange
         var bookId = "non-existent-id";
-        var result = Result<GetSerhanKitapDto>.Failure("Book not found", 404);
+        var result = Result<GetSerhanKitapDto>.Failure(BookNotFoundMessage, 404);
 
         _mediatorMock.Setup(m => m.Send(It.Is<GetSerhanKitapDetailsQuery>(q => q.Id == bookId), It.IsAny<CancellationToken>()))
             .ReturnsAsync(result);
@@ -175,7 +367,7 @@ public class SerhanKitaplarControllerTests
         response.Should().NotBeNull();
         response!.Success.Should().BeFalse();
         response.StatusCode.Should().Be(404);
-        response.Message.Should().Be("Book not found");
+        response.Message.Should().Be(BookNotFoundMessage);
     }
 
     [Fact]
@@ -204,9 +396,9 @@ public class SerhanKitaplarControllerTests
         // Arrange
         var createDto = new CreateSerhanKitapDto
         {
-            KitapName = "New Book",
-            KitapYazar = "New Author",
-            KitapSayfaSayisi = 300
+            KitapName = "Tutunamayanlar",
+            KitapYazar = "Oğuz Atay",
+            KitapSayfaSayisi = 724
         };
         var createdId = "new-book-id";
         var result = Result<string>.Success("Book created successfully", createdId);
@@ -237,7 +429,7 @@ public class SerhanKitaplarControllerTests
         var createDto = new CreateSerhanKitapDto
         {
             KitapName = "",
-            KitapYazar = "Author",
+            KitapYazar = DefaultAuthor,
             KitapSayfaSayisi = -1
         };
         var result = Result<string>.Failure("Validation failed", 400);
@@ -267,10 +459,10 @@ public class SerhanKitaplarControllerTests
         var createDto = new CreateSerhanKitapDto
         {
             KitapName = "Test",
-            KitapYazar = "Author",
+            KitapYazar = DefaultAuthor,
             KitapSayfaSayisi = 100
         };
-        var result = Result<string>.Success("Success", "id");
+        var result = Result<string>.Success(SuccessMessage, "id");
 
         _mediatorMock.Setup(m => m.Send(It.IsAny<CreateSerhanKitapCommand>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(result);
@@ -296,9 +488,9 @@ public class SerhanKitaplarControllerTests
         var bookId = "existing-id";
         var editDto = new EditSerhanKitapDto
         {
-            KitapName = "Updated Book",
-            KitapYazar = "Updated Author",
-            KitapSayfaSayisi = 250
+            KitapName = "İnce Memed",
+            KitapYazar = "Yaşar Kemal",
+            KitapSayfaSayisi = 436
         };
         var result = Result<Unit>.Success("Book updated successfully", Unit.Value);
 
@@ -328,10 +520,10 @@ public class SerhanKitaplarControllerTests
         var editDto = new EditSerhanKitapDto
         {
             KitapName = "Book",
-            KitapYazar = "Author",
+            KitapYazar = DefaultAuthor,
             KitapSayfaSayisi = 100
         };
-        var result = Result<Unit>.Failure("Book not found", 404);
+        var result = Result<Unit>.Failure(BookNotFoundMessage, 404);
 
         _mediatorMock.Setup(m => m.Send(It.IsAny<EditSerhanKitapCommand>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(result);
@@ -359,10 +551,10 @@ public class SerhanKitaplarControllerTests
         var editDto = new EditSerhanKitapDto
         {
             KitapName = "Name",
-            KitapYazar = "Author",
+            KitapYazar = DefaultAuthor,
             KitapSayfaSayisi = 150
         };
-        var result = Result<Unit>.Success("Success", Unit.Value);
+        var result = Result<Unit>.Success(SuccessMessage, Unit.Value);
 
         _mediatorMock.Setup(m => m.Send(It.IsAny<EditSerhanKitapCommand>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(result);
@@ -434,7 +626,7 @@ public class SerhanKitaplarControllerTests
     {
         // Arrange
         var bookId = "non-existent";
-        var result = Result<Unit>.Failure("Book not found", 404);
+        var result = Result<Unit>.Failure(BookNotFoundMessage, 404);
 
         _mediatorMock.Setup(m => m.Send(It.IsAny<DeleteSerhanKitapCommand>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(result);
@@ -459,7 +651,7 @@ public class SerhanKitaplarControllerTests
     {
         // Arrange
         var bookId = "specific-book-id";
-        var result = Result<Unit>.Success("Success", Unit.Value);
+        var result = Result<Unit>.Success(SuccessMessage, Unit.Value);
 
         _mediatorMock.Setup(m => m.Send(It.IsAny<DeleteSerhanKitapCommand>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(result);
