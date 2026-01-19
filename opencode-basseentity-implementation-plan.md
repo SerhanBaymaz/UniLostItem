@@ -85,9 +85,11 @@ feat: add BaseEntity with full audit trail properties
 
 **Tasks:**
 
-- [ ] Update `Domain/SerhanKitap.cs` to inherit from `BaseEntity`
-- [ ] Remove duplicate `Id` property (now inherited)
-- [ ] Keep existing properties: KitapName, KitapYazar, KitapSayfaSayisi
+- [x] Update `Domain/SerhanKitap.cs` to inherit from `BaseEntity`
+- [x] Remove duplicate `Id` property (now inherited)
+- [x] Keep existing properties: KitapName, KitapYazar, KitapSayfaSayisi
+- [x] Create `AutoMapperExtensions` with reusable methods for BaseEntity mapping
+- [x] Update `MappingProfiles.cs` to use extension methods
 
 **Before:**
 
@@ -649,15 +651,15 @@ After completing this implementation, consider:
 ## Completion Checklist
 
 - [x] Step 1: BaseEntity created with tests ✓
-- [ ] Step 2: SerhanKitap inherits from BaseEntity ✓
-- [ ] Step 3: EF Core migration created ✓
-- [ ] Step 4: Create handler sets CreatedDate/CreatedBy ✓
-- [ ] Step 5: Edit handler sets UpdatedDate/UpdatedBy ✓
-- [ ] Step 6: Delete handler uses soft delete ✓
-- [ ] Step 7: List handler filters deleted entities ✓
-- [ ] Step 8: Details handler rejects deleted entities ✓
-- [ ] Step 9: AutoMapper profiles updated ✓
-- [ ] Step 10: All tests passing ✓
+- [x] Step 2: SerhanKitap inherits from BaseEntity ✓
+- [ ] Step 3: EF Core migration created
+- [ ] Step 4: Create handler sets CreatedDate/CreatedBy
+- [ ] Step 5: Edit handler sets UpdatedDate/UpdatedBy
+- [ ] Step 6: Delete handler uses soft delete
+- [ ] Step 7: List handler filters deleted entities
+- [ ] Step 8: Details handler rejects deleted entities
+- [ ] Step 9: AutoMapper profiles updated
+- [ ] Step 10: All tests passing
 
 **Total Estimated Time:** ~2-3 hours (including testing)
 **Total Commits:** 10
