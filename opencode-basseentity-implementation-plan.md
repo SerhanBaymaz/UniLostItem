@@ -445,11 +445,11 @@ feat: filter out soft-deleted SerhanKitap entities in list query
 
 **Tasks:**
 
-- [ ] Open `Application/Features/SerhanKitaplar/Queries/GetSerhanKitapDetails/GetSerhanKitapDetailsQueryHandler.cs`
-- [ ] After finding entity, check if `IsDeleted` is true
-- [ ] Check if `IsActive` is false
-- [ ] If deleted or inactive, return failure response
-- [ ] If not deleted and active, proceed with normal flow
+- [x] Open `Application/Features/SerhanKitaplar/Queries/GetSerhanKitapDetails/GetSerhanKitapDetailsQueryHandler.cs`
+- [x] After finding entity, check if `IsDeleted` is true
+- [x] Check if `IsActive` is false
+- [x] If deleted or inactive, return failure response
+- [x] If not deleted and active, proceed with normal flow
 
 **Handler Update:**
 
@@ -664,7 +664,7 @@ After completing this implementation, consider:
 - [x] Step 5: Edit handler sets UpdatedDate/UpdatedBy ✓
 - [x] Step 6: Delete handler uses soft delete ✓
 - [x] Step 7: List handler filters deleted entities ✓
-- [ ] Step 8: Details handler rejects deleted entities
+- [x] Step 8: Details handler rejects deleted entities ✓
 - [ ] Step 9: AutoMapper profiles updated
 - [ ] Step 10: All tests passing
 

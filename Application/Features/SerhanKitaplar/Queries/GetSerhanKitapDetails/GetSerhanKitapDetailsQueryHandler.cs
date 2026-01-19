@@ -28,6 +28,16 @@ public class GetSerhanKitapDetailsQueryHandler : IRequestHandler<GetSerhanKitapD
             return Result<GetSerhanKitapDto>.Failure("SerhanKitap not found", 404);
         }
 
+        if (serhanKitap.IsDeleted)
+        {
+            return Result<GetSerhanKitapDto>.Failure("SerhanKitap has been deleted", 410);
+        }
+
+        if (!serhanKitap.IsActive)
+        {
+            return Result<GetSerhanKitapDto>.Failure("SerhanKitap is not active", 423);
+        }
+
         var dto = _mapper.Map<GetSerhanKitapDto>(serhanKitap);
         return Result<GetSerhanKitapDto>.Success("SerhanKitap retrieved successfully", dto);
     }
