@@ -139,9 +139,9 @@ refactor: make SerhanKitap inherit from BaseEntity
 
 **Tasks:**
 
-- [ ] Run migration command: `dotnet ef migrations add AddBaseEntityAuditFields -p Persistence -s API`
-- [ ] Review generated migration in `Persistence/Migrations/`
-- [ ] Verify migration adds new columns:
+- [x] Run migration command: `dotnet ef migrations add AddBaseEntityAuditFields -p Persistence -s API`
+- [x] Review generated migration in `Persistence/Migrations/`
+- [x] Verify migration adds new columns:
   - `CreatedBy` (nullable string)
   - `UpdatedDate` (nullable DateTime)
   - `UpdatedBy` (nullable string)
@@ -652,7 +652,7 @@ After completing this implementation, consider:
 
 - [x] Step 1: BaseEntity created with tests ✓
 - [x] Step 2: SerhanKitap inherits from BaseEntity ✓
-- [ ] Step 3: EF Core migration created
+- [x] Step 3: EF Core migration created ✓
 - [ ] Step 4: Create handler sets CreatedDate/CreatedBy
 - [ ] Step 5: Edit handler sets UpdatedDate/UpdatedBy
 - [ ] Step 6: Delete handler uses soft delete
