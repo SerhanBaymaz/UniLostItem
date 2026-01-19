@@ -752,4 +752,80 @@ public class GetSerhanKitapListQueryHandlerTests
         result.Value!.Items.Should().BeEmpty();
         result.Value.TotalCount.Should().Be(0);
     }
+
+    [Fact]
+    public async Task Handle_WithSoftDeletedItems_ShouldExcludeDeletedItems()
+    {
+        // Arrange
+        var kitaplar = new[]
+        {
+            new SerhanKitap { Id = "1", KitapName = "Active Book 1", KitapYazar = "Author 1", KitapSayfaSayisi = 200, IsDeleted = false, IsActive = true },
+            new SerhanKitap { Id = "2", KitapName = "Deleted Book", KitapYazar = "Author 2", KitapSayfaSayisi = 300, IsDeleted = true, IsActive = true },
+            new SerhanKitap { Id = "3", KitapName = "Active Book 2", KitapYazar = "Author 3", KitapSayfaSayisi = 250, IsDeleted = false, IsActive = true }
+        };
+
+        await (_context as AppDbContext)!.SerhanKitaplar.AddRangeAsync(kitaplar);
+        await (_context as AppDbContext)!.SaveChangesAsync();
+
+        var kitaplarDto = new[]
+        {
+            new GetSerhanKitapDto { Id = "1", KitapName = "Active Book 1", KitapYazar = "Author 1", KitapSayfaSayisi = 200 },
+            new GetSerhanKitapDto { Id = "3", KitapName = "Active Book 2", KitapYazar = "Author 3", KitapSayfaSayisi = 250 }
+        };
+
+        _mockMapper.Setup(x => x.Map<List<GetSerhanKitapDto>>(It.IsAny<List<SerhanKitap>>()))
+            .Returns(kitaplarDto.ToList());
+
+        var query = new GetSerhanKitapListQuery
+        {
+            PageNumber = 1,
+            PageSize = 10
+        };
+
+        // Act
+        var result = await _handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Value!.TotalCount.Should().Be(2); // Only non-deleted items counted
+        result.Value.Items.Should().HaveCount(2);
+        result.Value.TotalPages.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task Handle_WithInactiveItems_ShouldExcludeInactiveItems()
+    {
+        // Arrange
+        var kitaplar = new[]
+        {
+            new SerhanKitap { Id = "1", KitapName = "Active Book", KitapYazar = "Author 1", KitapSayfaSayisi = 200, IsDeleted = false, IsActive = true },
+            new SerhanKitap { Id = "2", KitapName = "Inactive Book", KitapYazar = "Author 2", KitapSayfaSayisi = 300, IsDeleted = false, IsActive = false },
+            new SerhanKitap { Id = "3", KitapName = "Deleted Book", KitapYazar = "Author 3", KitapSayfaSayisi = 250, IsDeleted = true, IsActive = false }
+        };
+
+        await (_context as AppDbContext)!.SerhanKitaplar.AddRangeAsync(kitaplar);
+        await (_context as AppDbContext)!.SaveChangesAsync();
+
+        var kitaplarDto = new[]
+        {
+            new GetSerhanKitapDto { Id = "1", KitapName = "Active Book", KitapYazar = "Author 1", KitapSayfaSayisi = 200 }
+        };
+
+        _mockMapper.Setup(x => x.Map<List<GetSerhanKitapDto>>(It.IsAny<List<SerhanKitap>>()))
+            .Returns(kitaplarDto.ToList());
+
+        var query = new GetSerhanKitapListQuery
+        {
+            PageNumber = 1,
+            PageSize = 10
+        };
+
+        // Act
+        var result = await _handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Value!.TotalCount.Should().Be(1); // Only active and non-deleted items counted
+        result.Value.Items.Should().HaveCount(1);
+    }
 }

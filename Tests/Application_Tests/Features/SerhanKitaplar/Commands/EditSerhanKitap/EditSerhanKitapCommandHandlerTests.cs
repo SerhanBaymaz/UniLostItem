@@ -2,23 +2,27 @@ using System.Threading;
 using System.Threading.Tasks;
 using Application.Core;
 using Application.Features.SerhanKitaplar.Commands.EditSerhanKitap;
+using Application.Interfaces;
 using Domain;
+using MediatR;
 using Moq;
 using Persistence;
 using Xunit;
-using MediatR;
 
 namespace Tests.Application_Tests.Features.SerhanKitaplar.Commands.EditSerhanKitap;
 
 public class EditSerhanKitapCommandHandlerTests
 {
     private readonly Mock<IAppDbContext> _mockContext;
+    private readonly Mock<ICurrentUserService> _currentUserServiceMock;
     private readonly EditSerhanKitapCommandHandler _handler;
 
     public EditSerhanKitapCommandHandlerTests()
     {
         _mockContext = new Mock<IAppDbContext>();
-        _handler = new EditSerhanKitapCommandHandler(_mockContext.Object);
+        _currentUserServiceMock = new Mock<ICurrentUserService>();
+        _currentUserServiceMock.Setup(x => x.UserId).Returns((string?)null); // Simulate anonymous user
+        _handler = new EditSerhanKitapCommandHandler(_mockContext.Object, _currentUserServiceMock.Object);
     }
 
         [Fact]

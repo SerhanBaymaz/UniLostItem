@@ -1,5 +1,6 @@
 using Application.Core;
 using Application.Features.SerhanKitaplar.Commands.CreateSerhanKitap;
+using Application.Interfaces;
 using AutoMapper;
 using Domain;
 using FluentAssertions;
@@ -13,6 +14,7 @@ namespace Tests.Application_Tests.Features.SerhanKitaplar.Commands.CreateSerhanK
 public class CreateSerhanKitapCommandHandlerTests
 {
     private readonly Mock<IMapper> _mapperMock;
+    private readonly Mock<ICurrentUserService> _currentUserServiceMock;
     private readonly IAppDbContext _context;
     private readonly CreateSerhanKitapCommandHandler _handler;
 
@@ -20,7 +22,9 @@ public class CreateSerhanKitapCommandHandlerTests
     {
         _context = TestDbContextFactory.CreateInMemoryDbContext();
         _mapperMock = new Mock<IMapper>();
-        _handler = new CreateSerhanKitapCommandHandler(_context, _mapperMock.Object);
+        _currentUserServiceMock = new Mock<ICurrentUserService>();
+        _currentUserServiceMock.Setup(x => x.UserId).Returns((string?)null); // Simulate anonymous user
+        _handler = new CreateSerhanKitapCommandHandler(_context, _mapperMock.Object, _currentUserServiceMock.Object);
     }
 
     [Fact]
@@ -257,12 +261,14 @@ public class CreateSerhanKitapCommandHandlerTests
         // Arrange
         var mockContext = new Mock<IAppDbContext>();
         var mockDbSet = new Mock<DbSet<SerhanKitap>>();
+        var mockUserService = new Mock<ICurrentUserService>();
 
         mockContext.Setup(c => c.SerhanKitaplar).Returns(mockDbSet.Object);
         mockContext.Setup(c => c.SaveChangesAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(0); // Simulate save failure
+        mockUserService.Setup(x => x.UserId).Returns((string?)null);
 
-        var handler = new CreateSerhanKitapCommandHandler(mockContext.Object, _mapperMock.Object);
+        var handler = new CreateSerhanKitapCommandHandler(mockContext.Object, _mapperMock.Object, mockUserService.Object);
 
         var dto = new CreateSerhanKitapDto
         {

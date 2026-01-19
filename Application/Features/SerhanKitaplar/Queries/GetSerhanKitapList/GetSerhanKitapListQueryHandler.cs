@@ -27,7 +27,8 @@ public class GetSerhanKitapListQueryHandler :
         GetSerhanKitapListQuery request,
         CancellationToken cancellationToken)
     {
-        var query = _context.SerhanKitaplar.AsQueryable();
+        var query = _context.SerhanKitaplar
+            .Where(x => !x.IsDeleted && x.IsActive);  // Exclude soft-deleted and inactive records
 
         // Filtering
         query = ApplyFiltering(query, request);

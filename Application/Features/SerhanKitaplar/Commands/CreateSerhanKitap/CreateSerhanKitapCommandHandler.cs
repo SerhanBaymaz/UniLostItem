@@ -1,6 +1,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Application.Core;
+using Application.Interfaces;
 using AutoMapper;
 using Domain;
 using MediatR;
@@ -12,16 +13,22 @@ public class CreateSerhanKitapCommandHandler : IRequestHandler<CreateSerhanKitap
 {
     private readonly IAppDbContext _context;
     private readonly IMapper _mapper;
+    private readonly ICurrentUserService _currentUserService;
 
-    public CreateSerhanKitapCommandHandler(IAppDbContext context, IMapper mapper)
+    public CreateSerhanKitapCommandHandler(IAppDbContext context, IMapper mapper, ICurrentUserService currentUserService)
     {
         _context = context;
         _mapper = mapper;
+        _currentUserService = currentUserService;
     }
 
     public async Task<Result<string>> Handle(CreateSerhanKitapCommand request, CancellationToken cancellationToken)
     {
         var serhanKitap = _mapper.Map<SerhanKitap>(request.CreateSerhanKitapDto);
+
+        // Set audit fields
+        serhanKitap.CreatedDate = System.DateTime.UtcNow;
+        serhanKitap.CreatedBy = _currentUserService.UserId;
 
         _context.SerhanKitaplar.Add(serhanKitap);
 
