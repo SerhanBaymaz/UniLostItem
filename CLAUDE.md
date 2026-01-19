@@ -174,35 +174,54 @@ All responses use `StandardApiResponse<T>` with:
 
 **Primary Resources:**
 
-- `SerhanKitap` - CRUD endpoints in `SerhanKitaplarController` (`/api/v1/serhan-kitaplar`)
+- `SerhanKitap` - CRUD endpoints in `SerhanKitaplarController` (`/api/v1/serhan-kitaplar`) - **All endpoints require authentication**
+
+**SerhanKitap API - Requires Authentication:**
+
+All endpoints under `/api/v1/serhan-kitaplar` require JWT Bearer authentication:
+
+- `GET /api/v1/serhan-kitaplar` - List all books (authenticated)
+- `GET /api/v1/serhan-kitaplar/{id}` - Get book details (authenticated)
+- `POST /api/v1/serhan-kitaplar` - Create new book (authenticated)
+- `PUT /api/v1/serhan-kitaplar/{id}` - Update book (authenticated)
+- `DELETE /api/v1/serhan-kitaplar/{id}` - Delete book (authenticated)
+
+**Testing with Swagger UI:**
+
+1. Click "Authorize" button at the top of Swagger UI
+2. Enter your JWT token (obtained from `POST /api/v1/auth/login`)
+3. Click "Authorize" to apply the token to all requests
 
 #### Pagination, Filtering & Sorting
 
 The `GET /api/v1/serhan-kitaplar` endpoint supports advanced querying:
 
 **Request DTO Pattern:**
+
 - Controllers use dedicated Request DTOs (e.g., `GetSerhanKitaplarRequest`) with Data Annotations validation
 - Parameters are bound via `[FromQuery]` and validated at the API layer
 
 **Enum-Based Sorting:**
+
 - Sort fields are defined as enums (e.g., `KitapSortField`) with Description attributes mapping to database field names
 - This provides type safety and better Swagger/OpenAPI documentation
 
 **Query Parameters:**
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `pageNumber` | int | Page number (min: 1, default: 1) |
-| `pageSize` | int | Page size (min: 1, max: 100, default: 10) |
-| `sortBy` | enum? | Sort field (KitapName, KitapYazar, KitapSayfaSayisi) |
-| `sortDescending` | bool | Sort descending (default: false) |
-| `searchTerm` | string? | Search in both name and author fields |
-| `kitapName` | string? | Filter by book name (contains) |
-| `kitapYazar` | string? | Filter by author (contains) |
-| `minPageCount` | int? | Minimum page count filter |
-| `maxPageCount` | int? | Maximum page count filter |
+| Parameter        | Type    | Description                                          |
+| ---------------- | ------- | ---------------------------------------------------- |
+| `pageNumber`     | int     | Page number (min: 1, default: 1)                     |
+| `pageSize`       | int     | Page size (min: 1, max: 100, default: 10)            |
+| `sortBy`         | enum?   | Sort field (KitapName, KitapYazar, KitapSayfaSayisi) |
+| `sortDescending` | bool    | Sort descending (default: false)                     |
+| `searchTerm`     | string? | Search in both name and author fields                |
+| `kitapName`      | string? | Filter by book name (contains)                       |
+| `kitapYazar`     | string? | Filter by author (contains)                          |
+| `minPageCount`   | int?    | Minimum page count filter                            |
+| `maxPageCount`   | int?    | Maximum page count filter                            |
 
 **Response Metadata:**
+
 ```json
 {
   "data": [...],
@@ -227,7 +246,7 @@ The `GET /api/v1/serhan-kitaplar` endpoint supports advanced querying:
 
 ### Adding a New Feature
 
-1. Create entity in `Domain/`
+1. Create entity in `Domain/` (inherit from `BaseEntity` for audit trail)
 2. Add `DbSet<T>` to `AppDbContext.cs`
 3. Create migration: `dotnet ef migrations add <Name> -p Persistence -s API`
 4. Add feature folder under `Application/Features/<Feature>/`
@@ -237,11 +256,42 @@ The `GET /api/v1/serhan-kitaplar` endpoint supports advanced querying:
 8. Inject handlers via MediatR in controller actions
 9. Add parallel tests in `Tests/Features/<Feature>/`
 
+#### BaseEntity & Audit Trail
+
+**BaseEntity Properties:**
+
+Entities inheriting from `BaseEntity` automatically get audit trail properties:
+
+| Property      | Type      | Default                     | Description                            |
+| ------------- | --------- | --------------------------- | -------------------------------------- |
+| `Id`          | string    | `Guid.NewGuid().ToString()` | Unique identifier for the entity       |
+| `CreatedDate` | DateTime  | `DateTime.UtcNow`           | Timestamp when entity was created      |
+| `CreatedBy`   | string?   | null                        | User ID who created the entity         |
+| `UpdatedDate` | DateTime? | null                        | Timestamp when entity was last updated |
+| `UpdatedBy`   | string?   | null                        | User ID who last updated the entity    |
+| `IsDeleted`   | bool      | false                       | Soft delete flag (true = deleted)      |
+| `IsActive`    | bool      | true                        | Active status flag (false = inactive)  |
+
+**Soft Delete Pattern:**
+
+- Delete operations set `IsDeleted = true` instead of physically removing records
+- List queries automatically filter out `IsDeleted = true` records
+- Details queries return 410 Gone for soft-deleted entities
+- Details queries return 423 Locked for inactive (`IsActive = false`) entities
+
+**Important Notes:**
+
+- `ApplicationUser` does NOT inherit from `BaseEntity` (already extends `IdentityUser`)
+- Handlers set `CreatedDate`, `CreatedBy`, `UpdatedDate`, `UpdatedBy` automatically
+- Use `ICurrentService.UserId` to get current user ID for audit fields
+- AutoMapper extension `IgnoreAllBaseEntityProperties()` prevents DTO→Entity mapping of audit fields
+
 #### Implementing Paginated List Queries with Filtering & Sorting
 
 For list endpoints with pagination, filtering, and sorting:
 
 1. **Create Sort Field Enum** (e.g., `KitapSortField.cs`):
+
    ```csharp
    public enum KitapSortField
    {
@@ -251,6 +301,7 @@ For list endpoints with pagination, filtering, and sorting:
    ```
 
 2. **Create Request DTO** (e.g., `GetItemsRequest.cs` in `API/Controllers/Requests/`):
+
    ```csharp
    public class GetItemsRequest
    {
@@ -268,6 +319,7 @@ For list endpoints with pagination, filtering, and sorting:
    ```
 
 3. **Create Query** inheriting from `PagedAndSortedQueryBase<T>`:
+
    ```csharp
    public record GetItemListQuery : PagedAndSortedQueryBase<KitapSortField>,
        IRequest<Result<PaginatedListDto<GetItemDto>>>
@@ -278,6 +330,7 @@ For list endpoints with pagination, filtering, and sorting:
    ```
 
 4. **Create Validator** inheriting from `PagedAndSortedQueryValidator<TQuery, TSortEnum>`:
+
    ```csharp
    public class GetItemListValidator : PagedAndSortedQueryValidator<GetItemListQuery, KitapSortField>
    {
@@ -294,6 +347,7 @@ For list endpoints with pagination, filtering, and sorting:
    - Uses pagination helper to create `PaginatedListDto<T>`
 
 6. **Controller Action**:
+
    ```csharp
    [HttpGet]
    public async Task<ActionResult<StandardApiResponse<PaginatedListDto<GetItemDto>>>> GetItems(
@@ -345,7 +399,7 @@ For list endpoints with pagination, filtering, and sorting:
   - Triggers: push/PR on main/develop branches
   - Includes SonarCloud analysis
 - `.github/workflows/ci-prod.yml` - Production pipeline (build, test, Docker)
-  - Triggers: push on main or version tags (v*.*.*)
+  - Triggers: push on main or version tags (v*.*.\*)
 - Images pushed to GitHub Container Registry (GHCR)
   - Dev: `ghcr.io/serhanbaymaz/dev-templatedeneme:latest` and `:sha-<git-sha>`
   - Prod: `ghcr.io/serhanbaymaz/prod-templatedeneme:latest` and `:sha-<git-sha>`
@@ -359,9 +413,12 @@ For list endpoints with pagination, filtering, and sorting:
 
 ## Important Files
 
+- `Domain/Common/BaseEntity.cs` - Base entity class with audit trail (Id, CreatedDate, CreatedBy, UpdatedDate, UpdatedBy, IsDeleted, IsActive)
+- `Domain/SerhanKitap.cs` - Business entity inheriting from BaseEntity
+- `Domain/ApplicationUser.cs` - Identity user entity (does NOT inherit from BaseEntity)
 - `API/Program.cs` - Application entry point with extension-based configuration
 - `Application/Core/Result.cs` - Result pattern implementation
-- `Application/Core/MappingProfiles.cs` - AutoMapper profiles for DTO mapping
+- `Application/Core/MappingProfiles.cs` - AutoMapper profiles for DTO mapping (includes BaseEntity extension methods)
 - `Application/Core/ValidationBehavior.cs` - MediatR validation pipeline
 - `Application/Core/Pagination/PagedAndSortedQueryBase.cs` - Base class for paginated queries
 - `Application/Core/Pagination/PaginatedListDto.cs` - Pagination response DTO with metadata
@@ -389,6 +446,10 @@ For list endpoints with pagination, filtering, and sorting:
 - **Pagination sorting** - Always whitelist sort fields at the handler level to prevent SQL injection, even when using enums
 - **Request DTO validation** - Data Annotations validate at API layer, FluentValidation at Application layer (defense in depth)
 - **SortBy null handling** - When `SortBy` is null, handlers should apply a default sort order (usually by name or ID)
+- **Soft delete filtering** - List queries must filter out `IsDeleted = true` records; this is NOT automatic at the DbContext level
+- **Audit fields in DTOs** - Query DTOs include audit fields; command DTOs should NOT (use `IgnoreAllBaseEntityProperties()` AutoMapper extension)
+- **BaseEntity inheritance** - Only business entities should inherit from `BaseEntity`; `ApplicationUser` does NOT (extends `IdentityUser`)
+- **DateTime consistency** - All timestamps use `DateTime.UtcNow` to avoid timezone issues
 
 ## Agentic Workflow
 

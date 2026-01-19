@@ -103,8 +103,10 @@ TemplateDeneme/
 │                   ├── GetSerhanKitapDetailsQuery.cs
 │                   └── GetSerhanKitapDetailsQueryHandler.cs
 ├── Domain/                   # Domain Layer - Domain modelleri
-│   └── ApplicationUser.cs    # Identity user entity (extended)
-│   └── SerhanKitap.cs        # Domain entity
+│   ├── Common/               # Ortak domain sınıfları
+│   │   └── BaseEntity.cs     # Base entity (audit trail: Id, CreatedDate, CreatedBy, UpdatedDate, UpdatedBy, IsDeleted, IsActive)
+│   ├── ApplicationUser.cs    # Identity user entity (extended, BaseEntity miras almaz)
+│   └── SerhanKitap.cs        # Domain entity (BaseEntity miras alır)
 ├── Infrastructure/           # Infrastructure Layer - Dış servisler (JWT, Security)
 │   ├── Security/             # Güvenlik implementasyonları
 │   │   └── JwtService.cs
@@ -117,22 +119,36 @@ TemplateDeneme/
 │   ├── DbInitializer.cs      # Veritabanı seed data
 │   └── Migrations/           # EF Core migration'ları
 └── Tests/                    # Unit and integration tests project
-    ├── Features/             # Feature-specific tests
-    │   └── SerhanKitaplar/
-    │       ├── Commands/
-    │       │   ├── CreateSerhanKitap/
-    │       │   │   ├── CreateSerhanKitapCommandHandlerTests.cs
-    │       │   │   └── CreateSerhanKitapCommandValidatorTests.cs
-    │       │   ├── EditSerhanKitap/
-    │       │   │   ├── EditSerhanKitapCommandHandlerTests.cs
-    │       │   │   └── EditSerhanKitapCommandValidatorTests.cs
-    │       │   └── DeleteSerhanKitap/
-    │       │       └── DeleteSerhanKitapCommandHandlerTests.cs
-    │       └── Queries/
-    │           ├── GetSerhanKitapList/
-    │           │   └── GetSerhanKitapListQueryHandlerTests.cs
-    │           └── GetSerhanKitapDetails/
-    │               └── GetSerhanKitapDetailsQueryHandlerTests.cs
+    ├── API_Tests/            # API layer tests
+    │   ├── Controllers/
+    │   │   ├── AuthControllerTests.cs
+    │   │   ├── BaseApiControllerTests.cs
+    │   │   ├── SerhanKitaplarControllerTests.cs
+    │   │   └── SerhanKitaplarControllerAuthorizationTests.cs
+    │   ├── Extensions/        # Extension method tests
+    │   ├── Helpers/           # Helper class tests
+    │   ├── Middleware/        # Middleware tests
+    │   └── Responses/         # Response model tests
+    ├── Application_Tests/     # Application layer tests
+    │   └── Features/
+    │       ├── Auth/          # Auth feature tests
+    │       └── SerhanKitaplar/ # SerhanKitap feature tests
+    │           ├── Commands/
+    │           │   ├── CreateSerhanKitap/
+    │           │   │   ├── CreateSerhanKitapCommandHandlerTests.cs
+    │           │   │   └── CreateSerhanKitapCommandValidatorTests.cs
+    │           │   ├── EditSerhanKitap/
+    │           │   │   ├── EditSerhanKitapCommandHandlerTests.cs
+    │           │   │   └── EditSerhanKitapCommandValidatorTests.cs
+    │           │   └── DeleteSerhanKitap/
+    │           │       └── DeleteSerhanKitapCommandHandlerTests.cs
+    │           └── Queries/
+    │               ├── GetSerhanKitapList/
+    │               │   └── GetSerhanKitapListQueryHandlerTests.cs
+    │               │   └── GetSerhanKitapListValidatorTests.cs
+    │               └── GetSerhanKitapDetails/
+    │                   └── GetSerhanKitapDetailsQueryHandlerTests.cs
+    └── Domain_Tests/          # Domain layer tests
 ```
 
 ## Kullanılan Teknolojiler
@@ -381,15 +397,17 @@ SEQ_FIRSTRUN_ADMINPASSWORD=admindev
 - **GET** `/api/v1/auth/profile` - Mevcut kullanıcı profilini getir (JWT gerektirir)
 - **PUT** `/api/v1/auth/profile` - Mevcut kullanıcı profilini güncelle (JWT gerektirir)
 
-#### SerhanKitap Endpoints (`/api/v1/serhan-kitaplar`)
+#### SerhanKitap Endpoints (`/api/v1/serhan-kitaplar`) - **JWT Authentication Required**
 
-API, `SerhanKitap` (Kitap) entity'si üzerinde CRUD işlemleri gerçekleştirir:
+Tüm endpoint'ler JWT Bearer token gerektirir (`[Authorize]`):
 
 - **GET** `/api/v1/serhan-kitaplar` - Kitapları listele (Pagination, Filtering, Sorting desteği)
 - **GET** `/api/v1/serhan-kitaplar/{id}` - Belirli bir kitabı getir
 - **POST** `/api/v1/serhan-kitaplar` - Yeni kitap ekle
 - **PUT** `/api/v1/serhan-kitaplar/{id}` - Kitap bilgilerini güncelle
 - **DELETE** `/api/v1/serhan-kitaplar/{id}` - Kitap sil
+
+> **Not:** Swagger UI'da test etmek için önce `/api/v1/auth/login` endpoint'i ile token almalı ve "Authorize" butonuna tıklayarak token girmelisiniz.
 
 ##### Pagination, Filtering & Sorting
 
@@ -439,13 +457,25 @@ GET /api/v1/serhan-kitaplar?kitapName=1984&sortBy=1
       "id": "1",
       "kitapName": "1984",
       "kitapYazar": "George Orwell",
-      "kitapSayfaSayisi": 328
+      "kitapSayfaSayisi": 328,
+      "createdDate": "2025-01-15T10:30:00Z",
+      "createdBy": "user-id-123",
+      "updatedDate": "2025-01-16T14:22:00Z",
+      "updatedBy": "user-id-456",
+      "isDeleted": false,
+      "isActive": true
     },
     {
       "id": "2",
       "kitapName": "Animal Farm",
       "kitapYazar": "George Orwell",
-      "kitapSayfaSayisi": 112
+      "kitapSayfaSayisi": 112,
+      "createdDate": "2025-01-14T09:15:00Z",
+      "createdBy": "user-id-123",
+      "updatedDate": null,
+      "updatedBy": null,
+      "isDeleted": false,
+      "isActive": true
     }
   ],
   "metadata": {
@@ -458,6 +488,36 @@ GET /api/v1/serhan-kitaplar?kitapName=1984&sortBy=1
   }
 }
 ```
+
+### BaseEntity & Audit Trail
+
+**BaseEntity Özellikleri:**
+
+Tüm business entity'ler `BaseEntity` sınıfından miras aldığında otomatik olarak audit trail özellikleri kazanır:
+
+| Property      | Type      | Default                     | Description                            |
+| ------------- | --------- | --------------------------- | -------------------------------------- |
+| `Id`          | string    | `Guid.NewGuid().ToString()` | Entity'nin benzersiz tanımlayıcısı     |
+| `CreatedDate` | DateTime  | `DateTime.UtcNow`           | Entity oluşturulma zaman damgası       |
+| `CreatedBy`   | string?   | null                        | Entity'yi oluşturan kullanıcı ID'si    |
+| `UpdatedDate` | DateTime? | null                        | Entity son güncelleme zaman damgası    |
+| `UpdatedBy`   | string?   | null                        | Entity'yi güncelleyen kullanıcı ID'si  |
+| `IsDeleted`   | bool      | false                       | Soft delete bayrağı (true = silinmiş)  |
+| `IsActive`    | bool      | true                        | Aktiflik bayrağı (false = aktif değil) |
+
+**Soft Delete Pattern:**
+
+- Silme işlemleri `IsDeleted = true` olarak ayarlar, fiziksel olarak kaydı silmez
+- List sorguları otomatik olarak `IsDeleted = true` kayıtları filtreler
+- Detay sorguları soft-delete edilmiş entity'ler için **410 Gone** döner
+- Detay sorguları inaktif (`IsActive = false`) entity'ler için **423 Locked** döner
+- Bu pattern sayesinde veri bütünlüğü korunur ve gerekirse geri yükleme yapılabilir
+
+**Önemli Notlar:**
+
+- `ApplicationUser` `BaseEntity`'den miras almaz (zaten `IdentityUser`'dan miras alıyor)
+- Handler'lar `CreatedDate`, `CreatedBy`, `UpdatedDate`, `UpdatedBy` alanlarını otomatik olarak ayarlar
+- Audit alanları Query DTO'larına dahil edilir, ancak Command DTO'lardan hariç tutulur (AutoMapper `IgnoreAllBaseEntityProperties()` extension method'u ile)
 
 ### Health Check Endpoints
 
@@ -547,6 +607,8 @@ GET /api/v1/serhan-kitaplar?kitapName=1984&sortBy=1
 - **CI/CD Pipelines** (GitHub Actions)
 - **Pagination** - Sayfalı listeler için `PaginatedListDto<T>` ile metadata desteği
 - **Filtering** - Esnek filtreleme (arama, aralık filtreleri, contains vb.)
+- **BaseEntity Audit Trail** - Tüm entity'ler için otomatik audit alanları (CreatedDate, CreatedBy, UpdatedDate, UpdatedBy, IsDeleted, IsActive)
+- **Soft Delete** - Veri bütünlüğünü koruyan soft delete pattern (fiziksel silme yerine `IsDeleted` bayrağı)
 - **Sorting** - Enum tabanlı type-safe sıralama desteği
 - **Request DTO Pattern** - Controller tarafında temiz parametre yönetimi için Data Annotations
 - **Docker Image Registry** - GitHub Container Registry entegrasyonu
