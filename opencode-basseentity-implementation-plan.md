@@ -397,9 +397,9 @@ feat: implement soft delete for SerhanKitap using IsDeleted flag
 
 **Tasks:**
 
-- [ ] Open `Application/Features/SerhanKitaplar/Queries/GetSerhanKitapList/GetSerhanKitapListQueryHandler.cs`
-- [ ] Add `.Where(x => !x.IsDeleted)` filter to the query
-- [ ] Optionally add `.Where(x => x.IsActive)` filter if active status should be checked
+- [x] Open `Application/Features/SerhanKitaplar/Queries/GetSerhanKitapList/GetSerhanKitapListQueryHandler.cs`
+- [x] Add `.Where(x => !x.IsDeleted)` filter to the query
+- [x] Optionally add `.Where(x => x.IsActive)` filter if active status should be checked
 
 **Handler Update:**
 
@@ -447,8 +447,9 @@ feat: filter out soft-deleted SerhanKitap entities in list query
 
 - [ ] Open `Application/Features/SerhanKitaplar/Queries/GetSerhanKitapDetails/GetSerhanKitapDetailsQueryHandler.cs`
 - [ ] After finding entity, check if `IsDeleted` is true
-- [ ] If deleted, return failure response
-- [ ] If not deleted, proceed with normal flow
+- [ ] Check if `IsActive` is false
+- [ ] If deleted or inactive, return failure response
+- [ ] If not deleted and active, proceed with normal flow
 
 **Handler Update:**
 
@@ -463,6 +464,9 @@ public async Task<Result<GetSerhanKitapDetailsDto>> Handle(GetSerhanKitapDetails
     if (kitap.IsDeleted)
         return Result<GetSerhanKitapDetailsDto>.Failure("Kitap silinmiş.", "410");
 
+    if (!kitap.IsActive)
+        return Result<GetSerhanKitapDetailsDto>.Failure("Kitap aktif değil.", "423");
+
     // Mapping logic continues...
 }
 ```
@@ -470,21 +474,24 @@ public async Task<Result<GetSerhanKitapDetailsDto>> Handle(GetSerhanKitapDetails
 **Commit Message:**
 
 ```text
-feat: return failure when requesting soft-deleted SerhanKitap details
+feat: return failure when requesting soft-deleted or inactive SerhanKitap details
 
-- Updated GetSerhanKitapDetailsQueryHandler to check IsDeleted flag
+- Updated GetSerhanKitapDetailsQueryHandler to check IsDeleted and IsActive flags
 - Returns failure (410 Gone) when requesting deleted entity details
-- Prevents access to soft-deleted entity data
+- Returns failure (423 Locked) when requesting inactive entity details
+- Prevents access to soft-deleted or inactive entity data
 ```
 
 **Tests:**
 
 - Update `Tests/Application_Tests/Features/SerhanKitaplar/Queries/GetSerhanKitapDetails/GetSerhanKitapDetailsQueryHandlerTests.cs`
 - Test 1: Verify returns failure when requesting soft-deleted entity
-- Test 2: Verify failure has correct message and status code (410)
-- Test 3: Verify returns success for non-deleted entity
-- Test 4: Verify returns 404 for non-existent entity (not deleted)
-- Test 5: Verify failure status codes are different for deleted (410) vs not found (404)
+- Test 2: Verify failure has correct message and status code (410) for deleted
+- Test 3: Verify returns failure when requesting inactive entity
+- Test 4: Verify failure has correct message and status code (423) for inactive
+- Test 5: Verify returns success for active and non-deleted entity
+- Test 6: Verify returns 404 for non-existent entity (not deleted)
+- Test 7: Verify failure status codes are different for deleted (410), inactive (423), and not found (404)
 
 **Run:** `dotnet test --filter "FullyQualifiedName~GetSerhanKitapDetailsQueryHandlerTests"`
 
@@ -656,7 +663,7 @@ After completing this implementation, consider:
 - [x] Step 4: Create handler sets CreatedDate/CreatedBy ✓
 - [x] Step 5: Edit handler sets UpdatedDate/UpdatedBy ✓
 - [x] Step 6: Delete handler uses soft delete ✓
-- [ ] Step 7: List handler filters deleted entities
+- [x] Step 7: List handler filters deleted entities ✓
 - [ ] Step 8: Details handler rejects deleted entities
 - [ ] Step 9: AutoMapper profiles updated
 - [ ] Step 10: All tests passing
