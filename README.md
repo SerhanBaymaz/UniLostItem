@@ -117,22 +117,36 @@ TemplateDeneme/
 │   ├── DbInitializer.cs      # Veritabanı seed data
 │   └── Migrations/           # EF Core migration'ları
 └── Tests/                    # Unit and integration tests project
-    ├── Features/             # Feature-specific tests
-    │   └── SerhanKitaplar/
-    │       ├── Commands/
-    │       │   ├── CreateSerhanKitap/
-    │       │   │   ├── CreateSerhanKitapCommandHandlerTests.cs
-    │       │   │   └── CreateSerhanKitapCommandValidatorTests.cs
-    │       │   ├── EditSerhanKitap/
-    │       │   │   ├── EditSerhanKitapCommandHandlerTests.cs
-    │       │   │   └── EditSerhanKitapCommandValidatorTests.cs
-    │       │   └── DeleteSerhanKitap/
-    │       │       └── DeleteSerhanKitapCommandHandlerTests.cs
-    │       └── Queries/
-    │           ├── GetSerhanKitapList/
-    │           │   └── GetSerhanKitapListQueryHandlerTests.cs
-    │           └── GetSerhanKitapDetails/
-    │               └── GetSerhanKitapDetailsQueryHandlerTests.cs
+    ├── API_Tests/            # API layer tests
+    │   ├── Controllers/
+    │   │   ├── AuthControllerTests.cs
+    │   │   ├── BaseApiControllerTests.cs
+    │   │   ├── SerhanKitaplarControllerTests.cs
+    │   │   └── SerhanKitaplarControllerAuthorizationTests.cs
+    │   ├── Extensions/        # Extension method tests
+    │   ├── Helpers/           # Helper class tests
+    │   ├── Middleware/        # Middleware tests
+    │   └── Responses/         # Response model tests
+    ├── Application_Tests/     # Application layer tests
+    │   └── Features/
+    │       ├── Auth/          # Auth feature tests
+    │       └── SerhanKitaplar/ # SerhanKitap feature tests
+    │           ├── Commands/
+    │           │   ├── CreateSerhanKitap/
+    │           │   │   ├── CreateSerhanKitapCommandHandlerTests.cs
+    │           │   │   └── CreateSerhanKitapCommandValidatorTests.cs
+    │           │   ├── EditSerhanKitap/
+    │           │   │   ├── EditSerhanKitapCommandHandlerTests.cs
+    │           │   │   └── EditSerhanKitapCommandValidatorTests.cs
+    │           │   └── DeleteSerhanKitap/
+    │           │       └── DeleteSerhanKitapCommandHandlerTests.cs
+    │           └── Queries/
+    │               ├── GetSerhanKitapList/
+    │               │   └── GetSerhanKitapListQueryHandlerTests.cs
+    │               │   └── GetSerhanKitapListValidatorTests.cs
+    │               └── GetSerhanKitapDetails/
+    │                   └── GetSerhanKitapDetailsQueryHandlerTests.cs
+    └── Domain_Tests/          # Domain layer tests
 ```
 
 ## Kullanılan Teknolojiler
@@ -381,15 +395,17 @@ SEQ_FIRSTRUN_ADMINPASSWORD=admindev
 - **GET** `/api/v1/auth/profile` - Mevcut kullanıcı profilini getir (JWT gerektirir)
 - **PUT** `/api/v1/auth/profile` - Mevcut kullanıcı profilini güncelle (JWT gerektirir)
 
-#### SerhanKitap Endpoints (`/api/v1/serhan-kitaplar`)
+#### SerhanKitap Endpoints (`/api/v1/serhan-kitaplar`) - **JWT Authentication Required**
 
-API, `SerhanKitap` (Kitap) entity'si üzerinde CRUD işlemleri gerçekleştirir:
+Tüm endpoint'ler JWT Bearer token gerektirir (`[Authorize]`):
 
 - **GET** `/api/v1/serhan-kitaplar` - Kitapları listele (Pagination, Filtering, Sorting desteği)
 - **GET** `/api/v1/serhan-kitaplar/{id}` - Belirli bir kitabı getir
 - **POST** `/api/v1/serhan-kitaplar` - Yeni kitap ekle
 - **PUT** `/api/v1/serhan-kitaplar/{id}` - Kitap bilgilerini güncelle
 - **DELETE** `/api/v1/serhan-kitaplar/{id}` - Kitap sil
+
+> **Not:** Swagger UI'da test etmek için önce `/api/v1/auth/login` endpoint'i ile token almalı ve "Authorize" butonuna tıklayarak token girmelisiniz.
 
 ##### Pagination, Filtering & Sorting
 

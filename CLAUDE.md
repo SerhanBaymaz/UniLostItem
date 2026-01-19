@@ -174,35 +174,54 @@ All responses use `StandardApiResponse<T>` with:
 
 **Primary Resources:**
 
-- `SerhanKitap` - CRUD endpoints in `SerhanKitaplarController` (`/api/v1/serhan-kitaplar`)
+- `SerhanKitap` - CRUD endpoints in `SerhanKitaplarController` (`/api/v1/serhan-kitaplar`) - **All endpoints require authentication**
+
+**SerhanKitap API - Requires Authentication:**
+
+All endpoints under `/api/v1/serhan-kitaplar` require JWT Bearer authentication:
+
+- `GET /api/v1/serhan-kitaplar` - List all books (authenticated)
+- `GET /api/v1/serhan-kitaplar/{id}` - Get book details (authenticated)
+- `POST /api/v1/serhan-kitaplar` - Create new book (authenticated)
+- `PUT /api/v1/serhan-kitaplar/{id}` - Update book (authenticated)
+- `DELETE /api/v1/serhan-kitaplar/{id}` - Delete book (authenticated)
+
+**Testing with Swagger UI:**
+
+1. Click "Authorize" button at the top of Swagger UI
+2. Enter your JWT token (obtained from `POST /api/v1/auth/login`)
+3. Click "Authorize" to apply the token to all requests
 
 #### Pagination, Filtering & Sorting
 
 The `GET /api/v1/serhan-kitaplar` endpoint supports advanced querying:
 
 **Request DTO Pattern:**
+
 - Controllers use dedicated Request DTOs (e.g., `GetSerhanKitaplarRequest`) with Data Annotations validation
 - Parameters are bound via `[FromQuery]` and validated at the API layer
 
 **Enum-Based Sorting:**
+
 - Sort fields are defined as enums (e.g., `KitapSortField`) with Description attributes mapping to database field names
 - This provides type safety and better Swagger/OpenAPI documentation
 
 **Query Parameters:**
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `pageNumber` | int | Page number (min: 1, default: 1) |
-| `pageSize` | int | Page size (min: 1, max: 100, default: 10) |
-| `sortBy` | enum? | Sort field (KitapName, KitapYazar, KitapSayfaSayisi) |
-| `sortDescending` | bool | Sort descending (default: false) |
-| `searchTerm` | string? | Search in both name and author fields |
-| `kitapName` | string? | Filter by book name (contains) |
-| `kitapYazar` | string? | Filter by author (contains) |
-| `minPageCount` | int? | Minimum page count filter |
-| `maxPageCount` | int? | Maximum page count filter |
+| Parameter        | Type    | Description                                          |
+| ---------------- | ------- | ---------------------------------------------------- |
+| `pageNumber`     | int     | Page number (min: 1, default: 1)                     |
+| `pageSize`       | int     | Page size (min: 1, max: 100, default: 10)            |
+| `sortBy`         | enum?   | Sort field (KitapName, KitapYazar, KitapSayfaSayisi) |
+| `sortDescending` | bool    | Sort descending (default: false)                     |
+| `searchTerm`     | string? | Search in both name and author fields                |
+| `kitapName`      | string? | Filter by book name (contains)                       |
+| `kitapYazar`     | string? | Filter by author (contains)                          |
+| `minPageCount`   | int?    | Minimum page count filter                            |
+| `maxPageCount`   | int?    | Maximum page count filter                            |
 
 **Response Metadata:**
+
 ```json
 {
   "data": [...],
@@ -242,6 +261,7 @@ The `GET /api/v1/serhan-kitaplar` endpoint supports advanced querying:
 For list endpoints with pagination, filtering, and sorting:
 
 1. **Create Sort Field Enum** (e.g., `KitapSortField.cs`):
+
    ```csharp
    public enum KitapSortField
    {
@@ -251,6 +271,7 @@ For list endpoints with pagination, filtering, and sorting:
    ```
 
 2. **Create Request DTO** (e.g., `GetItemsRequest.cs` in `API/Controllers/Requests/`):
+
    ```csharp
    public class GetItemsRequest
    {
@@ -268,6 +289,7 @@ For list endpoints with pagination, filtering, and sorting:
    ```
 
 3. **Create Query** inheriting from `PagedAndSortedQueryBase<T>`:
+
    ```csharp
    public record GetItemListQuery : PagedAndSortedQueryBase<KitapSortField>,
        IRequest<Result<PaginatedListDto<GetItemDto>>>
@@ -278,6 +300,7 @@ For list endpoints with pagination, filtering, and sorting:
    ```
 
 4. **Create Validator** inheriting from `PagedAndSortedQueryValidator<TQuery, TSortEnum>`:
+
    ```csharp
    public class GetItemListValidator : PagedAndSortedQueryValidator<GetItemListQuery, KitapSortField>
    {
@@ -294,6 +317,7 @@ For list endpoints with pagination, filtering, and sorting:
    - Uses pagination helper to create `PaginatedListDto<T>`
 
 6. **Controller Action**:
+
    ```csharp
    [HttpGet]
    public async Task<ActionResult<StandardApiResponse<PaginatedListDto<GetItemDto>>>> GetItems(
@@ -345,7 +369,7 @@ For list endpoints with pagination, filtering, and sorting:
   - Triggers: push/PR on main/develop branches
   - Includes SonarCloud analysis
 - `.github/workflows/ci-prod.yml` - Production pipeline (build, test, Docker)
-  - Triggers: push on main or version tags (v*.*.*)
+  - Triggers: push on main or version tags (v*.*.\*)
 - Images pushed to GitHub Container Registry (GHCR)
   - Dev: `ghcr.io/serhanbaymaz/dev-templatedeneme:latest` and `:sha-<git-sha>`
   - Prod: `ghcr.io/serhanbaymaz/prod-templatedeneme:latest` and `:sha-<git-sha>`

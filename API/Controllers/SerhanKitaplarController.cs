@@ -9,11 +9,13 @@ using Application.Features.SerhanKitaplar.Queries.Common.DTOs;
 using Application.Features.SerhanKitaplar.Queries.GetSerhanKitapDetails;
 using Application.Features.SerhanKitaplar.Queries.GetSerhanKitapList;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
 
 [Route("api/v1/serhan-kitaplar")]
+[Authorize]
 public class SerhanKitaplarController : BaseApiController
 {
     [HttpGet]
