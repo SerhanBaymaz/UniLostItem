@@ -1,6 +1,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Application.Core;
+using Application.Interfaces;
 using Domain;
 using MediatR;
 using Persistence;
@@ -10,10 +11,12 @@ namespace Application.Features.SerhanKitaplar.Commands.EditSerhanKitap;
 public class EditSerhanKitapCommandHandler : IRequestHandler<EditSerhanKitapCommand, Result<Unit>>
 {
     private readonly IAppDbContext _context;
+    private readonly ICurrentUserService _currentUserService;
 
-    public EditSerhanKitapCommandHandler(IAppDbContext context)
+    public EditSerhanKitapCommandHandler(IAppDbContext context, ICurrentUserService currentUserService)
     {
         _context = context;
+        _currentUserService = currentUserService;
     }
 
     public async Task<Result<Unit>> Handle(EditSerhanKitapCommand request, CancellationToken cancellationToken)
@@ -28,6 +31,10 @@ public class EditSerhanKitapCommandHandler : IRequestHandler<EditSerhanKitapComm
         serhanKitap.KitapName = request.EditSerhanKitapDto.KitapName;
         serhanKitap.KitapYazar = request.EditSerhanKitapDto.KitapYazar;
         serhanKitap.KitapSayfaSayisi = request.EditSerhanKitapDto.KitapSayfaSayisi;
+
+        // Update audit fields
+        serhanKitap.UpdatedDate = System.DateTime.UtcNow;
+        serhanKitap.UpdatedBy = _currentUserService.UserId;
 
         var result = await _context.SaveChangesAsync(cancellationToken);
 

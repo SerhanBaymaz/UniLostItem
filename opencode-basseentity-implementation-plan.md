@@ -279,12 +279,12 @@ feat: set CreatedDate and CreatedBy on SerhanKitap creation
 
 **Tasks:**
 
-- [ ] Open `Application/Features/SerhanKitaplar/Commands/EditSerhanKitap/EditSerhanKitapCommandHandler.cs`
-- [ ] Inject `ICurrentUserService` if not already injected
-- [ ] Before `SaveChangesAsync`, update:
+- [x] Open `Application/Features/SerhanKitaplar/Commands/EditSerhanKitap/EditSerhanKitapCommandHandler.cs`
+- [x] Inject `ICurrentUserService` if not already injected
+- [x] Before `SaveChangesAsync`, update:
   - `UpdatedDate = DateTime.UtcNow`
   - `UpdatedBy = _currentUserService.UserId`
-- [ ] Ensure `CreatedDate` and `CreatedBy` are NOT modified
+- [x] Ensure `CreatedDate` and `CreatedBy` are NOT modified
 
 **Handler Update:**
 
@@ -654,7 +654,7 @@ After completing this implementation, consider:
 - [x] Step 2: SerhanKitap inherits from BaseEntity ✓
 - [x] Step 3: EF Core migration created ✓
 - [x] Step 4: Create handler sets CreatedDate/CreatedBy ✓
-- [ ] Step 5: Edit handler sets UpdatedDate/UpdatedBy
+- [x] Step 5: Edit handler sets UpdatedDate/UpdatedBy ✓
 - [ ] Step 6: Delete handler uses soft delete
 - [ ] Step 7: List handler filters deleted entities
 - [ ] Step 8: Details handler rejects deleted entities
