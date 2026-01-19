@@ -246,7 +246,7 @@ The `GET /api/v1/serhan-kitaplar` endpoint supports advanced querying:
 
 ### Adding a New Feature
 
-1. Create entity in `Domain/`
+1. Create entity in `Domain/` (inherit from `BaseEntity` for audit trail)
 2. Add `DbSet<T>` to `AppDbContext.cs`
 3. Create migration: `dotnet ef migrations add <Name> -p Persistence -s API`
 4. Add feature folder under `Application/Features/<Feature>/`
@@ -255,6 +255,36 @@ The `GET /api/v1/serhan-kitaplar` endpoint supports advanced querying:
 7. Create Controller inheriting from `BaseApiController`
 8. Inject handlers via MediatR in controller actions
 9. Add parallel tests in `Tests/Features/<Feature>/`
+
+#### BaseEntity & Audit Trail
+
+**BaseEntity Properties:**
+
+Entities inheriting from `BaseEntity` automatically get audit trail properties:
+
+| Property      | Type      | Default                     | Description                            |
+| ------------- | --------- | --------------------------- | -------------------------------------- |
+| `Id`          | string    | `Guid.NewGuid().ToString()` | Unique identifier for the entity       |
+| `CreatedDate` | DateTime  | `DateTime.UtcNow`           | Timestamp when entity was created      |
+| `CreatedBy`   | string?   | null                        | User ID who created the entity         |
+| `UpdatedDate` | DateTime? | null                        | Timestamp when entity was last updated |
+| `UpdatedBy`   | string?   | null                        | User ID who last updated the entity    |
+| `IsDeleted`   | bool      | false                       | Soft delete flag (true = deleted)      |
+| `IsActive`    | bool      | true                        | Active status flag (false = inactive)  |
+
+**Soft Delete Pattern:**
+
+- Delete operations set `IsDeleted = true` instead of physically removing records
+- List queries automatically filter out `IsDeleted = true` records
+- Details queries return 410 Gone for soft-deleted entities
+- Details queries return 423 Locked for inactive (`IsActive = false`) entities
+
+**Important Notes:**
+
+- `ApplicationUser` does NOT inherit from `BaseEntity` (already extends `IdentityUser`)
+- Handlers set `CreatedDate`, `CreatedBy`, `UpdatedDate`, `UpdatedBy` automatically
+- Use `ICurrentService.UserId` to get current user ID for audit fields
+- AutoMapper extension `IgnoreAllBaseEntityProperties()` prevents DTO→Entity mapping of audit fields
 
 #### Implementing Paginated List Queries with Filtering & Sorting
 
@@ -383,9 +413,12 @@ For list endpoints with pagination, filtering, and sorting:
 
 ## Important Files
 
+- `Domain/Common/BaseEntity.cs` - Base entity class with audit trail (Id, CreatedDate, CreatedBy, UpdatedDate, UpdatedBy, IsDeleted, IsActive)
+- `Domain/SerhanKitap.cs` - Business entity inheriting from BaseEntity
+- `Domain/ApplicationUser.cs` - Identity user entity (does NOT inherit from BaseEntity)
 - `API/Program.cs` - Application entry point with extension-based configuration
 - `Application/Core/Result.cs` - Result pattern implementation
-- `Application/Core/MappingProfiles.cs` - AutoMapper profiles for DTO mapping
+- `Application/Core/MappingProfiles.cs` - AutoMapper profiles for DTO mapping (includes BaseEntity extension methods)
 - `Application/Core/ValidationBehavior.cs` - MediatR validation pipeline
 - `Application/Core/Pagination/PagedAndSortedQueryBase.cs` - Base class for paginated queries
 - `Application/Core/Pagination/PaginatedListDto.cs` - Pagination response DTO with metadata
@@ -413,6 +446,10 @@ For list endpoints with pagination, filtering, and sorting:
 - **Pagination sorting** - Always whitelist sort fields at the handler level to prevent SQL injection, even when using enums
 - **Request DTO validation** - Data Annotations validate at API layer, FluentValidation at Application layer (defense in depth)
 - **SortBy null handling** - When `SortBy` is null, handlers should apply a default sort order (usually by name or ID)
+- **Soft delete filtering** - List queries must filter out `IsDeleted = true` records; this is NOT automatic at the DbContext level
+- **Audit fields in DTOs** - Query DTOs include audit fields; command DTOs should NOT (use `IgnoreAllBaseEntityProperties()` AutoMapper extension)
+- **BaseEntity inheritance** - Only business entities should inherit from `BaseEntity`; `ApplicationUser` does NOT (extends `IdentityUser`)
+- **DateTime consistency** - All timestamps use `DateTime.UtcNow` to avoid timezone issues
 
 ## Agentic Workflow
 
