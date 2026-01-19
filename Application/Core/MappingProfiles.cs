@@ -13,9 +13,8 @@ public class MappingProfiles : Profile
     public MappingProfiles()
     {
         // ========== QUERIES (Read) ==========
-        // Entity → DTO: Ignore audit fields that don't exist in DTO
-        CreateMap<SerhanKitap, GetSerhanKitapDto>()
-            .IgnoreBaseEntityAuditFields();
+        // Entity → DTO: Map all properties including audit fields
+        CreateMap<SerhanKitap, GetSerhanKitapDto>();
 
         // ========== COMMANDS (Write) ==========
         // DTO → Entity: Ignore all BaseEntity properties (set by handlers, not from DTOs)
