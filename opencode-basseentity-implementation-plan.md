@@ -212,9 +212,9 @@ feat: add migration for BaseEntity audit fields to SerhanKitap
 
 **Tasks:**
 
-- [ ] Open `Application/Features/SerhanKitaplar/Commands/CreateSerhanKitap/CreateSerhanKitapCommandHandler.cs`
-- [ ] Inject `ICurrentUserService` if not already injected
-- [ ] After creating SerhanKitap, set:
+- [x] Open `Application/Features/SerhanKitaplar/Commands/CreateSerhanKitap/CreateSerhanKitapCommandHandler.cs`
+- [x] Inject `ICurrentUserService` if not already injected
+- [x] After creating SerhanKitap, set:
   - `CreatedDate = DateTime.UtcNow` (though it has default, set explicitly for clarity)
   - `CreatedBy = _currentUserService.UserId` (may be null for anonymous users)
 
@@ -653,7 +653,7 @@ After completing this implementation, consider:
 - [x] Step 1: BaseEntity created with tests ✓
 - [x] Step 2: SerhanKitap inherits from BaseEntity ✓
 - [x] Step 3: EF Core migration created ✓
-- [ ] Step 4: Create handler sets CreatedDate/CreatedBy
+- [x] Step 4: Create handler sets CreatedDate/CreatedBy ✓
 - [ ] Step 5: Edit handler sets UpdatedDate/UpdatedBy
 - [ ] Step 6: Delete handler uses soft delete
 - [ ] Step 7: List handler filters deleted entities
