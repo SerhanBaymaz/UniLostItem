@@ -339,13 +339,13 @@ feat: set UpdatedDate and UpdatedBy on SerhanKitap update
 
 **Tasks:**
 
-- [ ] Open `Application/Features/SerhanKitaplar/Commands/DeleteSerhanKitap/DeleteSerhanKitapCommandHandler.cs`
-- [ ] Inject `ICurrentUserService` if not already injected
-- [ ] Replace `_context.Remove(kitap)` with soft delete:
+- [x] Open `Application/Features/SerhanKitaplar/Commands/DeleteSerhanKitap/DeleteSerhanKitapCommandHandler.cs`
+- [x] Inject `ICurrentUserService` if not already injected
+- [x] Replace `_context.Remove(kitap)` with soft delete:
   - Set `IsDeleted = true`
   - Set `UpdatedDate = DateTime.UtcNow`
   - Set `UpdatedBy = _currentUserService.UserId`
-- [ ] Keep `SaveChangesAsync` call
+- [x] Keep `SaveChangesAsync` call
 
 **Handler Update:**
 
@@ -655,7 +655,7 @@ After completing this implementation, consider:
 - [x] Step 3: EF Core migration created ✓
 - [x] Step 4: Create handler sets CreatedDate/CreatedBy ✓
 - [x] Step 5: Edit handler sets UpdatedDate/UpdatedBy ✓
-- [ ] Step 6: Delete handler uses soft delete
+- [x] Step 6: Delete handler uses soft delete ✓
 - [ ] Step 7: List handler filters deleted entities
 - [ ] Step 8: Details handler rejects deleted entities
 - [ ] Step 9: AutoMapper profiles updated

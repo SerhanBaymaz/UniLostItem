@@ -1,6 +1,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Application.Core;
+using Application.Interfaces;
 using MediatR;
 using Persistence;
 
@@ -9,10 +10,12 @@ namespace Application.Features.SerhanKitaplar.Commands.DeleteSerhanKitap;
 public class DeleteSerhanKitapCommandHandler : IRequestHandler<DeleteSerhanKitapCommand, Result<Unit>>
 {
     private readonly IAppDbContext _context;
+    private readonly ICurrentUserService _currentUserService;
 
-    public DeleteSerhanKitapCommandHandler(IAppDbContext context)
+    public DeleteSerhanKitapCommandHandler(IAppDbContext context, ICurrentUserService currentUserService)
     {
         _context = context;
+        _currentUserService = currentUserService;
     }
 
     public async Task<Result<Unit>> Handle(DeleteSerhanKitapCommand request, CancellationToken cancellationToken)
@@ -24,7 +27,10 @@ public class DeleteSerhanKitapCommandHandler : IRequestHandler<DeleteSerhanKitap
             return Result<Unit>.Failure("SerhanKitap not found", 404);
         }
 
-        _context.SerhanKitaplar.Remove(serhanKitap);
+        // Soft delete instead of physical removal
+        serhanKitap.IsDeleted = true;
+        serhanKitap.UpdatedDate = System.DateTime.UtcNow;
+        serhanKitap.UpdatedBy = _currentUserService.UserId;
 
         var result = await _context.SaveChangesAsync(cancellationToken) > 0;
 

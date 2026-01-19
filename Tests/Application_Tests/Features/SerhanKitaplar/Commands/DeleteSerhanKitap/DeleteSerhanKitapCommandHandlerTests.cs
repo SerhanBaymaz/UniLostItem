@@ -1,24 +1,30 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Application.Core;
 using Application.Features.SerhanKitaplar.Commands.DeleteSerhanKitap;
+using Application.Interfaces;
 using Domain;
+using FluentAssertions;
+using MediatR;
 using Moq;
 using Persistence;
 using Xunit;
-using MediatR;
 
 namespace Tests.Application_Tests.Features.SerhanKitaplar.Commands.DeleteSerhanKitap;
 
 public class DeleteSerhanKitapCommandHandlerTests
 {
     private readonly Mock<IAppDbContext> _mockContext;
+    private readonly Mock<ICurrentUserService> _currentUserServiceMock;
     private readonly DeleteSerhanKitapCommandHandler _handler;
 
     public DeleteSerhanKitapCommandHandlerTests()
     {
         _mockContext = new Mock<IAppDbContext>();
-        _handler = new DeleteSerhanKitapCommandHandler(_mockContext.Object);
+        _currentUserServiceMock = new Mock<ICurrentUserService>();
+        _currentUserServiceMock.Setup(x => x.UserId).Returns((string?)null); // Simulate anonymous user
+        _handler = new DeleteSerhanKitapCommandHandler(_mockContext.Object, _currentUserServiceMock.Object);
     }
 
         [Fact]
@@ -46,7 +52,6 @@ public class DeleteSerhanKitapCommandHandlerTests
             var kitap = new SerhanKitap { Id = "1", KitapName = "Test", KitapYazar = "Yazar", KitapSayfaSayisi = 100 };
             _mockContext.Setup(x => x.SerhanKitaplar.FindAsync(It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(kitap);
-            _mockContext.Setup(x => x.SerhanKitaplar.Remove(It.IsAny<SerhanKitap>()));
             _mockContext.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
             var command = new DeleteSerhanKitapCommand { Id = "1" };
@@ -55,8 +60,11 @@ public class DeleteSerhanKitapCommandHandlerTests
             var result = await _handler.Handle(command, CancellationToken.None);
 
             // Assert
-            Assert.True(result.IsSuccess);
-            Assert.Equal("Serhan kitap deleted successfully", result.Message);
+            result.IsSuccess.Should().BeTrue();
+            result.Message.Should().Be("Serhan kitap deleted successfully");
+            // Verify soft delete behavior
+            kitap.IsDeleted.Should().BeTrue();
+            kitap.UpdatedDate.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
         }
 
         [Fact]
@@ -66,7 +74,6 @@ public class DeleteSerhanKitapCommandHandlerTests
             var kitap = new SerhanKitap { Id = "1", KitapName = "Test", KitapYazar = "Yazar", KitapSayfaSayisi = 100 };
             _mockContext.Setup(x => x.SerhanKitaplar.FindAsync(It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(kitap);
-            _mockContext.Setup(x => x.SerhanKitaplar.Remove(It.IsAny<SerhanKitap>()));
             _mockContext.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(0);
 
             var command = new DeleteSerhanKitapCommand { Id = "1" };
@@ -75,8 +82,8 @@ public class DeleteSerhanKitapCommandHandlerTests
             var result = await _handler.Handle(command, CancellationToken.None);
 
             // Assert
-            Assert.False(result.IsSuccess);
-            Assert.Equal(400, result.Code);
-            Assert.Equal("Failed to delete the serhan kitap", result.Message);
+            result.IsSuccess.Should().BeFalse();
+            result.Code.Should().Be(400);
+            result.Message.Should().Be("Failed to delete the serhan kitap");
         }
     }
