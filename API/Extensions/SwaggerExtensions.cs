@@ -1,4 +1,5 @@
 using Microsoft.OpenApi.Models;
+using API.Helpers;
 
 namespace API.Extensions;
 
@@ -10,6 +11,7 @@ public static class SwaggerExtensions
         services.AddSwaggerGen(c =>
         {
             c.SwaggerDoc("v1", new OpenApiInfo { Title = "Uni Lost Item API", Version = "v1" });
+            c.DocumentFilter<HealthChecksDocumentFilter>();
             // Use full type names for schema Ids to avoid collisions from nested types
             c.CustomSchemaIds(type => type.FullName?.Replace('+', '.') ?? type.Name);
 
