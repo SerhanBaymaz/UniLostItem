@@ -22,7 +22,7 @@ public class DeleteSerhanKitapCommandHandler : IRequestHandler<DeleteSerhanKitap
     {
         var serhanKitap = await _context.SerhanKitaplar.FindAsync(new object[] { request.Id }, cancellationToken);
 
-        if (serhanKitap == null)
+        if (serhanKitap == null || serhanKitap.IsDeleted)
         {
             return Result<Unit>.Failure("SerhanKitap not found", 404);
         }

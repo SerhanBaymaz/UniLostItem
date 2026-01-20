@@ -68,6 +68,26 @@ public class DeleteSerhanKitapCommandHandlerTests
         }
 
         [Fact]
+        public async Task Handle_ShouldReturnNotFound_WhenSerhanKitapIsAlreadySoftDeleted()
+        {
+            // Arrange
+            var kitap = new SerhanKitap { Id = "1", KitapName = "Test", KitapYazar = "Yazar", KitapSayfaSayisi = 100, IsDeleted = true };
+            _mockContext.Setup(x => x.SerhanKitaplar.FindAsync(It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(kitap);
+
+            var command = new DeleteSerhanKitapCommand { Id = "1" };
+
+            // Act
+            var result = await _handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.Code.Should().Be(404);
+            result.Message.Should().Be("SerhanKitap not found");
+            kitap.IsDeleted.Should().BeTrue(); // Should remain deleted
+        }
+
+        [Fact]
         public async Task Handle_ShouldReturnFailure_WhenSaveChangesFails()
         {
             // Arrange
