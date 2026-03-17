@@ -1,8 +1,8 @@
-name: unilostitem-prod
+name: cqrs-clean-net9-prod
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: postgres-unilostitem-prod
+    container_name: postgres-cqrs-clean-net9-prod
     env_file:
       - prod.env
     ports:
@@ -18,7 +18,7 @@ services:
 
   seq:
     image: datalust/seq:latest
-    container_name: seq-unilostitem-prod
+    container_name: seq-cqrs-clean-net9-prod
     env_file:
       - prod.env
     ports:
@@ -32,8 +32,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.prod
-    image: unilostitem-api:prod
-    container_name: api-unilostitem-prod
+    image: cqrs-clean-net9-api:prod
+    container_name: api-cqrs-clean-net9-prod
     env_file:
       - prod.env
     ports:

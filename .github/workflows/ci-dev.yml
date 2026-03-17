@@ -66,7 +66,7 @@ jobs:
           dotnet tool install --global dotnet-sonarscanner
 
       - name: Restore dependencies
-        run: dotnet restore Unilostitem.sln
+        run: dotnet restore CqrsCleanLayerDotNET9Template.sln
 
       - name: Begin SonarCloud analysis
         env:
@@ -84,11 +84,11 @@ jobs:
             /d:sonar.exclusions="**/Persistence/Migrations/**,**/Migrations/**,**/obj/**,**/bin/**"
 
       - name: Build solution
-        run: dotnet build Unilostitem.sln --no-restore --configuration Release
+        run: dotnet build CqrsCleanLayerDotNET9Template.sln --no-restore --configuration Release
 
       - name: Run tests with coverage
         run: |
-          dotnet test Unilostitem.sln \
+          dotnet test CqrsCleanLayerDotNET9Template.sln \
             --no-build \
             --configuration Release \
             --verbosity normal \
@@ -154,16 +154,16 @@ jobs:
       - name: Build Docker dev image
         run: |
           docker build -f Dockerfile.dev \
-            -t ghcr.io/${{ steps.repo-owner.outputs.owner }}/dev-templatedeneme:latest \
-            -t ghcr.io/${{ steps.repo-owner.outputs.owner }}/dev-templatedeneme:sha-${{ steps.git-sha.outputs.sha }} \
+            -t ghcr.io/${{ steps.repo-owner.outputs.owner }}/dev-cqrs-clean-net9:latest \
+            -t ghcr.io/${{ steps.repo-owner.outputs.owner }}/dev-cqrs-clean-net9:sha-${{ steps.git-sha.outputs.sha }} \
             .
 
       - name: Verify Docker image
         run: |
-          docker images | grep dev-templatedeneme
+          docker images | grep dev-cqrs-clean-net9
           echo "📦 Built tags:"
-          echo "  - ghcr.io/${{ steps.repo-owner.outputs.owner }}/dev-templatedeneme:latest"
-          echo "  - ghcr.io/${{ steps.repo-owner.outputs.owner }}/dev-templatedeneme:sha-${{ steps.git-sha.outputs.sha }}"
+          echo "  - ghcr.io/${{ steps.repo-owner.outputs.owner }}/dev-cqrs-clean-net9:latest"
+          echo "  - ghcr.io/${{ steps.repo-owner.outputs.owner }}/dev-cqrs-clean-net9:sha-${{ steps.git-sha.outputs.sha }}"
 
       - name: Test Docker container
         env:
@@ -179,7 +179,7 @@ jobs:
             -e Jwt__Audience="${JWT_AUDIENCE_DEV}" \
             -e Jwt__AccessTokenExpirationMinutes="${JWT_ACCESS_TOKEN_EXPIRATION_MINUTES_DEV}" \
             -e Jwt__RefreshTokenExpirationDays="${JWT_REFRESH_TOKEN_EXPIRATION_DAYS_DEV}" \
-            ghcr.io/${{ steps.repo-owner.outputs.owner }}/dev-templatedeneme:latest
+            ghcr.io/${{ steps.repo-owner.outputs.owner }}/dev-cqrs-clean-net9:latest
 
           echo "⏳ Waiting for container to build and start..."
           echo "📦 Dev container uses 'dotnet watch' which needs time to build..."
@@ -231,6 +231,6 @@ jobs:
       - name: Push to GitHub Container Registry
         if: github.event_name != 'pull_request'
         run: |
-          docker push ghcr.io/${{ steps.repo-owner.outputs.owner }}/dev-templatedeneme:latest
-          docker push ghcr.io/${{ steps.repo-owner.outputs.owner }}/dev-templatedeneme:sha-${{ steps.git-sha.outputs.sha }}
+          docker push ghcr.io/${{ steps.repo-owner.outputs.owner }}/dev-cqrs-clean-net9:latest
+          docker push ghcr.io/${{ steps.repo-owner.outputs.owner }}/dev-cqrs-clean-net9:sha-${{ steps.git-sha.outputs.sha }}
           echo "✅ Images pushed to GitHub Container Registry"
