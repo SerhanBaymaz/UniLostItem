@@ -17,7 +17,7 @@
       "processId": "${command:pickRemoteProcess}", //choose API.dll or dotnet
       "pipeTransport": {
         "pipeProgram": "docker",
-        "pipeArgs": ["exec", "-i", "api-unilostitem-dev"],
+        "pipeArgs": ["exec", "-i", "api-cqrs-clean-net9-dev"],
         "debuggerPath": "/vsdbg/vsdbg",
         "pipeCwd": "${workspaceFolder}",
         "quoteArgs": false

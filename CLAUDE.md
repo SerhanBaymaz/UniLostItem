@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a .NET 9 Clean Architecture Web API project implementing CQRS with MediatR, Entity Framework Core, and PostgreSQL. The solution follows vertical slice architecture with features organized under `Application/Features/`.
+This is **CqrsCleanLayerDotNET9Template** - a .NET 9 Clean Architecture Web API project implementing CQRS with MediatR, Entity Framework Core, and PostgreSQL. The solution follows vertical slice architecture with features organized under `Application/Features/`.
 
 **Layer Dependencies (outer to inner):** API -> Application -> Persistence -> Domain <- Infrastructure
 
@@ -19,7 +19,7 @@ This is a .NET 9 Clean Architecture Web API project implementing CQRS with Media
 
 ```bash
 # Build solution
-dotnet build
+dotnet build CqrsCleanLayerDotNET9Template.sln
 
 # Run API project (standard)
 dotnet run --project API
@@ -401,8 +401,8 @@ For list endpoints with pagination, filtering, and sorting:
 - `.github/workflows/ci-prod.yml` - Production pipeline (build, test, Docker)
   - Triggers: push on main or version tags (v*.*.\*)
 - Images pushed to GitHub Container Registry (GHCR)
-  - Dev: `ghcr.io/serhanbaymaz/dev-templatedeneme:latest` and `:sha-<git-sha>`
-  - Prod: `ghcr.io/serhanbaymaz/prod-templatedeneme:latest` and `:sha-<git-sha>`
+  - Dev: `ghcr.io/serhanbaymaz/dev-cqrs-clean-net9:latest` and `:sha-<git-sha>`
+  - Prod: `ghcr.io/serhanbaymaz/prod-cqrs-clean-net9:latest` and `:sha-<git-sha>`
 - Dev secrets required: `SONAR_TOKEN_DEV`, `SONAR_PROJECT_KEY_DEV`, `SONAR_ORGANIZATION_DEV`, `SONAR_HOST_URL_DEV`
 
 ### Code Quality
