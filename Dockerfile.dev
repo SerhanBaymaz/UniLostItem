@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y curl unzip \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Copy solution and project files
-COPY ["Unilostitem.sln", "./"]
+COPY ["CqrsCleanLayerDotNET9Template.sln", "./"]
 COPY ["Directory.Build.props", "./"]
 
 COPY ["API/API.csproj", "API/"]
@@ -21,7 +21,7 @@ COPY ["Persistence/Persistence.csproj", "Persistence/"]
 COPY ["Tests/Tests.csproj", "Tests/"]
 
 # Restore dependencies
-RUN dotnet restore "Unilostitem.sln"
+RUN dotnet restore "CqrsCleanLayerDotNET9Template.sln"
 
 # Copy all source code
 COPY . .
