@@ -6,6 +6,7 @@ using Application.Features.SerhanKitaplar.Queries.Common.DTOs;
 using AutoMapper;
 using Domain;
 using FluentAssertions;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace Tests.Application_Tests.Core;
@@ -16,7 +17,9 @@ public class MappingProfilesTests
 
     public MappingProfilesTests()
     {
-        var configuration = new MapperConfiguration(cfg => cfg.AddProfile<MappingProfiles>());
+        var configuration = new MapperConfiguration(
+            cfg => cfg.AddProfile<MappingProfiles>(),
+            NullLoggerFactory.Instance);
         _mapper = configuration.CreateMapper();
     }
 
@@ -196,11 +199,13 @@ public class MappingProfilesTests
     public void IgnoreBaseEntityAuditFields_ShouldConfigureValidationToIgnoreAuditFields()
     {
         // Arrange & Act
-        var configuration = new MapperConfiguration(cfg =>
-        {
-            cfg.CreateMap<SerhanKitap, GetSerhanKitapDto>()
-                .IgnoreBaseEntityAuditFields();
-        });
+        var configuration = new MapperConfiguration(
+            cfg =>
+            {
+                cfg.CreateMap<SerhanKitap, GetSerhanKitapDto>()
+                    .IgnoreBaseEntityAuditFields();
+            },
+            NullLoggerFactory.Instance);
 
         // Assert - Configuration should be valid even if destination has audit fields
         configuration.AssertConfigurationIsValid();
@@ -217,11 +222,13 @@ public class MappingProfilesTests
             KitapSayfaSayisi = 100
         };
 
-        var configuration = new MapperConfiguration(cfg =>
-        {
-            cfg.CreateMap<CreateSerhanKitapDto, SerhanKitap>()
-                .IgnoreAllBaseEntityProperties();
-        });
+        var configuration = new MapperConfiguration(
+            cfg =>
+            {
+                cfg.CreateMap<CreateSerhanKitapDto, SerhanKitap>()
+                    .IgnoreAllBaseEntityProperties();
+            },
+            NullLoggerFactory.Instance);
 
         var mapper = configuration.CreateMapper();
 
@@ -260,11 +267,13 @@ public class MappingProfilesTests
             KitapSayfaSayisi = 200
         };
 
-        var configuration = new MapperConfiguration(cfg =>
-        {
-            cfg.CreateMap<EditSerhanKitapDto, SerhanKitap>()
-                .IgnoreAllBaseEntityProperties();
-        });
+        var configuration = new MapperConfiguration(
+            cfg =>
+            {
+                cfg.CreateMap<EditSerhanKitapDto, SerhanKitap>()
+                    .IgnoreAllBaseEntityProperties();
+            },
+            NullLoggerFactory.Instance);
 
         var mapper = configuration.CreateMapper();
 
@@ -304,14 +313,16 @@ public class MappingProfilesTests
     public void IgnoreAllBaseEntityProperties_ShouldBeReusableAcrossDifferentMappings()
     {
         // Arrange & Act - Create multiple mappings using the extension
-        var configuration = new MapperConfiguration(cfg =>
-        {
-            cfg.CreateMap<CreateSerhanKitapDto, SerhanKitap>()
-                .IgnoreAllBaseEntityProperties();
+        var configuration = new MapperConfiguration(
+            cfg =>
+            {
+                cfg.CreateMap<CreateSerhanKitapDto, SerhanKitap>()
+                    .IgnoreAllBaseEntityProperties();
 
-            cfg.CreateMap<EditSerhanKitapDto, SerhanKitap>()
-                .IgnoreAllBaseEntityProperties();
-        });
+                cfg.CreateMap<EditSerhanKitapDto, SerhanKitap>()
+                    .IgnoreAllBaseEntityProperties();
+            },
+            NullLoggerFactory.Instance);
 
         // Assert - Both mappings should be valid
         configuration.AssertConfigurationIsValid();
