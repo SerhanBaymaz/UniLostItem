@@ -37,44 +37,44 @@ CqrsCleanLayerDotNET9Template/
 │   ├── Properties/
 │   │   └── launchSettings.json
 │   ├── appsettings.Development.json
-│   └── Program.cs            #Uygulama başlangıç noktası (Extensions method ile Temiz ve okunabilir yapılandırma )
+│   └── Program.cs            # Uygulama başlangıç noktası (Extensions method ile Temiz ve okunabilir yapılandırma)
 ├── Application/              # Application Layer - İş mantığı
 │   ├── Core/                 # Ortak yapılar (Result, Validation, Mapping)
 │   │   ├── MappingProfiles.cs       # AutoMapper profilleri
 │   │   ├── Result.cs                # Result pattern implementasyonu
 │   │   └── ValidationBehavior.cs    # MediatR validation pipeline
-    └── Features/
-        ├── Auth/             # Authentication & Identity module
-        │   ├── Commands/
-        │   │   ├── Login/
-        │   │   │   ├── LoginCommand.cs
-        │   │   │   ├── LoginCommandHandler.cs
-        │   │   │   ├── LoginCommandValidator.cs
-        │   │   │   └── LoginDto.cs
-        │   │   ├── Register/
-        │   │   │   ├── RegisterCommand.cs
-        │   │   │   ├── RegisterCommandHandler.cs
-        │   │   │   ├── RegisterCommandValidator.cs
-        │   │   │   └── RegisterDto.cs
-        │   │   ├── RefreshToken/
-        │   │   │   ├── RefreshTokenCommand.cs
-        │   │   │   ├── RefreshTokenCommandHandler.cs
-        │   │   │   ├── RefreshTokenCommandValidator.cs
-        │   │   │   └── RefreshTokenDto.cs
-        │   │   └── UpdateUserProfile/
-        │   │       ├── UpdateUserProfileCommand.cs
-        │   │       ├── UpdateUserProfileCommandHandler.cs
-        │   │       ├── UpdateUserProfileCommandValidator.cs
-        │   │       └── UpdateUserProfileDto.cs
-        │   ├── Queries/
-        │   │   └── GetCurrentUser/
-        │   │       ├── GetCurrentUserQuery.cs
-        │   │       ├── GetCurrentUserQueryHandler.cs
-        │   │       └── CurrentUserDto.cs
-        │   └── Common/
-        │       └── DTOs/
-        │           └── UserDto.cs
-        └── SerhanKitaplar/   # SerhanKitap feature modülü
+│   └── Features/
+│       ├── Auth/             # Authentication & Identity module
+│       │   ├── Commands/
+│       │   │   ├── Login/
+│       │   │   │   ├── LoginCommand.cs
+│       │   │   │   ├── LoginCommandHandler.cs
+│       │   │   │   ├── LoginCommandValidator.cs
+│       │   │   │   └── LoginDto.cs
+│       │   │   ├── Register/
+│       │   │   │   ├── RegisterCommand.cs
+│       │   │   │   ├── RegisterCommandHandler.cs
+│       │   │   │   ├── RegisterCommandValidator.cs
+│       │   │   │   └── RegisterDto.cs
+│       │   │   ├── RefreshToken/
+│       │   │   │   ├── RefreshTokenCommand.cs
+│       │   │   │   ├── RefreshTokenCommandHandler.cs
+│       │   │   │   ├── RefreshTokenCommandValidator.cs
+│       │   │   │   └── RefreshTokenDto.cs
+│       │   │   └── UpdateUserProfile/
+│       │   │       ├── UpdateUserProfileCommand.cs
+│       │   │       ├── UpdateUserProfileCommandHandler.cs
+│       │   │       ├── UpdateUserProfileCommandValidator.cs
+│       │   │       └── UpdateUserProfileDto.cs
+│       │   ├── Queries/
+│       │   │   └── GetCurrentUser/
+│       │   │       ├── GetCurrentUserQuery.cs
+│       │   │       ├── GetCurrentUserQueryHandler.cs
+│       │   │       └── CurrentUserDto.cs
+│       │   └── Common/
+│       │       └── DTOs/
+│       │           └── UserDto.cs
+│       └── SerhanKitaplar/    # SerhanKitap feature modülü
 │           ├── Commands/
 │           │   ├── CreateSerhanKitap/
 │           │   │   ├── CreateSerhanKitapCommand.cs
@@ -129,9 +129,9 @@ CqrsCleanLayerDotNET9Template/
     │   ├── Helpers/           # Helper class tests
     │   ├── Middleware/        # Middleware tests
     │   └── Responses/         # Response model tests
-    ├── Application_Tests/     # Application layer tests
+    ├── Application_Tests/    # Application layer tests
     │   └── Features/
-    │       ├── Auth/          # Auth feature tests
+    │       ├── Auth/         # Auth feature tests
     │       └── SerhanKitaplar/ # SerhanKitap feature tests
     │           ├── Commands/
     │           │   ├── CreateSerhanKitap/
@@ -144,11 +144,11 @@ CqrsCleanLayerDotNET9Template/
     │           │       └── DeleteSerhanKitapCommandHandlerTests.cs
     │           └── Queries/
     │               ├── GetSerhanKitapList/
-    │               │   └── GetSerhanKitapListQueryHandlerTests.cs
+    │               │   ├── GetSerhanKitapListQueryHandlerTests.cs
     │               │   └── GetSerhanKitapListValidatorTests.cs
     │               └── GetSerhanKitapDetails/
     │                   └── GetSerhanKitapDetailsQueryHandlerTests.cs
-    └── Domain_Tests/          # Domain layer tests
+    └── Domain_Tests/         # Domain layer tests
 ```
 
 ## Kullanılan Teknolojiler
@@ -189,7 +189,7 @@ CqrsCleanLayerDotNET9Template/
 | Kütüphane                                          | Versiyon | Açıklama                                |
 | -------------------------------------------------- | -------- | --------------------------------------- |
 | **MediatR**                                        | 12.4.1   | CQRS pattern implementasyonu            |
-| **AutoMapper**                                     | 13.0.1   | Object-to-object mapping                |
+| **AutoMapper**                                     | 16.1.1   | Object-to-object mapping                |
 | **FluentValidation.DependencyInjectionExtensions** | 11.11.0  | Validation kuralları ve DI entegrasyonu |
 | **System.IdentityModel.Tokens.Jwt**                | 8.15.0   | JWT token types ve claims               |
 
