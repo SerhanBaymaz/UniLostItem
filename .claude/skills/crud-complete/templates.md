@@ -1,483 +1,466 @@
-# CRUD Code Templates
+# CRUD Code Templates — UniLostItem Patterns
 
-This file contains complete code templates for all CRUD components.
+Templates matching the actual codebase patterns from `LostItems` and `ItemClaims` features.
 
-## Table of Contents
+## Create Command Template
 
-1. [Domain Entity](#domain-entity)
-2. [Create Command](#create-command)
-3. [Edit Command](#edit-command)
-4. [Delete Command](#delete-command)
-5. [Get List Query](#get-list-query)
-6. [Get Details Query](#get-details-query)
-7. [DTOs](#dtos)
-8. [API Controller](#api-controller)
-9. [MappingProfiles](#mappingprofiles)
-
----
-
-## Domain Entity
-
-**File:** `Domain/{EntityName}.cs`
+### DTO
 
 ```csharp
-using System;
+namespace Application.Features.{Feature}.Commands.Create{Entity};
 
-namespace Domain;
-
-public class {EntityName}
+public class Create{Entity}Dto
 {
-    public string Id { get; set; } = Guid.NewGuid().ToString();
-    public required string Property1 { get; set; }
-    public required string Property2 { get; set; }
-    public int Property3 { get; set; }
-    public bool IsActive { get; set; } = true;
+    public required string Title { get; set; }
+    public required string Description { get; set; }
+    public ItemCategory Category { get; set; }
+    public string? OptionalField { get; set; }
 }
 ```
 
----
-
-## Create Command
-
-**File:** `Application/Features/{EntityName}Plural/Commands/Create{EntityName}/Create{EntityName}Command.cs`
+### Command
 
 ```csharp
 using Application.Core;
 using MediatR;
 
-namespace Application.Features.{EntityName}Plural.Commands.Create{EntityName};
+namespace Application.Features.{Feature}.Commands.Create{Entity};
 
-public class Create{EntityName}Command : IRequest<Result<string>>
+public class Create{Entity}Command : IRequest<Result<string>>
 {
-    public required Create{EntityName}Dto Create{EntityName}Dto { get; set; }
+    public required Create{Entity}Dto Create{Entity}Dto { get; set; }
 }
 ```
 
-**File:** `Application/Features/{EntityName}Plural/Commands/Create{EntityName}/Create{EntityName}Dto.cs`
+### Validator
 
 ```csharp
-namespace Application.Features.{EntityName}Plural.Commands.Create{EntityName};
+using FluentValidation;
 
-public class Create{EntityName}Dto
+namespace Application.Features.{Feature}.Commands.Create{Entity};
+
+public class Create{Entity}CommandValidator : AbstractValidator<Create{Entity}Command>
 {
-    public required string Property1 { get; set; }
-    public required string Property2 { get; set; }
-    public required int Property3 { get; set; }
+    public Create{Entity}CommandValidator()
+    {
+        RuleFor(x => x.Create{Entity}Dto)
+            .NotNull().WithMessage("{Entity} bilgileri gereklidir");
+
+        When(x => x.Create{Entity}Dto != null, () =>
+        {
+            RuleFor(x => x.Create{Entity}Dto!.Title)
+                .NotEmpty().WithMessage("Başlık boş olamaz")
+                .MaximumLength(200).WithMessage("Başlık en fazla 200 karakter olabilir");
+
+            RuleFor(x => x.Create{Entity}Dto!.Description)
+                .NotEmpty().WithMessage("Açıklama boş olamaz")
+                .MaximumLength(2000).WithMessage("Açıklama en fazla 2000 karakter olabilir");
+
+            RuleFor(x => x.Create{Entity}Dto!.OptionalField)
+                .MaximumLength(500).WithMessage("Opsiyonel alan en fazla 500 karakter olabilir")
+                .When(x => !string.IsNullOrEmpty(x.Create{Entity}Dto!.OptionalField));
+        });
+    }
 }
 ```
 
-**File:** `Application/Features/{EntityName}Plural/Commands/Create{EntityName}/Create{EntityName}CommandHandler.cs`
+### Handler (with ICurrentUserService)
 
 ```csharp
-using System.Threading;
-using System.Threading.Tasks;
 using Application.Core;
+using Application.Interfaces;
 using AutoMapper;
 using Domain;
 using MediatR;
 using Persistence;
 
-namespace Application.Features.{EntityName}Plural.Commands.Create{EntityName};
+namespace Application.Features.{Feature}.Commands.Create{Entity};
 
-public class Create{EntityName}CommandHandler : IRequestHandler<Create{EntityName}Command, Result<string>>
+public class Create{Entity}CommandHandler : IRequestHandler<Create{Entity}Command, Result<string>>
 {
     private readonly IAppDbContext _context;
     private readonly IMapper _mapper;
+    private readonly ICurrentUserService _currentUserService;
 
-    public Create{EntityName}CommandHandler(IAppDbContext context, IMapper mapper)
+    public Create{Entity}CommandHandler(IAppDbContext context, IMapper mapper, ICurrentUserService currentUserService)
     {
         _context = context;
         _mapper = mapper;
+        _currentUserService = currentUserService;
     }
 
-    public async Task<Result<string>> Handle(Create{EntityName}Command request, CancellationToken cancellationToken)
+    public async Task<Result<string>> Handle(Create{Entity}Command request, CancellationToken cancellationToken)
     {
-        var entity = _mapper.Map<{EntityName}>(request.Create{EntityName}Dto);
+        var entity = _mapper.Map<{Entity}>(request.Create{Entity}Dto);
 
-        _context.{EntityName}Plural.Add(entity);
+        entity.CreatedDate = DateTime.UtcNow;
+        entity.CreatedBy = _currentUserService.UserId;
+        entity.UserId = _currentUserService.UserId!;
+
+        _context.{Entity}Plural.Add(entity);
 
         var result = await _context.SaveChangesAsync(cancellationToken) > 0;
 
         if (!result)
         {
-            return Result<string>.Failure("Failed to create the {entityNameLower}", 400);
+            return Result<string>.Failure("Kayıt oluşturulamadı", 400);
         }
 
-        return Result<string>.Success("{EntityName} created successfully", entity.Id);
+        return Result<string>.Success("Kayıt başarıyla oluşturuldu", entity.Id);
     }
 }
 ```
 
----
+## Update Command Template
 
-## Edit Command
+### DTO (no immutable fields)
 
-**File:** `Application/Features/{EntityName}Plural/Commands/Edit{EntityName}/Edit{EntityName}Command.cs`
+```csharp
+namespace Application.Features.{Feature}.Commands.Update{Entity};
+
+public class Update{Entity}Dto
+{
+    public required string Title { get; set; }
+    public required string Description { get; set; }
+    // NO Status, NO ItemType — these are immutable after creation
+}
+```
+
+### Command
 
 ```csharp
 using Application.Core;
 using MediatR;
 
-namespace Application.Features.{EntityName}Plural.Commands.Edit{EntityName};
+namespace Application.Features.{Feature}.Commands.Update{Entity};
 
-public class Edit{EntityName}Command : IRequest<Result<Unit>>
+public class Update{Entity}Command : IRequest<Result<Unit>>
 {
-    public string Id { get; set; } = string.Empty;
-    public required Edit{EntityName}Dto Edit{EntityName}Dto { get; set; }
+    public required string Id { get; set; }
+    public required Update{Entity}Dto Update{Entity}Dto { get; set; }
 }
 ```
 
-**File:** `Application/Features/{EntityName}Plural/Commands/Edit{EntityName}/Edit{EntityName}Dto.cs`
+### Handler (ownership + soft delete check + property-by-property mapping)
 
 ```csharp
-namespace Application.Features.{EntityName}Plural.Commands.Edit{EntityName};
-
-public class Edit{EntityName}Dto
-{
-    public required string Property1 { get; set; }
-    public required string Property2 { get; set; }
-    public required int Property3 { get; set; }
-}
-```
-
-**File:** `Application/Features/{EntityName}Plural/Commands/Edit{EntityName}/Edit{EntityName}CommandHandler.cs`
-
-```csharp
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 using Application.Core;
-using AutoMapper;
-using Domain;
+using Application.Interfaces;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
 
-namespace Application.Features.{EntityName}Plural.Commands.Edit{EntityName};
+namespace Application.Features.{Feature}.Commands.Update{Entity};
 
-public class Edit{EntityName}CommandHandler : IRequestHandler<Edit{EntityName}Command, Result<Unit>>
+public class Update{Entity}CommandHandler : IRequestHandler<Update{Entity}Command, Result<Unit>>
 {
     private readonly IAppDbContext _context;
-    private readonly IMapper _mapper;
+    private readonly ICurrentUserService _currentUserService;
 
-    public Edit{EntityName}CommandHandler(IAppDbContext context, IMapper mapper)
+    public Update{Entity}CommandHandler(IAppDbContext context, ICurrentUserService currentUserService)
     {
         _context = context;
-        _mapper = mapper;
+        _currentUserService = currentUserService;
     }
 
-    public async Task<Result<Unit>> Handle(Edit{EntityName}Command request, CancellationToken cancellationToken)
+    public async Task<Result<Unit>> Handle(Update{Entity}Command request, CancellationToken cancellationToken)
     {
-        var entity = await _context.{EntityName}Plural
-            .FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
+        var entity = await _context.{Entity}Plural
+            .FirstOrDefaultAsync(x => x.Id == request.Id && !x.IsDeleted, cancellationToken);
 
         if (entity == null)
         {
-            return Result<Unit>.Failure("{EntityName} not found", 404);
+            return Result<Unit>.Failure("Kayıt bulunamadı", 404);
         }
 
-        _mapper.Map(request.Edit{EntityName}Dto, entity);
-
-        var result = await _context.SaveChangesAsync(cancellationToken) > 0;
-
-        if (!result)
+        if (entity.UserId != _currentUserService.UserId)
         {
-            return Result<Unit>.Failure("Failed to update the {entityNameLower}", 400);
+            return Result<Unit>.Failure("Bu kaydı güncelleme yetkiniz yok", 403);
         }
 
-        return Result<Unit>.Success("{EntityName} updated successfully", Unit.Value);
+        entity.Title = request.Update{Entity}Dto.Title;
+        entity.Description = request.Update{Entity}Dto.Description;
+
+        entity.UpdatedDate = DateTime.UtcNow;
+        entity.UpdatedBy = _currentUserService.UserId;
+
+        await _context.SaveChangesAsync(cancellationToken);
+
+        return Result<Unit>.Success("Kayıt başarıyla güncellendi", Unit.Value);
     }
 }
 ```
 
----
+## Delete Command Template (Soft Delete)
 
-## Delete Command
-
-**File:** `Application/Features/{EntityName}Plural/Commands/Delete{EntityName}/Delete{EntityName}Command.cs`
+### Command
 
 ```csharp
 using Application.Core;
 using MediatR;
 
-namespace Application.Features.{EntityName}Plural.Commands.Delete{EntityName};
+namespace Application.Features.{Feature}.Commands.Delete{Entity};
 
-public class Delete{EntityName}Command : IRequest<Result<Unit>>
+public class Delete{Entity}Command : IRequest<Result<Unit>>
 {
-    public string Id { get; set; } = string.Empty;
+    public required string Id { get; set; }
 }
 ```
 
-**File:** `Application/Features/{EntityName}Plural/Commands/Delete{EntityName}/Delete{EntityName}CommandHandler.cs`
+### Handler
 
 ```csharp
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 using Application.Core;
-using Domain;
+using Application.Interfaces;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
 
-namespace Application.Features.{EntityName}Plural.Commands.Delete{EntityName};
+namespace Application.Features.{Feature}.Commands.Delete{Entity};
 
-public class Delete{EntityName}CommandHandler : IRequestHandler<Delete{EntityName}Command, Result<Unit>>
+public class Delete{Entity}CommandHandler : IRequestHandler<Delete{Entity}Command, Result<Unit>>
 {
     private readonly IAppDbContext _context;
+    private readonly ICurrentUserService _currentUserService;
 
-    public Delete{EntityName}CommandHandler(IAppDbContext context)
+    public Delete{Entity}CommandHandler(IAppDbContext context, ICurrentUserService currentUserService)
     {
         _context = context;
+        _currentUserService = currentUserService;
     }
 
-    public async Task<Result<Unit>> Handle(Delete{EntityName}Command request, CancellationToken cancellationToken)
+    public async Task<Result<Unit>> Handle(Delete{Entity}Command request, CancellationToken cancellationToken)
     {
-        var entity = await _context.{EntityName}Plural
-            .FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
+        var entity = await _context.{Entity}Plural
+            .FirstOrDefaultAsync(x => x.Id == request.Id && !x.IsDeleted, cancellationToken);
 
         if (entity == null)
         {
-            return Result<Unit>.Failure("{EntityName} not found", 404);
+            return Result<Unit>.Failure("Kayıt bulunamadı", 404);
         }
 
-        _context.{EntityName}Plural.Remove(entity);
+        if (entity.UserId != _currentUserService.UserId)
+        {
+            return Result<Unit>.Failure("Bu kaydı silme yetkiniz yok", 403);
+        }
+
+        entity.IsDeleted = true;
+        entity.UpdatedDate = DateTime.UtcNow;
+        entity.UpdatedBy = _currentUserService.UserId;
 
         var result = await _context.SaveChangesAsync(cancellationToken) > 0;
 
         if (!result)
         {
-            return Result<Unit>.Failure("Failed to delete the {entityNameLower}", 400);
+            return Result<Unit>.Failure("Kayıt silinemedi", 400);
         }
 
-        return Result<Unit>.Success("{EntityName} deleted successfully", Unit.Value);
+        return Result<Unit>.Success("Kayıt başarıyla silindi", Unit.Value);
     }
 }
 ```
 
----
+## Query Templates
 
-## Get List Query
-
-**File:** `Application/Features/{EntityName}Plural/Queries/Get{EntityName}List/Get{EntityName}ListQuery.cs`
+### Sort Field Enum
 
 ```csharp
-using Application.Core;
-using MediatR;
+using System.ComponentModel;
 
-namespace Application.Features.{EntityName}Plural.Queries.Get{EntityName}List;
+namespace Application.Features.{Feature}.Queries.Common.Enums;
 
-public class Get{EntityName}ListQuery : IRequest<Result<List<Get{EntityName}Dto>>>
+public enum {Entity}SortField
 {
+    [Description("title")]
+    Title,
+    [Description("createddate")]
+    CreatedDate
 }
 ```
 
-**File:** `Application/Features/{EntityName}Plural/Queries/Get{EntityName}List/Get{EntityName}ListQueryHandler.cs`
+### List Query (Paginated with Filtering/Sorting)
 
 ```csharp
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 using Application.Core;
-using AutoMapper;
+using Application.Core.Pagination;
+using Application.Features.{Feature}.Queries.Common.DTOs;
+using Application.Features.{Feature}.Queries.Common.Enums;
+using MediatR;
+
+namespace Application.Features.{Feature}.Queries.Get{Entity}List;
+
+public record Get{Entity}ListQuery : PagedAndSortedQueryBase<{Entity}SortField>,
+    IRequest<Result<PaginatedListDto<Get{Entity}Dto>>>
+{
+    public string? SearchTerm { get; init; }
+    public SomeEnum? SomeFilter { get; init; }
+}
+```
+
+### List Query Handler
+
+```csharp
+using Application.Core;
+using Application.Core.Pagination;
+using Application.Features.{Feature}.Queries.Common.DTOs;
+using Application.Features.{Feature}.Queries.Common.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
 
-namespace Application.Features.{EntityName}Plural.Queries.Get{EntityName}List;
+namespace Application.Features.{Feature}.Queries.Get{Entity}List;
 
-public class Get{EntityName}ListQueryHandler : IRequestHandler<Get{EntityName}ListQuery, Result<List<Get{EntityName}Dto>>>
+public class Get{Entity}ListQueryHandler :
+    IRequestHandler<Get{Entity}ListQuery, Result<PaginatedListDto<Get{Entity}Dto>>>
 {
     private readonly IAppDbContext _context;
-    private readonly IMapper _mapper;
 
-    public Get{EntityName}ListQueryHandler(IAppDbContext context, IMapper mapper)
+    public Get{Entity}ListQueryHandler(IAppDbContext context)
     {
         _context = context;
-        _mapper = mapper;
     }
 
-    public async Task<Result<List<Get{EntityName}Dto>>> Handle(Get{EntityName}ListQuery request, CancellationToken cancellationToken)
+    public async Task<Result<PaginatedListDto<Get{Entity}Dto>>> Handle(
+        Get{Entity}ListQuery request, CancellationToken cancellationToken)
     {
-        var entities = await _context.{EntityName}Plural
+        var query = _context.{Entity}Plural
+            .Where(x => !x.IsDeleted && x.IsActive);
+
+        // Filtering
+        if (!string.IsNullOrWhiteSpace(request.SearchTerm))
+        {
+            query = query.Where(x =>
+                x.Title.ToLower().Contains(request.SearchTerm.ToLower()));
+        }
+
+        // Sorting (switch expression with default)
+        query = request.SortBy switch
+        {
+            {Entity}SortField.Title => request.SortDescending
+                ? query.OrderByDescending(x => x.Title)
+                : query.OrderBy(x => x.Title),
+            _ => query.OrderByDescending(x => x.CreatedDate)
+        };
+
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        // .Select() projection (NOT AutoMapper)
+        var items = await query
+            .Select(x => new Get{Entity}Dto
+            {
+                Id = x.Id,
+                Title = x.Title,
+                Description = x.Description,
+                CreatedDate = x.CreatedDate
+            })
+            .Skip((request.PageNumber - 1) * request.PageSize)
+            .Take(request.PageSize)
             .ToListAsync(cancellationToken);
 
-        var dtos = _mapper.Map<List<Get{EntityName}Dto>>(entities);
-
-        return Result<List<Get{EntityName}Dto>>.Success("Entities retrieved successfully", dtos);
-    }
-}
-```
-
----
-
-## Get Details Query
-
-**File:** `Application/Features/{EntityName}Plural/Queries/Get{EntityName}Details/Get{EntityName}DetailsQuery.cs`
-
-```csharp
-using Application.Core;
-using MediatR;
-
-namespace Application.Features.{EntityName}Plural.Queries.Get{EntityName}Details;
-
-public class Get{EntityName}DetailsQuery : IRequest<Result<Get{EntityName}Dto>>
-{
-    public string Id { get; set; } = string.Empty;
-}
-```
-
-**File:** `Application/Features/{EntityName}Plural/Queries/Get{EntityName}Details/Get{EntityName}DetailsQueryHandler.cs`
-
-```csharp
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-using Application.Core;
-using AutoMapper;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
-using Persistence;
-
-namespace Application.Features.{EntityName}Plural.Queries.Get{EntityName}Details;
-
-public class Get{EntityName}DetailsQueryHandler : IRequestHandler<Get{EntityName}DetailsQuery, Result<Get{EntityName}Dto>>
-{
-    private readonly IAppDbContext _context;
-    private readonly IMapper _mapper;
-
-    public Get{EntityName}DetailsQueryHandler(IAppDbContext context, IMapper mapper)
-    {
-        _context = context;
-        _mapper = mapper;
-    }
-
-    public async Task<Result<Get{EntityName}Dto>> Handle(Get{EntityName}DetailsQuery request, CancellationToken cancellationToken)
-    {
-        var entity = await _context.{EntityName}Plural
-            .FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
-
-        if (entity == null)
+        var paginatedList = new PaginatedListDto<Get{Entity}Dto>
         {
-            return Result<Get{EntityName}Dto>.Failure("{EntityName} not found", 404);
-        }
+            Items = items,
+            TotalCount = totalCount,
+            PageNumber = request.PageNumber,
+            PageSize = request.PageSize
+        };
 
-        var dto = _mapper.Map<Get{EntityName}Dto>(entity);
-
-        return Result<Get{EntityName}Dto>.Success("Entity retrieved successfully", dto);
+        return Result<PaginatedListDto<Get{Entity}Dto>>.Success("Kayıtlar başarıyla getirildi", paginatedList);
     }
 }
 ```
 
----
-
-## DTOs
-
-**File:** `Application/Features/{EntityName}Plural/Queries/Common/DTOs/Get{EntityName}Dto.cs`
+### Details Query Handler (with 404/410/423 status codes)
 
 ```csharp
-namespace Application.Features.{EntityName}Plural.Queries.Common.DTOs;
-
-public class Get{EntityName}Dto
+if (entity == null)
 {
-    public string Id { get; set; } = string.Empty;
-    public required string Property1 { get; set; }
-    public required string Property2 { get; set; }
-    public int Property3 { get; set; }
-    public bool IsActive { get; set; }
+    return Result<Get{Entity}DetailDto>.Failure("Kayıt bulunamadı", 404);
+}
+
+if (entity.IsDeleted)
+{
+    return Result<Get{Entity}DetailDto>.Failure("Bu kayıt silinmiş", 410);
+}
+
+if (!entity.IsActive)
+{
+    return Result<Get{Entity}DetailDto>.Failure("Bu kayıt aktif değil", 423);
 }
 ```
 
----
-
-## API Controller
-
-**File:** `API/Controllers/{EntityName}PluralController.cs`
+## AutoMapper Mapping Template
 
 ```csharp
-using API.Responses;
-using Application.Features.{EntityName}Plural.Commands.Create{EntityName};
-using Application.Features.{EntityName}Plural.Commands.Delete{EntityName};
-using Application.Features.{EntityName}Plural.Commands.Edit{EntityName};
-using Application.Features.{EntityName}Plural.Queries.Common.DTOs;
-using Application.Features.{EntityName}Plural.Queries.Get{EntityName}Details;
-using Application.Features.{EntityName}Plural.Queries.Get{EntityName}List;
-using MediatR;
+// ========== COMMANDS (Write) ==========
+// DTO → Entity: Ignore all BaseEntity properties (set by handlers, not from DTOs)
+CreateMap<Create{Entity}Dto, {Entity}>()
+    .IgnoreAllBaseEntityProperties()
+    .ForMember(dest => dest.UserId, opt => opt.Ignore())   // FK set by handler
+    .ForMember(dest => dest.User, opt => opt.Ignore())     // navigation property
+    .ForMember(dest => dest.Status, opt => opt.Ignore());   // immutable field
+```
+
+**Key rule:** Every navigation property AND every property not in the DTO must be explicitly `.Ignore()`d.
+
+## Controller Template
+
+```csharp
+using Application.Features.{Feature}.Commands.Create{Entity};
+using Application.Features.{Feature}.Commands.Update{Entity};
+using Application.Features.{Feature}.Commands.Delete{Entity};
+using Application.Features.{Feature}.Queries.Get{Entity}List;
+using Application.Features.{Feature}.Queries.Get{Entity}Details;
+using API.Controllers.Requests;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
 
 [Route("api/v1/{route-prefix}")]
-public class {EntityName}PluralController : BaseApiController
+public class {Entity}PluralController : BaseApiController
 {
     [HttpGet]
-    public async Task<ActionResult<StandardApiResponse<List<Get{EntityName}Dto>>>> Get{EntityName}Plural()
+    [AllowAnonymous]
+    public async Task<ActionResult> GetItems([FromQuery] Get{Entity}Request request)
     {
-        return HandleResult(await Mediator.Send(new Get{EntityName}ListQuery()));
+        var query = new Get{Entity}ListQuery
+        {
+            PageNumber = request.PageNumber,
+            PageSize = request.PageSize,
+            SortBy = request.SortBy,
+            SortDescending = request.SortDescending,
+            SearchTerm = request.SearchTerm
+        };
+        return HandleResult(await Mediator.Send(query));
     }
 
-    [HttpGet("{{id}}")]
-    public async Task<ActionResult<StandardApiResponse<Get{EntityName}Dto>>> Get{EntityName}Detail(string id)
+    [HttpGet("{id}")]
+    [AllowAnonymous]
+    public async Task<ActionResult> GetItemDetails(string id)
     {
-        return HandleResult(await Mediator.Send(new Get{EntityName}DetailsQuery { Id = id }));
+        return HandleResult(await Mediator.Send(new Get{Entity}DetailsQuery { Id = id }));
     }
 
     [HttpPost]
-    public async Task<ActionResult<StandardApiResponse<string>>> Create{EntityName}([FromBody] Create{EntityName}Dto create{EntityName}Dto)
+    [Authorize]
+    public async Task<ActionResult> CreateItem(Create{Entity}Dto dto)
     {
-        var command = new Create{EntityName}Command { Create{EntityName}Dto = create{EntityName}Dto };
-        return HandleResult(await Mediator.Send(command));
+        return HandleResult(await Mediator.Send(new Create{Entity}Command { Create{Entity}Dto = dto }));
     }
 
-    [HttpPut("{{id}}")]
-    public async Task<ActionResult<StandardApiResponse<Unit>>> Edit{EntityName}(string id, [FromBody] Edit{EntityName}Dto edit{EntityName}Dto)
+    [HttpPut("{id}")]
+    [Authorize]
+    public async Task<ActionResult> UpdateItem(string id, Update{Entity}Dto dto)
     {
-        var command = new Edit{EntityName}Command { Id = id, Edit{EntityName}Dto = edit{EntityName}Dto };
-        return HandleResult(await Mediator.Send(command));
+        return HandleResult(await Mediator.Send(new Update{Entity}Command { Id = id, Update{Entity}Dto = dto }));
     }
 
-    [HttpDelete("{{id}}")]
-    public async Task<ActionResult<StandardApiResponse<Unit>>> Delete{EntityName}(string id)
+    [HttpDelete("{id}")]
+    [Authorize]
+    public async Task<ActionResult> DeleteItem(string id)
     {
-        return HandleResult(await Mediator.Send(new Delete{EntityName}Command { Id = id }));
+        return HandleResult(await Mediator.Send(new Delete{Entity}Command { Id = id }));
     }
 }
 ```
-
----
-
-## MappingProfiles
-
-**File:** `Application/Core/MappingProfiles.cs`
-
-Add these mappings to the `MappingProfiles` class:
-
-```csharp
-// ========== QUERIES (Read) ==========
-// Entity → DTO
-CreateMap<{EntityName}, Get{EntityName}Dto>();
-
-// ========== COMMANDS (Write) ==========
-// DTO → Entity (Id is ignored for creation and editing)
-CreateMap<Create{EntityName}Dto, {EntityName}>()
-    .ForMember(dest => dest.Id, opt => opt.Ignore());
-
-CreateMap<Edit{EntityName}Dto, {EntityName}>()
-    .ForMember(dest => dest.Id, opt => opt.Ignore());
-```
-
----
-
-## Template Placeholders
-
-Replace these placeholders when generating code:
-
-| Placeholder | Description | Example |
-| --- | --- | --- |
-| `{EntityName}` | PascalCase entity name (singular) | `Product`, `Customer` |
-| `{EntityName}Plural` | Plural form of entity name | `Products`, `Customers` |
-| `{entityNameLower}` | Lowercase entity name | `product`, `customer` |
-| `{route-prefix}` | URL-friendly kebab-case plural | `products`, `customers` |
-| `{Property1}`, etc. | Entity property names | `Name`, `Price`, `Stock` |
-| `Property1`, etc. | Property name without prefix | `Name`, `Price`, `Stock` |
-| `property1`, etc. | Lowercase property name | `name`, `price`, `stock` |
