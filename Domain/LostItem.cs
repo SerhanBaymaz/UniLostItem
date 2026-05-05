@@ -18,7 +18,7 @@ public class LostItem : BaseEntity
     public double Latitude { get; set; }
     public double Longitude { get; set; }
 
-    public string UserId { get; set; } = string.Empty; //FK
+    public required string UserId { get; set; } //FK
 
     //Navigation Properities
     public ApplicationUser User { get; set; } = null!;

@@ -12,6 +12,8 @@ This is **UniLostItem** - a .NET 9 Clean Architecture Web API project implementi
 
 - `Application/Features/SerhanKitaplar` - CRUD operations for SerhanKitap entity
 - `Application/Features/Auth` - Authentication module (Login, Register, RefreshToken, UpdateUserProfile, GetCurrentUser)
+- `Application/Features/LostItems` - Lost & Found item management (Create, Update, Delete, List, Details, MyItems)
+- `Application/Features/ItemClaims` - Item claim workflow (Create, Cancel, Respond, Extend, AdminReview, Queries)
 
 ## Common Commands
 
@@ -175,6 +177,8 @@ All responses use `StandardApiResponse<T>` with:
 **Primary Resources:**
 
 - `SerhanKitap` - CRUD endpoints in `SerhanKitaplarController` (`/api/v1/serhan-kitaplar`) - **All endpoints require authentication**
+- `LostItem` - CRUD endpoints in `LostItemsController` (`/api/v1/items`) - **List/Details are anonymous, CUD require auth**
+- `ItemClaim` - Claim workflow endpoints in `ItemClaimsController` (`/api/v1/claims`) - **All endpoints require authentication**
 
 **SerhanKitap API - Requires Authentication:**
 
@@ -185,6 +189,27 @@ All endpoints under `/api/v1/serhan-kitaplar` require JWT Bearer authentication:
 - `POST /api/v1/serhan-kitaplar` - Create new book (authenticated)
 - `PUT /api/v1/serhan-kitaplar/{id}` - Update book (authenticated)
 - `DELETE /api/v1/serhan-kitaplar/{id}` - Delete book (authenticated)
+
+**LostItem API:**
+
+- `GET /api/v1/items` - List active items (anonymous, paginated/filtered/sorted)
+- `GET /api/v1/items/{id}` - Get item details (anonymous)
+- `POST /api/v1/items` - Create new item (authorized)
+- `PUT /api/v1/items/{id}` - Update own item (authorized, owner only)
+- `DELETE /api/v1/items/{id}` - Soft-delete item (authorized, owner or admin)
+- `GET /api/v1/items/my-items` - List own items (authorized)
+
+**ItemClaim API - Requires Authentication:**
+
+- `POST /api/v1/claims` - Create claim on an item
+- `GET /api/v1/claims/{id}` - Get claim details (claimant/poster/admin)
+- `GET /api/v1/claims/my-claims` - List my submitted claims
+- `PUT /api/v1/claims/{id}/cancel` - Cancel own claim (claimant)
+- `GET /api/v1/claims/by-item/{lostItemId}` - List claims for an item (poster/admin)
+- `PUT /api/v1/claims/{id}/respond` - Approve/Reject claim (item poster)
+- `PUT /api/v1/claims/{id}/extend` - Extend claim deadline +2 days, max 2x (item poster)
+- `PUT /api/v1/claims/{id}/admin-review` - Admin approve/reject claim (admin)
+- `GET /api/v1/claims/pending` - List all pending claims (admin)
 
 **Testing with Swagger UI:**
 
@@ -415,7 +440,13 @@ For list endpoints with pagination, filtering, and sorting:
 
 - `Domain/Common/BaseEntity.cs` - Base entity class with audit trail (Id, CreatedDate, CreatedBy, UpdatedDate, UpdatedBy, IsDeleted, IsActive)
 - `Domain/SerhanKitap.cs` - Business entity inheriting from BaseEntity
-- `Domain/ApplicationUser.cs` - Identity user entity (does NOT inherit from BaseEntity)
+- `Domain/LostItem.cs` - Lost & Found item entity inheriting from BaseEntity
+- `Domain/ItemClaim.cs` - Item claim entity inheriting from BaseEntity
+- `Domain/ApplicationUser.cs` - Identity user entity (does NOT inherit from BaseEntity) — includes `LostItems` and `Claims` navigation properties
+- `Domain/Common/Enums/ItemType.cs` - Lost/Found enum
+- `Domain/Common/Enums/ItemStatus.cs` - PendingApproval/Active/Rejected/Resolved/Flagged enum
+- `Domain/Common/Enums/ItemCategory.cs` - Electronics/Documents/Other etc. enum (9 values including Documents and HealthMedical)
+- `Domain/Common/Enums/ClaimStatus.cs` - Pending/Approved/Rejected/Cancelled enum
 - `API/Program.cs` - Application entry point with extension-based configuration
 - `Application/Core/Result.cs` - Result pattern implementation
 - `Application/Core/MappingProfiles.cs` - AutoMapper profiles for DTO mapping (includes BaseEntity extension methods)
@@ -428,7 +459,7 @@ For list endpoints with pagination, filtering, and sorting:
 - `API/Middleware/ExceptionMiddleware.cs` - Centralized exception handling
 - `Persistence/AppDbContext.cs` - EF Core DbContext (extends `IdentityDbContext<ApplicationUser>`)
 - `Persistence/IAppDbContext.cs` - DbContext interface for mocking
-- `Persistence/DbInitializer.cs` - Database seeding (called on startup, seeds `BaseUser` role)
+- `Persistence/DbInitializer.cs` - Database seeding (called on startup, seeds roles + admin, test-admin, test-user users + sample LostItems)
 - `Infrastructure/Security/JwtService.cs` - JWT token generation/validation (implements `IJwtService`)
 - `Infrastructure/Services/CurrentUserService.cs` - Current user from claims (implements `ICurrentUserService`)
 - `Directory.Build.props` - Centralized package references and analyzer configuration

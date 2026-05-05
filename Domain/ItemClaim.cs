@@ -11,9 +11,9 @@ public class ItemClaim : BaseEntity
     public DateTime ExpiresAt { get; set; }
     public int ExtensionCount { get; set; }
 
-    public string LostItemId { get; set; } = string.Empty;
-    public LostItem LostItem { get; set; } = null!; //FK
-    public string ClaimantId { get; set; } = string.Empty; //FK
+    public required string LostItemId { get; set; } //FK
+    public LostItem LostItem { get; set; } = null!;
+    public required string ClaimantId { get; set; } //FK
     public ApplicationUser Claimant { get; set; } = null!;
 
     public string? OwnerComment { get; set; }
