@@ -29,7 +29,9 @@ public class MappingProfiles : Profile
             .IgnoreAllBaseEntityProperties()
             .ForMember(dest => dest.UserId, opt => opt.Ignore())
             .ForMember(dest => dest.ItemType, opt => opt.MapFrom(src => src.ItemType))
-            .ForMember(dest => dest.Status, opt => opt.Ignore());
+            .ForMember(dest => dest.Status, opt => opt.Ignore())
+            .ForMember(dest => dest.User, opt => opt.Ignore())
+            .ForMember(dest => dest.Claims, opt => opt.Ignore());
     }
 }
 

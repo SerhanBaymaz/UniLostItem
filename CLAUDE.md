@@ -51,9 +51,11 @@ dotnet test --verbosity detailed
 
 **Test Setup:**
 
-- Uses `Microsoft.EntityFrameworkCore.InMemory` for database tests
+- Uses `Microsoft.Data.Sqlite` in-memory for database tests (via `TestDbContextFactory`)
 - Mocking framework: Moq
 - Assertions: FluentAssertions
+- `Tests/Helpers/TestDbContextFactory.cs` — creates isolated SQLite in-memory databases per test
+- `Tests/Helpers/MockHelpers.cs` — `Mock<DbSet<T>>` helper for mock-based tests (note: `FirstOrDefaultAsync` cannot be mocked with Moq; use real DB instead)
 - Integration tests use `WebApplicationFactory` - MUST mock sensitive config (e.g., `Jwt__SecretKey`) via environment variables in constructor/dispose pattern for CI/test environments without .env files
 
 ### Entity Framework Migrations
@@ -454,6 +456,8 @@ For list endpoints with pagination, filtering, and sorting:
 - `Application/Core/Pagination/PagedAndSortedQueryBase.cs` - Base class for paginated queries
 - `Application/Core/Pagination/PaginatedListDto.cs` - Pagination response DTO with metadata
 - `Application/Core/Extensions/EnumExtensions.cs` - Extension methods for enum Description attribute
+- `Tests/Helpers/TestDbContextFactory.cs` - In-memory SQLite database factory for tests
+- `Tests/Helpers/MockHelpers.cs` - DbSet mock helper for unit tests
 - `API/Controllers/BaseApiController.cs` - Base controller with MediatR and Result handling
 - `API/Controllers/Requests/` - Request DTOs for API endpoints with Data Annotations
 - `API/Middleware/ExceptionMiddleware.cs` - Centralized exception handling
@@ -479,6 +483,8 @@ For list endpoints with pagination, filtering, and sorting:
 - **SortBy null handling** - When `SortBy` is null, handlers should apply a default sort order (usually by name or ID)
 - **Soft delete filtering** - List queries must filter out `IsDeleted = true` records; this is NOT automatic at the DbContext level
 - **Audit fields in DTOs** - Query DTOs include audit fields; command DTOs should NOT (use `IgnoreAllBaseEntityProperties()` AutoMapper extension)
+- **Navigation properties in AutoMapper** - When mapping DTO→Entity, navigation properties (`User`, `Claims`, etc.) must be explicitly `.Ignore()`d to avoid AutoMapper configuration validation errors
+- **Query projections** - LostItems queries use EF Core `.Select()` projection instead of AutoMapper for computed fields (e.g., `UserFullName`, `ClaimCount`). Use AutoMapper only when DTO maps 1:1 to entity
 - **BaseEntity inheritance** - Only business entities should inherit from `BaseEntity`; `ApplicationUser` does NOT (extends `IdentityUser`)
 - **DateTime consistency** - All timestamps use `DateTime.UtcNow` to avoid timezone issues
 
