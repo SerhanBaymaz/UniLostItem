@@ -3,6 +3,7 @@ using Application.Features.SerhanKitaplar.Queries.Common.DTOs;
 using Application.Features.SerhanKitaplar.Commands.CreateSerhanKitap;
 using Application.Features.SerhanKitaplar.Commands.EditSerhanKitap;
 using Application.Features.LostItems.Commands.CreateLostItem;
+using Application.Features.ItemClaims.Commands.CreateItemClaim;
 using AutoMapper;
 using Domain;
 using Domain.Common;
@@ -32,6 +33,20 @@ public class MappingProfiles : Profile
             .ForMember(dest => dest.Status, opt => opt.Ignore())
             .ForMember(dest => dest.User, opt => opt.Ignore())
             .ForMember(dest => dest.Claims, opt => opt.Ignore());
+
+        CreateMap<CreateItemClaimDto, ItemClaim>()
+            .IgnoreAllBaseEntityProperties()
+            .ForMember(dest => dest.ClaimantId, opt => opt.Ignore())
+            .ForMember(dest => dest.Status, opt => opt.Ignore())
+            .ForMember(dest => dest.ExpiresAt, opt => opt.Ignore())
+            .ForMember(dest => dest.ExtensionCount, opt => opt.Ignore())
+            .ForMember(dest => dest.LostItem, opt => opt.Ignore())
+            .ForMember(dest => dest.Claimant, opt => opt.Ignore())
+            .ForMember(dest => dest.OwnerComment, opt => opt.Ignore())
+            .ForMember(dest => dest.OwnerResponseDate, opt => opt.Ignore())
+            .ForMember(dest => dest.ReviewedBy, opt => opt.Ignore())
+            .ForMember(dest => dest.ReviewedDate, opt => opt.Ignore())
+            .ForMember(dest => dest.AdminComment, opt => opt.Ignore());
     }
 }
 
