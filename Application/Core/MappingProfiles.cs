@@ -2,6 +2,7 @@ using System;
 using Application.Features.SerhanKitaplar.Queries.Common.DTOs;
 using Application.Features.SerhanKitaplar.Commands.CreateSerhanKitap;
 using Application.Features.SerhanKitaplar.Commands.EditSerhanKitap;
+using Application.Features.LostItems.Commands.CreateLostItem;
 using AutoMapper;
 using Domain;
 using Domain.Common;
@@ -23,6 +24,12 @@ public class MappingProfiles : Profile
 
         CreateMap<EditSerhanKitapDto, SerhanKitap>()
             .IgnoreAllBaseEntityProperties();
+
+        CreateMap<CreateLostItemDto, LostItem>()
+            .IgnoreAllBaseEntityProperties()
+            .ForMember(dest => dest.UserId, opt => opt.Ignore())
+            .ForMember(dest => dest.ItemType, opt => opt.MapFrom(src => src.ItemType))
+            .ForMember(dest => dest.Status, opt => opt.Ignore());
     }
 }
 
