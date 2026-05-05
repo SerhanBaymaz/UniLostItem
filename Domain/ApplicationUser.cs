@@ -12,4 +12,8 @@ public class ApplicationUser : IdentityUser
     public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
     public DateTime? LastLoginDate { get; set; }
     public string? ProfileImageUrl { get; set; }
+
+    //Navigation Properities
+    public ICollection<LostItem> LostItems { get; set; } = [];
+    public ICollection<ItemClaim> Claims { get; set; } = [];
 }
