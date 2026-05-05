@@ -1599,7 +1599,7 @@
 
           <!-- Item Claims -->
           <div class="api-group">
-            <div class="api-group-title" style="border-color:var(--accent-amber); color:var(--accent-amber);">📋 /api/v1/item-claims</div>
+            <div class="api-group-title" style="border-color:var(--accent-amber); color:var(--accent-amber);">📋 /api/v1/claims</div>
             <div class="api-endpoint">
               <span class="api-method post">POST</span>
               <span class="api-route">/</span>
@@ -1855,7 +1855,7 @@
               <div class="cn-icon" style="background:rgba(167,139,250,0.15); color:var(--accent-violet);">👤</div>
               <div>
                 <div class="cn-text">Kullanıcı talep oluşturur</div>
-                <div class="cn-sub">POST /api/v1/item-claims → ExpiresAt = +2 gün</div>
+                <div class="cn-sub">POST /api/v1/claims → ExpiresAt = +2 gün</div>
               </div>
             </div>
 
@@ -2009,7 +2009,7 @@
             <div class="step-content">
               <strong>Gelen Talepleri İnceler</strong>
               Birisi laptop bulduğunu iddia eder. Serhan talep detayını ve açıklamayı okur.
-              <span class="step-method" style="background:rgba(56,189,248,0.1); color:var(--accent-sky);">GET /item-claims/by-item/{id}</span>
+              <span class="step-method" style="background:rgba(56,189,248,0.1); color:var(--accent-sky);">GET /claims/by-item/{id}</span>
             </div>
             <div class="step-connector" style="background:linear-gradient(to right, var(--accent-sky), var(--accent-teal));"></div>
           </div>
@@ -2018,7 +2018,7 @@
             <div class="step-content">
               <strong>Talebi Onaylar</strong>
               "Bu benim laptop! Seri numarası eşleşiyor" yorumuyla talebi onaylar. Eşya Resolved olur.
-              <span class="step-method" style="background:rgba(245,158,11,0.1); color:var(--accent-amber);">PUT /item-claims/{id}/respond</span>
+              <span class="step-method" style="background:rgba(245,158,11,0.1); color:var(--accent-amber);">PUT /claims/{id}/respond</span>
             </div>
           </div>
         </div>
@@ -2066,7 +2066,7 @@
             <div class="step-content">
               <strong>Talep Oluşturur</strong>
               "Mavi deri cüzdan, içinde 3 kart var. Yemekhane girişinde buldum" açıklamasıyla talep oluşturur.
-              <span class="step-method" style="background:rgba(56,189,248,0.1); color:var(--accent-sky);">POST /item-claims</span>
+              <span class="step-method" style="background:rgba(56,189,248,0.1); color:var(--accent-sky);">POST /claims</span>
             </div>
             <div class="step-connector" style="background:linear-gradient(to right, var(--accent-teal), var(--accent-amber));"></div>
           </div>
@@ -2075,7 +2075,7 @@
             <div class="step-content">
               <strong>Talep Durumunu Takip Eder</strong>
               Zeynep 2 gün içinde yanıt vermez. Serhan (Admin) devreye girip talebi inceler.
-              <span class="step-method" style="background:rgba(245,158,11,0.1); color:var(--accent-amber);">GET /item-claims/my-claims</span>
+              <span class="step-method" style="background:rgba(245,158,11,0.1); color:var(--accent-amber);">GET /claims/my-claims</span>
             </div>
           </div>
         </div>
@@ -2105,7 +2105,7 @@
             <div class="step-content">
               <strong>3 Talep Gelir</strong>
               Ahmet, Serhan ve başka biri anahtar için talep oluşturur.
-              <span class="step-method" style="background:rgba(56,189,248,0.1); color:var(--accent-sky);">GET /item-claims/by-item/{id}</span>
+              <span class="step-method" style="background:rgba(56,189,248,0.1); color:var(--accent-sky);">GET /claims/by-item/{id}</span>
             </div>
             <div class="step-connector" style="background:linear-gradient(to right, var(--accent-amber), var(--accent-violet));"></div>
           </div>
@@ -2114,7 +2114,7 @@
             <div class="step-content">
               <strong>Ahmet'in Talebini Reddeder</strong>
               "Anahtar modeli uyuşmuyor" yorumuyla reddeder.
-              <span class="step-method" style="background:rgba(245,158,11,0.1); color:var(--accent-amber);">PUT /item-claims/{id}/respond</span>
+              <span class="step-method" style="background:rgba(245,158,11,0.1); color:var(--accent-amber);">PUT /claims/{id}/respond</span>
             </div>
             <div class="step-connector" style="background:linear-gradient(to right, var(--accent-violet), var(--accent-sky));"></div>
           </div>
@@ -2123,7 +2123,7 @@
             <div class="step-content">
               <strong>Serhan'ın Süresini Uzatır</strong>
               Serhan doğru kişi olabilir ama belge getirmesi lazım. Süreyi 2 gün uzatır.
-              <span class="step-method" style="background:rgba(245,158,11,0.1); color:var(--accent-amber);">PUT /item-claims/{id}/extend</span>
+              <span class="step-method" style="background:rgba(245,158,11,0.1); color:var(--accent-amber);">PUT /claims/{id}/extend</span>
             </div>
             <div class="step-connector" style="background:linear-gradient(to right, var(--accent-sky), var(--accent-teal));"></div>
           </div>
@@ -2132,7 +2132,7 @@
             <div class="step-content">
               <strong>Serhan'ın Talebini Onaylar</strong>
               Serhan anahtar fotoğrafını getirir, eşleşiyor. Zeynep onaylar.
-              <span class="step-method" style="background:rgba(245,158,11,0.1); color:var(--accent-amber);">PUT /item-claims/{id}/respond</span>
+              <span class="step-method" style="background:rgba(245,158,11,0.1); color:var(--accent-amber);">PUT /claims/{id}/respond</span>
             </div>
           </div>
         </div>
@@ -2153,7 +2153,7 @@
             <div class="step-content">
               <strong>Bekleyen Talepleri Görür</strong>
               Admin panelinde süresi dolan taleplerin listesini açar.
-              <span class="step-method" style="background:rgba(244,63,94,0.1); color:var(--accent-rose);">GET /item-claims/pending</span>
+              <span class="step-method" style="background:rgba(244,63,94,0.1); color:var(--accent-rose);">GET /claims/pending</span>
             </div>
             <div class="step-connector" style="background:linear-gradient(to right, var(--accent-violet), var(--accent-amber));"></div>
           </div>
@@ -2162,7 +2162,7 @@
             <div class="step-content">
               <strong>Talep Detayını İnceler</strong>
               Ahmet'in Zeynep'in cüzdanı için yaptığı talebi okur. Açıklama detaylı, eşleşme ihtimali yüksek.
-              <span class="step-method" style="background:rgba(56,189,248,0.1); color:var(--accent-sky);">GET /item-claims/{id}</span>
+              <span class="step-method" style="background:rgba(56,189,248,0.1); color:var(--accent-sky);">GET /claims/{id}</span>
             </div>
             <div class="step-connector" style="background:linear-gradient(to right, var(--accent-amber), var(--accent-teal));"></div>
           </div>
@@ -2171,7 +2171,7 @@
             <div class="step-content">
               <strong>Admin Onayı Verir</strong>
               Zeynep 2 gün içinde yanıt vermediği için Serhan admin olarak talebi onaylar. Cüzdan Resolved olur.
-              <span class="step-method" style="background:rgba(244,63,94,0.1); color:var(--accent-rose);">PUT /item-claims/{id}/admin-review</span>
+              <span class="step-method" style="background:rgba(244,63,94,0.1); color:var(--accent-rose);">PUT /claims/{id}/admin-review</span>
             </div>
             <div class="step-connector" style="background:linear-gradient(to right, var(--accent-teal), var(--accent-rose));"></div>
           </div>

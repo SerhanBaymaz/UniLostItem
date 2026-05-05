@@ -4,13 +4,13 @@ This is **UniLostItem** — a .NET 9 Clean Architecture Web API with CQRS (Media
 
 **Layers:** API -> Application -> Persistence -> Domain <- Infrastructure
 
-**Features:** `SerhanKitaplar` (CRUD), `Auth` (Login/Register/Profile), `LostItems` (CRUD+Queries), `ItemClaims` (Workflow Commands+Queries)
+**Features:** `Auth` (Login/Register/Profile), `LostItems` (CRUD+Queries), `ItemClaims` (Workflow Commands+Queries)
 
 ## Commands
 
 ```bash
 dotnet build UniLostItem.sln        # Build
-dotnet test                        # Run all tests (499 tests)
+dotnet test                        # Run all tests (391 tests)
 dotnet ef migrations add X -p Persistence -s API   # Add migration
 dotnet ef database update -p Persistence -s API     # Apply migration
 ```
@@ -57,9 +57,8 @@ Common/    — DTOs, Enums (sort fields)
 
 | Controller | Route | Auth |
 |-----------|-------|------|
-| SerhanKitaplarController | `/api/v1/serhan-kitaplar` | All: `[Authorize]` |
 | LostItemsController | `/api/v1/items` | List/Details: anonymous, CUD: `[Authorize]` |
-| ItemClaimsController | `/api/v1/claims` | All: `[Authorize]` |
+| ItemClaimsController | `/api/v1/claims` | List: `[Authorize]`, Pending: `[Authorize(Roles="Admin")]`, AdminReview: `[Authorize(Roles="Admin")]` |
 
 ## Test Setup
 

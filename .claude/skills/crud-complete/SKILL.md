@@ -8,7 +8,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 
 ## Overview
 
-Generates complete CRUD operations following the project's established patterns from `LostItems` and `SerhanKitaplar` features.
+Generates complete CRUD operations following the project's established patterns from `LostItems` and `ItemClaims` features.
 
 **Generated files:**
 - Domain Entity (inherits `BaseEntity`)
