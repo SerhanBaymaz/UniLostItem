@@ -6,7 +6,7 @@ FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 
 # Copy solution and project files for restoring dependencies only (first layer caching, speeds up builds when code changes but dependencies do not)
-COPY ["CqrsCleanLayerDotNET9Template.sln", "./"]
+COPY ["UniLostItem.sln", "./"]
 COPY ["Directory.Build.props", "./"]
 
 COPY ["API/API.csproj", "API/"]
@@ -17,7 +17,7 @@ COPY ["Persistence/Persistence.csproj", "Persistence/"]
 COPY ["Tests/Tests.csproj", "Tests/"]
 
 # Restore dependencies (download NuGet packages, it will be cached if unchanged and not re-downloaded unless the project files change)
-RUN dotnet restore "CqrsCleanLayerDotNET9Template.sln"
+RUN dotnet restore "UniLostItem.sln"
 
 
 # Copy all source code to the container /src directory

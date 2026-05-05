@@ -1,8 +1,8 @@
-name: cqrs-clean-net9-dev
+name: uni-lost-item-dev
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: postgres-cqrs-clean-net9-dev
+    container_name: postgres-uni-lost-item-dev
     env_file:
       - dev.env
     ports:
@@ -18,7 +18,7 @@ services:
 
   seq:
     image: datalust/seq:latest
-    container_name: seq-cqrs-clean-net9-dev
+    container_name: seq-uni-lost-item-dev
     env_file:
       - dev.env
     ports:
@@ -32,8 +32,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.dev
-    image: cqrs-clean-net9-api:dev
-    container_name: api-cqrs-clean-net9-dev
+    image: uni-lost-item-api:dev
+    container_name: api-uni-lost-item-dev
     env_file:
       - dev.env
     ports:

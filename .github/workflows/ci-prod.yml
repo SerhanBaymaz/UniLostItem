@@ -35,14 +35,14 @@ jobs:
             ${{ runner.os }}-nuget-
 
       - name: Restore dependencies
-        run: dotnet restore CqrsCleanLayerDotNET9Template.sln
+        run: dotnet restore UniLostItem.sln
 
       - name: Build solution
-        run: dotnet build CqrsCleanLayerDotNET9Template.sln --no-restore --configuration Release
+        run: dotnet build UniLostItem.sln --no-restore --configuration Release
 
       - name: Run tests with coverage
         run: |
-          dotnet test CqrsCleanLayerDotNET9Template.sln \
+          dotnet test UniLostItem.sln \
             --no-build \
             --configuration Release \
             --verbosity normal \
@@ -103,16 +103,16 @@ jobs:
       - name: Build Docker production image
         run: |
           docker build -f Dockerfile.prod \
-            -t ghcr.io/${{ steps.repo-owner.outputs.owner }}/prod-cqrs-clean-net9:latest \
-            -t ghcr.io/${{ steps.repo-owner.outputs.owner }}/prod-cqrs-clean-net9:sha-${{ steps.git-sha.outputs.sha }} \
+            -t ghcr.io/${{ steps.repo-owner.outputs.owner }}/prod-uni-lost-item:latest \
+            -t ghcr.io/${{ steps.repo-owner.outputs.owner }}/prod-uni-lost-item:sha-${{ steps.git-sha.outputs.sha }} \
             .
 
       - name: Verify Docker image
         run: |
-          docker images | grep prod-cqrs-clean-net9
+          docker images | grep prod-uni-lost-item
           echo "📦 Built tags:"
-          echo "  - ghcr.io/${{ steps.repo-owner.outputs.owner }}/prod-cqrs-clean-net9:latest"
-          echo "  - ghcr.io/${{ steps.repo-owner.outputs.owner }}/prod-cqrs-clean-net9:sha-${{ steps.git-sha.outputs.sha }}"
+          echo "  - ghcr.io/${{ steps.repo-owner.outputs.owner }}/prod-uni-lost-item:latest"
+          echo "  - ghcr.io/${{ steps.repo-owner.outputs.owner }}/prod-uni-lost-item:sha-${{ steps.git-sha.outputs.sha }}"
 
       - name: Test Docker container
         env:
@@ -128,7 +128,7 @@ jobs:
             -e Jwt__Audience="${JWT_AUDIENCE_PROD}" \
             -e Jwt__AccessTokenExpirationMinutes="${JWT_ACCESS_TOKEN_EXPIRATION_MINUTES_PROD}" \
             -e Jwt__RefreshTokenExpirationDays="${JWT_REFRESH_TOKEN_EXPIRATION_DAYS_PROD}" \
-            ghcr.io/${{ steps.repo-owner.outputs.owner }}/prod-cqrs-clean-net9:latest
+            ghcr.io/${{ steps.repo-owner.outputs.owner }}/prod-uni-lost-item:latest
 
           echo "⏳ Waiting for container to start..."
           sleep 10
@@ -160,6 +160,6 @@ jobs:
 
       - name: Push to GitHub Container Registry
         run: |
-          docker push ghcr.io/${{ steps.repo-owner.outputs.owner }}/prod-cqrs-clean-net9:latest
-          docker push ghcr.io/${{ steps.repo-owner.outputs.owner }}/prod-cqrs-clean-net9:sha-${{ steps.git-sha.outputs.sha }}
+          docker push ghcr.io/${{ steps.repo-owner.outputs.owner }}/prod-uni-lost-item:latest
+          docker push ghcr.io/${{ steps.repo-owner.outputs.owner }}/prod-uni-lost-item:sha-${{ steps.git-sha.outputs.sha }}
           echo "✅ Images pushed to GitHub Container Registry"

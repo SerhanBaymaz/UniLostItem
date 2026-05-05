@@ -1,8 +1,8 @@
-name: cqrs-clean-net9-local
+name: uni-lost-item-local
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: postgres-cqrs-clean-net9-local
+    container_name: postgres-uni-lost-item-local
     env_file:
       - dev.env
     ports:
@@ -18,7 +18,7 @@ services:
 
   seq:
     image: datalust/seq:latest
-    container_name: seq-cqrs-clean-net9-local
+    container_name: seq-uni-lost-item-local
     env_file:
       - dev.env
     ports:
