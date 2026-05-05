@@ -1,5 +1,5 @@
 using Application.Core;
-using Application.Features.SerhanKitaplar.Validators;
+using Application.Features.LostItems.Commands.CreateLostItem;
 using FluentValidation;
 using MediatR;
 
@@ -18,6 +18,6 @@ public static class ApplicationExtensions
         });
 
         services.AddAutoMapper(_ => { }, typeof(MappingProfiles).Assembly);
-        services.AddValidatorsFromAssemblyContaining<CreateSerhanKitapCommandValidator>();
+        services.AddValidatorsFromAssemblyContaining<CreateLostItemCommandValidator>();
     }
 }

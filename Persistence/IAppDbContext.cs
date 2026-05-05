@@ -8,6 +8,7 @@ namespace Persistence;
 
 public interface IAppDbContext : IAsyncDisposable
 {
-    DbSet<SerhanKitap> SerhanKitaplar { get; set; }
+    DbSet<LostItem> LostItems { get; set; }
+    DbSet<ItemClaim> ItemClaims { get; set; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

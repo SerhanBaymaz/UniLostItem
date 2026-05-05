@@ -1,142 +1,121 @@
 ---
 name: test-generator
-description: Analyzes git status to identify files needing unit tests, checks existing test coverage, and generates missing tests following project patterns.
+description: Analyzes git status to identify files needing unit tests, checks existing test coverage, and generates missing tests following UniLostItem project patterns.
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 ---
 
-# Test Generator - Automated Unit Test Coverage
+# Test Generator — UniLostItem Automated Test Coverage
 
 ## Overview
 
-This Skill analyzes changed files from git status, identifies missing or incomplete unit test coverage, and generates tests following the project's testing patterns.
+Analyzes changed files from git status, identifies missing or incomplete unit test coverage, and generates tests following the project's established patterns.
 
-**Test Framework Used:**
+## Test Infrastructure
 
-- xUnit as test framework
-- Moq for mocking dependencies
-- FluentAssertions for readable assertions
-- Microsoft.EntityFrameworkCore.InMemory for database tests
+- **xUnit** — test framework
+- **FluentAssertions** — readable assertions
+- **Moq** — mocking `ICurrentUserService`, `IMapper` (NOT `IAppDbContext` or `DbSet<T>`)
+- **Microsoft.Data.Sqlite** — in-memory database via `TestDbContextFactory`
+- **Real `AppDbContext`** — NOT `Mock<IAppDbContext>` (Moq cannot mock EF Core extension methods)
 
 ## Workflow
 
 ### Step 1: Identify Changed Files
 
-Run `git status --porcelain` to identify modified/new files. Filter for:
+```bash
+git status --porcelain
+```
 
-- `Application/**/*.cs` - Handlers, Commands, Queries, Validators, DTOs
-- `API/Controllers/*.cs` - API Controllers
-- `API/**/*.cs` - Middleware, Extensions, Helpers
-- `Infrastructure/**/*.cs` - Services
-- `Persistence/**/*.cs` - DbContext, DbInitializer
-- `Domain/**/*.cs` - Entities
+Filter for:
+- `Application/Features/**/Commands/**/*.cs` — Handlers, Commands, DTOs, Validators
+- `Application/Features/**/Queries/**/*.cs` — Handlers, Queries, DTOs
+- `Domain/**/*.cs` — Entity changes (may require test updates)
 
 ### Step 2: Determine Test Requirements
 
-For each changed file, determine what tests are needed:
-
-| File Type | Test Location | Test Coverage |
-| ----------- | --------------- | --------------- |
-| Command Handler | `Tests/Application_Tests/Features/{Feature}/Commands/{Operation}/` | Success path, Failure path, Edge cases |
-| Query Handler | `Tests/Application_Tests/Features/{Feature}/Queries/{Operation}/` | Success path, Empty results, NotFound |
-| Validator | `Tests/Application_Tests/Features/{Feature}/Commands/{Operation}/` | Valid cases, Invalid cases, Null checks |
-| Controller | `Tests/API_Tests/Controllers/` | Each endpoint, Auth requirements, Model validation |
-| Service | `Tests/Infrastructure_Tests/` or `Tests/Application_Tests/Services/` | All public methods, Error handling |
-| Middleware | `Tests/API_Tests/Middleware/` | Invoke logic, Exception handling |
-| Extension | `Tests/API_Tests/Extensions/` | Each extension method |
+| File Type | Test File | Test Coverage |
+|-----------|-----------|---------------|
+| Command Handler | `Tests/Application_Tests/Features/{Feature}/Commands/{Op}/{Op}HandlerTests.cs` | Success, NotFound(404), Forbidden(403), BadRequest(400) |
+| Query Handler | `Tests/Application_Tests/Features/{Feature}/Queries/{Op}/{Op}HandlerTests.cs` | Success, Empty, Filter, SoftDelete, Pagination, Sort |
+| Validator | `Tests/Application_Tests/Features/{Feature}/Commands/{Op}/{Op}ValidatorTests.cs` | Valid, NullDto, EmptyField, MaxLength, MultipleErrors |
 
 ### Step 3: Check Existing Tests
 
-Use `Glob` to find existing test files:
-
-```text
-Tests/**/Tests/{FileNameWithoutExtension}Tests.cs
-```
-
-For existing tests, read and analyze what test cases exist. Identify gaps:
-
-- Missing happy path tests
-- Missing error/failure paths
-- Missing edge cases
-- Missing validation tests
+Use `Glob` to find existing test files under `Tests/Application_Tests/Features/`. For existing tests, identify gaps:
+- Missing success/failure paths
+- Missing ownership (403) tests
+- Missing validator edge cases
 
 ### Step 4: Generate Tests
 
-Generate test files following existing patterns. See [patterns.md](patterns.md) for detailed templates.
+Generate test files following the patterns in [patterns.md](patterns.md).
 
-### Step 5: Run Tests
+**Critical rules:**
+1. Use `TestDbContextFactory.CreateInMemoryDbContext()` — NOT `Mock<IAppDbContext>`
+2. Seed FK-referenced entities (ApplicationUser) before adding entities with FKs
+3. Use `Mock<ICurrentUserService>` for user identity
+4. Use `Mock<IMapper>` only for Create handlers (Update handlers use property-by-property mapping)
+5. Use `CreateContextWithItem()` helper for Update/Delete tests needing pre-seeded data
+6. Always use braces `{ }` on if/else
+7. Assert Turkish error messages
+
+### Step 5: Build & Run Tests
 
 ```bash
+dotnet build UniLostItem.sln
 dotnet test
 ```
 
-Report any failures and fix them.
+## Test File Naming
 
-## Test File Naming Convention
-
-```text
+```
 {ClassName}Tests.cs
 ```
 
 Examples:
+- `CreateLostItemCommandHandlerTests.cs`
+- `UpdateLostItemCommandValidatorTests.cs`
+- `GetLostItemListQueryHandlerTests.cs`
 
-- `CreateProductCommandHandlerTests.cs`
-- `AuthControllerTests.cs`
-- `JwtServiceTests.cs`
-
-## Test Structure Template
+## Test Structure
 
 ```csharp
-using System;
-using System.Threading;
-using System.Threading.Tasks;
+using Application.Core;
+using Application.Interfaces;
+using Domain;
 using FluentAssertions;
 using Moq;
-using Xunit;
+using Persistence;
+using Tests.Helpers;
 
-namespace Tests.{TestFolder};
+namespace Tests.Application_Tests.Features.{Feature}.Commands.{Operation};
 
-public class {ClassName}Tests : IDisposable
+public class {Operation}HandlerTests
 {
-    private readonly {Dependencies} _dependency;
-    private readonly {SystemUnderTest} _sut;
+    private readonly AppDbContext _context;
+    // ... dependencies
 
-    public {ClassName}Tests()
+    public {Operation}HandlerTests()
     {
-        // Arrange - Setup mocks and SUT
+        _context = TestDbContextFactory.CreateInMemoryDbContext();
+        // ... setup mocks
     }
 
     [Fact]
-    public async Task {MethodName}_{Scenario}_{ExpectedOutcome}()
+    public async Task Handle_ShouldReturnSuccess_WhenValid()
     {
         // Arrange
         // Act
         // Assert
     }
-
-    public void Dispose()
-    {
-        // Cleanup
-    }
 }
 ```
 
-## Common Test Patterns
-
-See [patterns.md](patterns.md) for:
-
-- Handler test patterns (Command/Query)
-- Validator test patterns
-- Controller test patterns
-- Service test patterns
-- Mock setup patterns
-
 ## Important Notes
 
-1. **Always implement IDisposable** for tests that create in-memory databases
-2. **Use unique database names** for each test to avoid interference
-3. **Follow AAA pattern** (Arrange-Act-Assert)
-4. **Use descriptive test names** that describe scenario and outcome
-5. **Mock external dependencies** (DbContext, AutoMapper, HttpContext, etc.)
-6. **Test both success and failure paths**
-7. **Use FluentAssertions** for readable assertions
-8. **Verify method calls** on mocks when appropriate
+1. **No `Mock<IAppDbContext>`** — Moq cannot mock `FirstOrDefaultAsync` (extension method)
+2. **No `Mock<DbSet<T>>`** — same reason
+3. **No `IDisposable`** — just fresh context per test class
+4. **FK constraints are real** — SQLite in-memory enforces them; seed ApplicationUser before entities with UserId
+5. **Test names** — follow `Handle_ShouldReturn{Code}_When{Scenario}` pattern
+6. **No AutoMapper for Update** — Update handlers use property-by-property mapping

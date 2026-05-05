@@ -1,372 +1,204 @@
-# Validator Templates
+# Validator Patterns — UniLostItem
 
-This file contains FluentValidation validator patterns for CRUD operations.
+FluentValidation patterns matching the actual codebase from `LostItems` and `ItemClaims` features.
 
-## Create Command Validator
+## Command Validator Structure
 
-**File:** `Application/Features/{EntityName}Plural/Commands/Create{EntityName}/Create{EntityName}CommandValidator.cs`
+All validators follow the same pattern:
+1. Validate DTO is not null
+2. Use `When(x => x.Dto != null, () => { ... })` to scope property validations
+3. Turkish error messages
+4. No `OverridePropertyName` — use default property names
 
-```csharp
-using FluentValidation;
-using Application.Features.{EntityName}Plural.Commands.Create{EntityName};
-
-namespace Application.Features.{EntityName}Plural.Validators;
-
-public class Create{EntityName}CommandValidator : AbstractValidator<Create{EntityName}Command>
-{
-    public Create{EntityName}CommandValidator()
-    {
-        RuleFor(x => x.Create{EntityName}Dto)
-            .NotNull().WithMessage("DTO is required")
-            .OverridePropertyName("{EntityName}");
-
-        // Validate nested properties when DTO is not null
-        RuleFor(x => x.Create{EntityName}Dto.Property1)
-            .NotEmpty().WithMessage("Property1 is required")
-            .When(x => x.Create{EntityName}Dto != null)
-            .OverridePropertyName("Property1");
-
-        RuleFor(x => x.Create{EntityName}Dto.Property2)
-            .NotEmpty().WithMessage("Property2 is required")
-            .When(x => x.Create{EntityName}Dto != null)
-            .OverridePropertyName("Property2");
-
-        RuleFor(x => x.Create{EntityName}Dto.Property3)
-            .NotEmpty().WithMessage("Property3 is required")
-            .GreaterThan(0).WithMessage("Property3 must be greater than 0")
-            .When(x => x.Create{EntityName}Dto != null)
-            .OverridePropertyName("Property3");
-    }
-}
-```
-
-## Edit Command Validator
-
-**File:** `Application/Features/{EntityName}Plural/Commands/Edit{EntityName}/Edit{EntityName}CommandValidator.cs`
-
-```csharp
-using FluentValidation;
-using Application.Features.{EntityName}Plural.Commands.Edit{EntityName};
-
-namespace Application.Features.{EntityName}Plural.Validators;
-
-public class Edit{EntityName}CommandValidator : AbstractValidator<Edit{EntityName}Command>
-{
-    public Edit{EntityName}CommandValidator()
-    {
-        RuleFor(x => x.Id)
-            .NotEmpty().WithMessage("ID is required")
-            .OverridePropertyName("Id");
-
-        RuleFor(x => x.Edit{EntityName}Dto)
-            .NotNull().WithMessage("DTO is required")
-            .OverridePropertyName("{EntityName}");
-
-        // Validate nested properties when DTO is not null
-        RuleFor(x => x.Edit{EntityName}Dto.Property1)
-            .NotEmpty().WithMessage("Property1 is required")
-            .When(x => x.Edit{EntityName}Dto != null)
-            .OverridePropertyName("Property1");
-
-        RuleFor(x => x.Edit{EntityName}Dto.Property2)
-            .NotEmpty().WithMessage("Property2 is required")
-            .When(x => x.Edit{EntityName}Dto != null)
-            .OverridePropertyName("Property2");
-
-        RuleFor(x => x.Edit{EntityName}Dto.Property3)
-            .NotEmpty().WithMessage("Property3 is required")
-            .GreaterThan(0).WithMessage("Property3 must be greater than 0")
-            .When(x => x.Edit{EntityName}Dto != null)
-            .OverridePropertyName("Property3");
-    }
-}
-```
-
----
-
-## Common Validation Patterns
-
-## String Validations
+## Common Validation Rules
 
 ### Required String
 
 ```csharp
-RuleFor(x => x.Property)
-    .NotEmpty().WithMessage("Property is required");
+RuleFor(x => x.Dto.Title)
+    .NotEmpty().WithMessage("Başlık boş olamaz")
+    .MaximumLength(200).WithMessage("Başlık en fazla 200 karakter olabilir")
+    .When(x => x.Dto != null);
 ```
 
-### String Length
+### Optional String (nullable, only validate length when present)
 
 ```csharp
-RuleFor(x => x.Property)
-    .MaximumLength(100).WithMessage("Property cannot exceed 100 characters");
-
-RuleFor(x => x.Property)
-    .Length(5, 50).WithMessage("Property must be between 5 and 50 characters");
+RuleFor(x => x.Dto.ImageUrl)
+    .MaximumLength(500).WithMessage("Resim URL en fazla 500 karakter olabilir")
+    .When(x => x.Dto != null && !string.IsNullOrEmpty(x.Dto.ImageUrl));
 ```
 
-### Email Validation
+### Enum
 
 ```csharp
-RuleFor(x => x.Email)
-    .EmailAddress().WithMessage("Invalid email format");
+RuleFor(x => x.Dto.Category)
+    .IsInEnum().WithMessage("Geçersiz kategori")
+    .When(x => x.Dto != null);
 ```
 
-### Phone Number (Basic)
+### DateTime (past or present only)
 
 ```csharp
-RuleFor(x => x.Phone)
-    .Matches(@"^\+?[1-9]\d{1,14}$").WithMessage("Invalid phone number format");
+RuleFor(x => x.Dto.IncidentDate)
+    .NotEmpty().WithMessage("Olay tarihi boş olamaz")
+    .LessThanOrEqualTo(DateTime.UtcNow).WithMessage("Olay tarihi gelecekte olamaz")
+    .When(x => x.Dto != null);
 ```
 
-### URL Validation
+### Numeric Range
 
 ```csharp
-RuleFor(x => x.Website)
-    .Must(BeAValidUrl).WithMessage("Invalid URL format");
+RuleFor(x => x.Dto.Latitude)
+    .InclusiveBetween(-90, 90).WithMessage("Enlem -90 ile 90 arasında olmalıdır")
+    .When(x => x.Dto != null);
 
-private bool BeAValidUrl(string? url)
+RuleFor(x => x.Dto.Longitude)
+    .InclusiveBetween(-180, 180).WithMessage("Boylam -180 ile 180 arasında olamaz")
+    .When(x => x.Dto != null);
+```
+
+### Boolean (always valid, no rule needed)
+
+### Id Validation (for Update/Delete commands)
+
+```csharp
+RuleFor(x => x.Id)
+    .NotEmpty().WithMessage("ID gereklidir");
+```
+
+### Comment/Note (optional string with max length)
+
+```csharp
+RuleFor(x => x.Dto.Comment)
+    .MaximumLength(500).WithMessage("Yorum en fazla 500 karakter olabilir")
+    .When(x => x.Dto != null);
+```
+
+## Complete Examples
+
+### CreateLostItemCommandValidator
+
+```csharp
+using FluentValidation;
+
+namespace Application.Features.LostItems.Commands.CreateLostItem;
+
+public class CreateLostItemCommandValidator : AbstractValidator<CreateLostItemCommand>
 {
-    return Uri.TryCreate(url, UriKind.Absolute, out var uriResult)
-        && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
-}
-```
-
-## Numeric Validations
-
-### Required Number
-
-```csharp
-RuleFor(x => x.Amount)
-    .NotEmpty().WithMessage("Amount is required")
-    .GreaterThan(0).WithMessage("Amount must be greater than 0");
-```
-
-### Range Validation
-
-```csharp
-RuleFor(x => x.Rating)
-    .InclusiveBetween(1, 5).WithMessage("Rating must be between 1 and 5");
-
-RuleFor(x => x.Price)
-    .GreaterThanOrEqualTo(0).WithMessage("Price cannot be negative");
-```
-
-### Decimal Precision
-
-```csharp
-RuleFor(x => x.Price)
-    .ScalePrecision(2, 10).WithMessage("Price cannot have more than 2 decimal places");
-```
-
-## Date/Time Validations
-
-### Required Date
-
-```csharp
-RuleFor(x => x.BirthDate)
-    .NotEmpty().WithMessage("Birth date is required");
-```
-
-### Date Range
-
-```csharp
-RuleFor(x => x.StartDate)
-    .LessThan(x => x.EndDate).WithMessage("Start date must be before end date");
-
-RuleFor(x => x.EventDate)
-    .Must(BeAFutureDate).WithMessage("Event date must be in the future");
-
-private bool BeAFutureDate(DateTime date)
-{
-    return date > DateTime.UtcNow;
-}
-```
-
-### Age Validation
-
-```csharp
-RuleFor(x => x.BirthDate)
-    .Must(BeAtLeast18YearsOld).WithMessage("Must be at least 18 years old");
-
-private bool BeAtLeast18YearsOld(DateTime birthDate)
-{
-    var today = DateTime.Today;
-    var age = today.Year - birthDate.Year;
-    if (birthDate.Date > today.AddYears(-age)) age--;
-    return age >= 18;
-}
-```
-
-## Boolean Validations
-
-### Required Boolean
-
-```csharp
-RuleFor(x => x.AcceptTerms)
-    .Equal(true).WithMessage("You must accept the terms and conditions");
-```
-
-## Enum Validations
-
-### Required Enum
-
-```csharp
-RuleFor(x => x.Status)
-    .IsInEnum().WithMessage("Invalid status value")
-    .NotEqual(Status.None).WithMessage("Status must be specified");
-```
-
-## Collection Validations
-
-### Required Collection
-
-```csharp
-RuleFor(x => x.Items)
-    .NotNull().WithMessage("Items are required")
-    .NotEmpty().WithMessage("At least one item is required");
-```
-
-### Collection Size
-
-```csharp
-RuleFor(x => x.Tags)
-    .Must(tags => tags == null || tags.Count <= 5).WithMessage("Cannot have more than 5 tags");
-```
-
-## Conditional Validation
-
-### Validate When Another Property Has Value
-
-```csharp
-RuleFor(x => x.ShippingAddress)
-    .NotEmpty().WithMessage("Shipping address is required")
-    .When(x => x.RequiresShipping)
-    .OverridePropertyName("ShippingAddress");
-```
-
-### Validate Based on Property Value
-
-```csharp
-RuleFor(x => x.BusinessName)
-    .NotEmpty().WithMessage("Business name is required")
-    .When(x => x.AccountType == AccountType.Business)
-    .OverridePropertyName("BusinessName");
-```
-
-## Custom Validation
-
-### Must Method
-
-```csharp
-RuleFor(x => x.Username)
-    .Must(BeUniqueUsername).WithMessage("Username already exists")
-    .When(x => !string.IsNullOrEmpty(x.Username));
-
-private bool BeUniqueUsername(string username)
-{
-    // Custom validation logic
-    return !_context.Users.Any(u => u.Username == username);
-}
-```
-
-### Custom Async Validation
-
-```csharp
-RuleFor(x => x.Email)
-    .MustAsync(BeUniqueEmail).WithMessage("Email already registered")
-    .When(x => !string.IsNullOrEmpty(x.Email));
-
-private async Task<bool> BeUniqueEmail(string email, CancellationToken cancellationToken)
-{
-    return !await _context.Users.AnyAsync(u => u.Email == email, cancellationToken);
-}
-```
-
----
-
-## Validator Best Practices
-
-1. **Always use `OverridePropertyName`**: This ensures the error response shows the correct field name
-2. **Use `.When()` for null checks**: Validate nested properties only when parent is not null
-3. **Keep validators focused**: Each validator should handle one concern
-4. **Use descriptive error messages**: Messages should be clear and actionable
-5. **Language considerations**: Use Turkish messages for Turkish projects, English for English projects
-
----
-
-## Common Validator Examples
-
-## Product Entity Validator
-
-```csharp
-public class CreateProductCommandValidator : AbstractValidator<CreateProductCommand>
-{
-    public CreateProductCommandValidator()
+    public CreateLostItemCommandValidator()
     {
-        RuleFor(x => x.CreateProductDto)
-            .NotNull().WithMessage("Ürün bilgileri gereklidir")
-            .OverridePropertyName("Product");
+        RuleFor(x => x.CreateLostItemDto)
+            .NotNull().WithMessage("Item bilgileri gereklidir");
 
-        RuleFor(x => x.CreateProductDto.Name)
-            .NotEmpty().WithMessage("Ürün adı boş olamaz")
-            .MaximumLength(100).WithMessage("Ürün adı 100 karakteri geçemez")
-            .When(x => x.CreateProductDto != null)
-            .OverridePropertyName("Name");
+        When(x => x.CreateLostItemDto != null, () =>
+        {
+            RuleFor(x => x.CreateLostItemDto!.Title)
+                .NotEmpty().WithMessage("Başlık boş olamaz")
+                .MaximumLength(200).WithMessage("Başlık en fazla 200 karakter olabilir");
 
-        RuleFor(x => x.CreateProductDto.Price)
-            .NotEmpty().WithMessage("Fiyat boş olamaz")
-            .GreaterThan(0).WithMessage("Fiyat 0'dan büyük olmalıdır")
-            .When(x => x.CreateProductDto != null)
-            .OverridePropertyName("Price");
+            RuleFor(x => x.CreateLostItemDto!.Description)
+                .NotEmpty().WithMessage("Açıklama boş olamaz")
+                .MaximumLength(2000).WithMessage("Açıklama en fazla 2000 karakter olabilir");
 
-        RuleFor(x => x.CreateProductDto.Stock)
-            .NotEmpty().WithMessage("Stok miktarı boş olamaz")
-            .GreaterThanOrEqualTo(0).WithMessage("Stok miktarı negatif olamaz")
-            .When(x => x.CreateProductDto != null)
-            .OverridePropertyName("Stock");
+            RuleFor(x => x.CreateLostItemDto!.Category)
+                .IsInEnum().WithMessage("Geçersiz kategori");
 
-        RuleFor(x => x.CreateProductDto.Category)
-            .IsInEnum().WithMessage("Geçersiz kategori")
-            .When(x => x.CreateProductDto != null)
-            .OverridePropertyName("Category");
+            RuleFor(x => x.CreateLostItemDto!.ItemType)
+                .IsInEnum().WithMessage("Geçersiz item tipi");
+
+            RuleFor(x => x.CreateLostItemDto!.IncidentDate)
+                .NotEmpty().WithMessage("Olay tarihi boş olamaz")
+                .LessThanOrEqualTo(DateTime.UtcNow).WithMessage("Olay tarihi gelecekte olamaz");
+
+            RuleFor(x => x.CreateLostItemDto!.ImageUrl)
+                .MaximumLength(500).WithMessage("Resim URL en fazla 500 karakter olabilir")
+                .When(x => !string.IsNullOrEmpty(x.CreateLostItemDto!.ImageUrl));
+
+            RuleFor(x => x.CreateLostItemDto!.ContactInfo)
+                .MaximumLength(300).WithMessage("İletişim bilgisi en fazla 300 karakter olabilir")
+                .When(x => !string.IsNullOrEmpty(x.CreateLostItemDto!.ContactInfo));
+
+            RuleFor(x => x.CreateLostItemDto!.LocationLabel)
+                .NotEmpty().WithMessage("Konum açıklaması boş olamaz")
+                .MaximumLength(300).WithMessage("Konum açıklaması en fazla 300 karakter olabilir");
+
+            RuleFor(x => x.CreateLostItemDto!.Latitude)
+                .InclusiveBetween(-90, 90).WithMessage("Enlem -90 ile 90 arasında olmalıdır");
+
+            RuleFor(x => x.CreateLostItemDto!.Longitude)
+                .InclusiveBetween(-180, 180).WithMessage("Boylam -180 ile 180 arasında olmalıdır");
+        });
     }
 }
 ```
 
-## Customer Entity Validator
+### CreateItemClaimCommandValidator (simple DTO)
 
 ```csharp
-public class CreateCustomerCommandValidator : AbstractValidator<CreateCustomerCommand>
+using FluentValidation;
+
+namespace Application.Features.ItemClaims.Commands.CreateItemClaim;
+
+public class CreateItemClaimCommandValidator : AbstractValidator<CreateItemClaimCommand>
 {
-    public CreateCustomerCommandValidator()
+    public CreateItemClaimCommandValidator()
     {
-        RuleFor(x => x.CreateCustomerDto)
-            .NotNull().WithMessage("Müşteri bilgileri gereklidir")
-            .OverridePropertyName("Customer");
+        RuleFor(x => x.CreateItemClaimDto)
+            .NotNull().WithMessage("Talep bilgileri gereklidir");
 
-        RuleFor(x => x.CreateCustomerDto.FirstName)
-            .NotEmpty().WithMessage("İsim boş olamaz")
-            .MaximumLength(50).WithMessage("İsim 50 karakteri geçemez")
-            .When(x => x.CreateCustomerDto != null)
-            .OverridePropertyName("FirstName");
+        When(x => x.CreateItemClaimDto != null, () =>
+        {
+            RuleFor(x => x.CreateItemClaimDto!.LostItemId)
+                .NotEmpty().WithMessage("İlan ID gereklidir");
 
-        RuleFor(x => x.CreateCustomerDto.LastName)
-            .NotEmpty().WithMessage("Soyisim boş olamaz")
-            .MaximumLength(50).WithMessage("Soyisim 50 karakteri geçemez")
-            .When(x => x.CreateCustomerDto != null)
-            .OverridePropertyName("LastName");
+            RuleFor(x => x.CreateItemClaimDto!.Description)
+                .NotEmpty().WithMessage("Açıklama gereklidir")
+                .MaximumLength(1000).WithMessage("Açıklama en fazla 1000 karakter olabilir");
+        });
+    }
+}
+```
 
-        RuleFor(x => x.CreateCustomerDto.Email)
-            .NotEmpty().WithMessage("E-posta boş olamaz")
-            .EmailAddress().WithMessage("Geçersiz e-posta formatı")
-            .When(x => x.CreateCustomerDto != null)
-            .OverridePropertyName("Email");
+### RespondToClaimCommandValidator (Id + DTO with optional comment)
 
-        RuleFor(x => x.CreateCustomerDto.Phone)
-            .Matches(@"^[0-9]{10,15}$").WithMessage("Geçersiz telefon numarası")
-            .When(x => x.CreateCustomerDto != null && !string.IsNullOrEmpty(x.CreateCustomerDto.Phone))
-            .OverridePropertyName("Phone");
+```csharp
+using FluentValidation;
+
+namespace Application.Features.ItemClaims.Commands.RespondToClaim;
+
+public class RespondToClaimCommandValidator : AbstractValidator<RespondToClaimCommand>
+{
+    public RespondToClaimCommandValidator()
+    {
+        RuleFor(x => x.Id).NotEmpty().WithMessage("Talep ID gereklidir");
+
+        RuleFor(x => x.RespondToClaimDto).NotNull().WithMessage("Yanıt bilgileri gereklidir");
+
+        When(x => x.RespondToClaimDto != null, () =>
+        {
+            RuleFor(x => x.RespondToClaimDto!.Comment)
+                .MaximumLength(500).WithMessage("Yorum en fazla 500 karakter olabilir");
+        });
+    }
+}
+```
+
+### Paginated Query Validator
+
+```csharp
+using Application.Core.Pagination;
+using Application.Features.{Feature}.Queries.Common.Enums;
+using FluentValidation;
+
+namespace Application.Features.{Feature}.Queries.Get{Entity}List;
+
+public class Get{Entity}ListValidator : PagedAndSortedQueryValidator<Get{Entity}ListQuery, {Entity}SortField>
+{
+    public Get{Entity}ListValidator()
+    {
+        // Base class handles PageNumber, PageSize, SortBy, SortDescending
+        // Add feature-specific rules here if needed
     }
 }
 ```

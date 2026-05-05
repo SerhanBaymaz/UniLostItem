@@ -323,7 +323,7 @@ public class DatabaseExtensionsTests
         // Assert - Verify database is ready for operations after migration
         using var assertScope = app.Services.CreateScope();
         var assertContext = assertScope.ServiceProvider.GetRequiredService<AppDbContext>();
-        var canQuery = await assertContext.SerhanKitaplar.AnyAsync();
+        var canQuery = await assertContext.LostItems.AnyAsync();
 
         // The query should execute successfully
         canQuery.Should().BeFalse("because the database starts empty but is queryable");
@@ -372,11 +372,27 @@ public class DatabaseExtensionsTests
         {
             var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             await context.Database.EnsureCreatedAsync();
-            context.SerhanKitaplar.Add(new Domain.SerhanKitap
+            context.Users.Add(new Domain.ApplicationUser
             {
-                KitapName = "Test Book",
-                KitapYazar = "Test Author",
-                KitapSayfaSayisi = 100
+                Id = "test-user-id",
+                UserName = "testuser",
+                Email = "test@test.com",
+                EmailConfirmed = true,
+                FirstName = "Test",
+                LastName = "User"
+            });
+            context.LostItems.Add(new Domain.LostItem
+            {
+                Title = "Test Item",
+                Description = "Test Desc",
+                Category = Domain.Common.Enums.ItemCategory.Electronics,
+                ItemType = Domain.Common.Enums.ItemType.Lost,
+                Status = Domain.Common.Enums.ItemStatus.Active,
+                IncidentDate = DateTime.UtcNow,
+                LocationLabel = "Test",
+                Latitude = 41.0,
+                Longitude = 29.0,
+                UserId = "test-user-id"
             });
             await context.SaveChangesAsync();
         }
@@ -388,7 +404,7 @@ public class DatabaseExtensionsTests
         using (var scope = app.Services.CreateScope())
         {
             var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            var count = await context.SerhanKitaplar.CountAsync();
+            var count = await context.LostItems.CountAsync();
             count.Should().Be(1, "because DbInitializer.SeedData should not add data when database is not empty");
         }
     }
@@ -511,7 +527,7 @@ public class DatabaseExtensionsTests
         {
             var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             await context.Database.EnsureCreatedAsync();
-            var initialCount = await context.SerhanKitaplar.CountAsync();
+            var initialCount = await context.LostItems.CountAsync();
             initialCount.Should().Be(0, "database should start empty");
         }
 

@@ -1,6 +1,5 @@
 using API.Extensions;
 using Application.Core;
-using Application.Features.SerhanKitaplar.Commands.CreateSerhanKitap;
 using AutoMapper;
 using FluentAssertions;
 using FluentValidation;
@@ -60,22 +59,6 @@ public class ApplicationExtensionsTests
             s.ServiceType.GetGenericTypeDefinition().Name.Contains("IValidator"));
 
         validatorRegistrations.Should().NotBeEmpty();
-    }
-
-    [Fact]
-    public void AddApplicationServices_ShouldRegisterCreateSerhanKitapCommandValidator()
-    {
-        // Arrange
-        var services = new ServiceCollection();
-
-        // Act
-        services.AddApplicationServices();
-
-        // Assert
-        var serviceProvider = services.BuildServiceProvider();
-        var validator = serviceProvider.GetService<IValidator<CreateSerhanKitapCommand>>();
-
-        validator.Should().NotBeNull();
     }
 
     [Fact]

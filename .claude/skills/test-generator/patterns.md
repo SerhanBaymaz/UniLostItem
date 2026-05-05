@@ -1,35 +1,28 @@
-# Test Patterns Reference
+# Test Patterns — UniLostItem
 
-This file contains test templates for all common patterns in the codebase.
+Test templates matching the actual patterns from `LostItems` and `ItemClaims` tests.
 
 ## Table of Contents
 
-1. [Command Handler Tests](#command-handler-tests)
-2. [Query Handler Tests](#query-handler-tests)
-3. [Validator Tests](#validator-tests)
-4. [Controller Tests](#controller-tests)
-5. [Service Tests](#service-tests)
-6. [Middleware Tests](#middleware-tests)
-7. [Extension Method Tests](#extension-method-tests)
+1. [Create Handler Tests](#create-handler-tests)
+2. [Update/Delete Handler Tests (with ownership)](#updatedelete-handler-tests)
+3. [Query Handler Tests](#query-handler-tests)
+4. [Validator Tests](#validator-tests)
+5. [Workflow Handler Tests (status transitions)](#workflow-handler-tests)
 
 ---
 
-## Command Handler Tests
+## Create Handler Tests
 
-### Create Command Handler Template
-
-**File:** `Tests/Application_Tests/Features/{Feature}/Commands/Create{Entity}/Create{Entity}CommandHandlerTests.cs`
+**Pattern:** SeedUser helper, Mock IMapper + ICurrentUserService, real AppDbContext
 
 ```csharp
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 using Application.Core;
 using Application.Features.{Feature}.Commands.Create{Entity};
+using Application.Interfaces;
 using AutoMapper;
 using Domain;
 using FluentAssertions;
-using Microsoft.EntityFrameworkCore;
 using Moq;
 using Persistence;
 using Tests.Helpers;
@@ -38,285 +31,233 @@ namespace Tests.Application_Tests.Features.{Feature}.Commands.Create{Entity};
 
 public class Create{Entity}CommandHandlerTests
 {
+    private readonly AppDbContext _context;
     private readonly Mock<IMapper> _mapperMock;
-    private readonly IAppDbContext _context;
+    private readonly Mock<ICurrentUserService> _currentUserMock;
     private readonly Create{Entity}CommandHandler _handler;
 
     public Create{Entity}CommandHandlerTests()
     {
         _context = TestDbContextFactory.CreateInMemoryDbContext();
         _mapperMock = new Mock<IMapper>();
-        _handler = new Create{Entity}CommandHandler(_context, _mapperMock.Object);
+        _currentUserMock = new Mock<ICurrentUserService>();
+        _currentUserMock.Setup(x => x.UserId).Returns("user-1");
+        _handler = new Create{Entity}CommandHandler(_context, _mapperMock.Object, _currentUserMock.Object);
+    }
+
+    private async Task SeedUser()
+    {
+        _context.Users.Add(new ApplicationUser
+        {
+            Id = "user-1",
+            UserName = "testuser",
+            Email = "test@test.com",
+            EmailConfirmed = true,
+            FirstName = "Test",
+            LastName = "User"
+        });
+        await _context.SaveChangesAsync();
     }
 
     [Fact]
-    public async Task Handle_WithValidCommand_ShouldCreate{Entity}()
+    public async Task Handle_ShouldCreate_WhenValid()
     {
-        // Arrange
-        var dto = new Create{Entity}Dto
-        {
-            Property1 = "Test Value",
-            Property2 = 100
-        };
-
+        await SeedUser();
+        var dto = new Create{Entity}Dto { /* valid properties */ };
         var command = new Create{Entity}Command { Create{Entity}Dto = dto };
+        _mapperMock.Setup(m => m.Map<{Entity}>(dto)).Returns(new {Entity} { /* ... */ });
 
-        var entity = new {Entity}
-        {
-            Property1 = dto.Property1,
-            Property2 = dto.Property2
-        };
-
-        _mapperMock.Setup(m => m.Map<{Entity}>(dto)).Returns(entity);
-
-        // Act
         var result = await _handler.Handle(command, CancellationToken.None);
 
-        // Assert
         result.IsSuccess.Should().BeTrue();
-        result.Message.Should().Be("{Entity} created successfully");
         result.Value.Should().NotBeNullOrEmpty();
+    }
 
-        var savedEntity = await _context.{Entity}Plural.FirstOrDefaultAsync();
-        savedEntity.Should().NotBeNull();
-        savedEntity!.Property1.Should().Be("Test Value");
+    [Fact]
+    public async Task Handle_ShouldSetUserId_FromService()
+    {
+        await SeedUser();
+        // ... create and handle ...
+
+        var saved = await _context.{Entity}Plural.FirstOrDefaultAsync();
+        saved!.UserId.Should().Be("user-1");
+    }
+
+    [Fact]
+    public async Task Handle_ShouldCallMapper()
+    {
+        await SeedUser();
+        var dto = new Create{Entity}Dto { /* ... */ };
+        var command = new Create{Entity}Command { Create{Entity}Dto = dto };
+        _mapperMock.Setup(m => m.Map<{Entity}>(dto)).Returns(new {Entity} { /* ... */ });
+
+        await _handler.Handle(command, CancellationToken.None);
+
+        _mapperMock.Verify(m => m.Map<{Entity}>(dto), Times.Once);
     }
 
     [Fact]
     public async Task Handle_ShouldReturnFailure_WhenSaveFails()
     {
-        // Arrange
-        var mockContext = new Mock<IAppDbContext>();
-        var mockDbSet = new Mock<DbSet<{Entity}>>();
-
-        mockContext.Setup(c => c.{Entity}Plural).Returns(mockDbSet.Object);
-        mockContext.Setup(c => c.SaveChangesAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(0); // Simulate save failure
-
-        var handler = new Create{Entity}CommandHandler(mockContext.Object, _mapperMock.Object);
-
-        var dto = new Create{Entity}Dto { Property1 = "Test" };
+        await SeedUser();
+        var dto = new Create{Entity}Dto { /* ... */ };
         var command = new Create{Entity}Command { Create{Entity}Dto = dto };
+        _mapperMock.Setup(m => m.Map<{Entity}>(dto)).Returns(new {Entity} { /* ... */ });
 
-        // Act
-        var result = await handler.Handle(command, CancellationToken.None);
+        await _context.DisposeAsync(); // break the context
 
-        // Assert
+        var result = await _handler.Handle(command, CancellationToken.None);
+
         result.IsSuccess.Should().BeFalse();
         result.Code.Should().Be(400);
-    }
-
-    [Fact]
-    public async Task Handle_ShouldCallMapperWithCorrectDto()
-    {
-        // Arrange
-        var dto = new Create{Entity}Dto { Property1 = "Test" };
-        var command = new Create{Entity}Command { Create{Entity}Dto = dto };
-
-        var entity = new {Entity} { Property1 = dto.Property1 };
-        _mapperMock.Setup(m => m.Map<{Entity}>(dto)).Returns(entity);
-
-        // Act
-        await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        _mapperMock.Verify(m => m.Map<{Entity}>(dto), Times.Once);
-    }
-}
-```
-
-### Edit Command Handler Template
-
-**File:** `Tests/Application_Tests/Features/{Feature}/Commands/Edit{Entity}/Edit{Entity}CommandHandlerTests.cs`
-
-```csharp
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-using Application.Core;
-using Application.Features.{Feature}.Commands.Edit{Entity};
-using AutoMapper;
-using Domain;
-using FluentAssertions;
-using Microsoft.EntityFrameworkCore;
-using Moq;
-using Persistence;
-using Tests.Helpers;
-
-namespace Tests.Application_Tests.Features.{Feature}.Commands.Edit{Entity};
-
-public class Edit{Entity}CommandHandlerTests
-{
-    private readonly Mock<IMapper> _mapperMock;
-    private readonly IAppDbContext _context;
-    private readonly Edit{Entity}CommandHandler _handler;
-    private readonly {Entity} _existingEntity;
-
-    public Edit{Entity}CommandHandlerTests()
-    {
-        _context = TestDbContextFactory.CreateInMemoryDbContext();
-        _mapperMock = new Mock<IMapper>();
-        _handler = new Edit{Entity}CommandHandler(_context, _mapperMock.Object);
-
-        _existingEntity = new {Entity}
-        {
-            Id = Guid.NewGuid().ToString(),
-            Property1 = "Original",
-            Property2 = 100
-        };
-
-        _context.{Entity}Plural.Add(_existingEntity);
-        _context.SaveChanges();
-    }
-
-    [Fact]
-    public async Task Handle_WhenEntityExists_ShouldUpdateAndReturnSuccess()
-    {
-        // Arrange
-        var dto = new Edit{Entity}Dto
-        {
-            Property1 = "Updated",
-            Property2 = 200
-        };
-
-        var command = new Edit{Entity}Command
-        {
-            Id = _existingEntity.Id,
-            Edit{Entity}Dto = dto
-        };
-
-        _mapperMock.Setup(m => m.Map(dto, _existingEntity))
-            .Callback(() =>
-            {
-                _existingEntity.Property1 = dto.Property1;
-                _existingEntity.Property2 = dto.Property2;
-            });
-
-        // Act
-        var result = await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        result.IsSuccess.Should().BeTrue();
-        result.Message.Should().Be("{Entity} updated successfully");
-
-        var updatedEntity = await _context.{Entity}Plural.FirstOrDefaultAsync(x => x.Id == _existingEntity.Id);
-        updatedEntity.Should().NotBeNull();
-        updatedEntity!.Property1.Should().Be("Updated");
-        updatedEntity.Property2.Should().Be(200);
-    }
-
-    [Fact]
-    public async Task Handle_WhenEntityNotFound_ShouldReturnNotFound()
-    {
-        // Arrange
-        var dto = new Edit{Entity}Dto { Property1 = "Test" };
-        var nonExistentId = Guid.NewGuid().ToString();
-        var command = new Edit{Entity}Command { Id = nonExistentId, Edit{Entity}Dto = dto };
-
-        // Act
-        var result = await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        result.IsSuccess.Should().BeFalse();
-        result.Code.Should().Be(404);
-        result.Message.Should().Be("{Entity} not found");
-    }
-}
-```
-
-### Delete Command Handler Template
-
-**File:** `Tests/Application_Tests/Features/{Feature}/Commands/Delete{Entity}/Delete{Entity}CommandHandlerTests.cs`
-
-```csharp
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-using Application.Core;
-using Application.Features.{Feature}.Commands.Delete{Entity};
-using FluentAssertions;
-using Microsoft.EntityFrameworkCore;
-using Persistence;
-using Tests.Helpers;
-
-namespace Tests.Application_Tests.Features.{Feature}.Commands.Delete{Entity};
-
-public class Delete{Entity}CommandHandlerTests
-{
-    private readonly IAppDbContext _context;
-    private readonly Delete{Entity}CommandHandler _handler;
-    private readonly {Entity} _existingEntity;
-
-    public Delete{Entity}CommandHandlerTests()
-    {
-        _context = TestDbContextFactory.CreateInMemoryDbContext();
-        _handler = new Delete{Entity}CommandHandler(_context);
-
-        _existingEntity = new {Entity}
-        {
-            Id = Guid.NewGuid().ToString(),
-            Property1 = "Test"
-        };
-
-        _context.{Entity}Plural.Add(_existingEntity);
-        _context.SaveChanges();
-    }
-
-    [Fact]
-    public async Task Handle_WhenEntityExists_ShouldDeleteAndReturnSuccess()
-    {
-        // Arrange
-        var command = new Delete{Entity}Command { Id = _existingEntity.Id };
-
-        // Act
-        var result = await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        result.IsSuccess.Should().BeTrue();
-        result.Message.Should().Be("{Entity} deleted successfully");
-
-        var deletedEntity = await _context.{Entity}Plural.FirstOrDefaultAsync(x => x.Id == _existingEntity.Id);
-        deletedEntity.Should().BeNull();
-    }
-
-    [Fact]
-    public async Task Handle_WhenEntityNotFound_ShouldReturnNotFound()
-    {
-        // Arrange
-        var nonExistentId = Guid.NewGuid().ToString();
-        var command = new Delete{Entity}Command { Id = nonExistentId };
-
-        // Act
-        var result = await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        result.IsSuccess.Should().BeFalse();
-        result.Code.Should().Be(404);
-        result.Message.Should().Be("{Entity} not found");
     }
 }
 ```
 
 ---
 
-## Query Handler Tests
+## Update/Delete Handler Tests
 
-### Get List Query Handler Template
-
-**File:** `Tests/Application_Tests/Features/{Feature}/Queries/Get{Entity}List/Get{Entity}ListQueryHandlerTests.cs`
+**Pattern:** `CreateContextWithItem()` helper that seeds both user and entity, tests 404/403/success
 
 ```csharp
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
+using Application.Core;
+using Application.Features.{Feature}.Commands.Update{Entity};
+using Application.Interfaces;
+using Domain;
+using FluentAssertions;
+using Moq;
+using Persistence;
+using Tests.Helpers;
+
+namespace Tests.Application_Tests.Features.{Feature}.Commands.Update{Entity};
+
+public class Update{Entity}CommandHandlerTests
+{
+    private const string OwnerUserId = "owner-id";
+    private const string OtherUserId = "other-id";
+
+    private async Task<AppDbContext> CreateContextWithItem(string userId = OwnerUserId)
+    {
+        var context = TestDbContextFactory.CreateInMemoryDbContext();
+        context.Users.Add(new ApplicationUser
+        {
+            Id = userId,
+            UserName = "owner",
+            Email = "owner@test.com",
+            EmailConfirmed = true,
+            FirstName = "Owner",
+            LastName = "User"
+        });
+        context.{Entity}Plural.Add(new {Entity}
+        {
+            Id = "item-1",
+            Property1 = "Original",
+            UserId = userId,
+            IsActive = true
+        });
+        await context.SaveChangesAsync();
+        return context;
+    }
+
+    [Fact]
+    public async Task Handle_ShouldReturnNotFound_WhenItemDoesNotExist()
+    {
+        var context = TestDbContextFactory.CreateInMemoryDbContext();
+        var currentUserMock = new Mock<ICurrentUserService>();
+        currentUserMock.Setup(x => x.UserId).Returns(OwnerUserId);
+        var handler = new Update{Entity}CommandHandler(context, currentUserMock.Object);
+
+        var command = new Update{Entity}Command
+        {
+            Id = "non-existent",
+            Update{Entity}Dto = new Update{Entity}Dto { Property1 = "Updated" }
+        };
+
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        result.IsSuccess.Should().BeFalse();
+        result.Code.Should().Be(404);
+    }
+
+    [Fact]
+    public async Task Handle_ShouldReturnForbidden_WhenUserIsNotOwner()
+    {
+        var context = await CreateContextWithItem(OwnerUserId);
+        var currentUserMock = new Mock<ICurrentUserService>();
+        currentUserMock.Setup(x => x.UserId).Returns(OtherUserId);
+        var handler = new Update{Entity}CommandHandler(context, currentUserMock.Object);
+
+        var command = new Update{Entity}Command
+        {
+            Id = "item-1",
+            Update{Entity}Dto = new Update{Entity}Dto { Property1 = "Hacked" }
+        };
+
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        result.IsSuccess.Should().BeFalse();
+        result.Code.Should().Be(403);
+    }
+
+    [Fact]
+    public async Task Handle_ShouldUpdate_WhenUserIsOwner()
+    {
+        var context = await CreateContextWithItem(OwnerUserId);
+        var currentUserMock = new Mock<ICurrentUserService>();
+        currentUserMock.Setup(x => x.UserId).Returns(OwnerUserId);
+        var handler = new Update{Entity}CommandHandler(context, currentUserMock.Object);
+
+        var command = new Update{Entity}Command
+        {
+            Id = "item-1",
+            Update{Entity}Dto = new Update{Entity}Dto { Property1 = "New Value" }
+        };
+
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        var item = await context.{Entity}Plural.FindAsync("item-1");
+        item!.Property1.Should().Be("New Value");
+        item.UpdatedBy.Should().Be(OwnerUserId);
+    }
+
+    [Fact]
+    public async Task Handle_ShouldReturnSuccess_WhenNoChanges()
+    {
+        var context = await CreateContextWithItem(OwnerUserId);
+        var item = await context.{Entity}Plural.FindAsync("item-1");
+        var currentUserMock = new Mock<ICurrentUserService>();
+        currentUserMock.Setup(x => x.UserId).Returns(OwnerUserId);
+        var handler = new Update{Entity}CommandHandler(context, currentUserMock.Object);
+
+        var command = new Update{Entity}Command
+        {
+            Id = "item-1",
+            Update{Entity}Dto = new Update{Entity}Dto { Property1 = item!.Property1 }
+        };
+
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+    }
+}
+```
+
+**Delete handler follows same pattern but tests soft delete (`IsDeleted = true`) instead of property changes.**
+
+---
+
+## Query Handler Tests
+
+**Pattern:** Seed data helper, real AppDbContext (no mocks), test filters/sort/pagination/soft-delete
+
+```csharp
 using Application.Core;
 using Application.Features.{Feature}.Queries.Get{Entity}List;
-using AutoMapper;
 using Domain;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
-using Moq;
 using Persistence;
 using Tests.Helpers;
 
@@ -324,133 +265,87 @@ namespace Tests.Application_Tests.Features.{Feature}.Queries.Get{Entity}List;
 
 public class Get{Entity}ListQueryHandlerTests
 {
-    private readonly IAppDbContext _context;
-    private readonly Mock<IMapper> _mapperMock;
-    private readonly Get{Entity}ListQueryHandler _handler;
+    private readonly AppDbContext _context;
 
     public Get{Entity}ListQueryHandlerTests()
     {
         _context = TestDbContextFactory.CreateInMemoryDbContext();
-        _mapperMock = new Mock<IMapper>();
-        _handler = new Get{Entity}ListQueryHandler(_context, _mapperMock.Object);
+    }
 
-        // Seed test data
-        var entities = Enumerable.Range(1, 5).Select(i => new {Entity}
+    private async Task SeedData()
+    {
+        var user = new ApplicationUser
         {
-            Id = Guid.NewGuid().ToString(),
-            Property1 = $"Item {i}"
-        }).ToList();
+            Id = "user-1",
+            UserName = "testuser",
+            Email = "test@test.com",
+            EmailConfirmed = true,
+            FirstName = "Test",
+            LastName = "User"
+        };
+        _context.Users.Add(user);
 
-        _context.{Entity}Plural.AddRange(entities);
-        _context.SaveChanges();
+        var items = new List<{Entity}>
+        {
+            new() { Title = "Alpha Item", UserId = "user-1", IsActive = true },
+            new() { Title = "Beta Item", UserId = "user-1", IsActive = true }
+        };
+        _context.{Entity}Plural.AddRange(items);
+        await _context.SaveChangesAsync();
     }
 
     [Fact]
-    public async Task Handle_WhenEntitiesExist_ShouldReturnListOfDtos()
+    public async Task Handle_ShouldReturnAllActiveItems()
     {
-        // Arrange
-        var query = new Get{Entity}ListQuery();
+        await SeedData();
+        var handler = new Get{Entity}ListQueryHandler(_context);
+        var result = await handler.Handle(new Get{Entity}ListQuery(), CancellationToken.None);
 
-        // Act
-        var result = await _handler.Handle(query, CancellationToken.None);
-
-        // Assert
         result.IsSuccess.Should().BeTrue();
-        result.Value.Should().NotBeEmpty();
-        result.Value.Should().HaveCount(5);
+        result.Value!.Items.Should().HaveCount(2);
     }
 
     [Fact]
-    public async Task Handle_WhenNoEntitiesExist_ShouldReturnEmptyList()
+    public async Task Handle_ShouldExcludeSoftDeleted()
     {
-        // Arrange
-        _context.{Entity}Plural.RemoveRange(_context.{Entity}Plural);
+        await SeedData();
+        var item = await _context.{Entity}Plural.FirstAsync();
+        item.IsDeleted = true;
         await _context.SaveChangesAsync();
 
-        var query = new Get{Entity}ListQuery();
+        var handler = new Get{Entity}ListQueryHandler(_context);
+        var result = await handler.Handle(new Get{Entity}ListQuery(), CancellationToken.None);
 
-        // Act
-        var result = await _handler.Handle(query, CancellationToken.None);
-
-        // Assert
         result.IsSuccess.Should().BeTrue();
-        result.Value.Should().BeEmpty();
-    }
-}
-```
-
-### Get Details Query Handler Template
-
-**File:** `Tests/Application_Tests/Features/{Feature}/Queries/Get{Entity}Details/Get{Entity}DetailsQueryHandlerTests.cs`
-
-```csharp
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-using Application.Core;
-using Application.Features.{Feature}.Queries.Get{Entity}Details;
-using AutoMapper;
-using Domain;
-using FluentAssertions;
-using Microsoft.EntityFrameworkCore;
-using Moq;
-using Persistence;
-using Tests.Helpers;
-
-namespace Tests.Application_Tests.Features.{Feature}.Queries.Get{Entity}Details;
-
-public class Get{Entity}DetailsQueryHandlerTests
-{
-    private readonly IAppDbContext _context;
-    private readonly Mock<IMapper> _mapperMock;
-    private readonly Get{Entity}DetailsQueryHandler _handler;
-    private readonly {Entity} _testEntity;
-
-    public Get{Entity}DetailsQueryHandlerTests()
-    {
-        _context = TestDbContextFactory.CreateInMemoryDbContext();
-        _mapperMock = new Mock<IMapper>();
-        _handler = new Get{Entity}DetailsQueryHandler(_context, _mapperMock.Object);
-
-        _testEntity = new {Entity}
-        {
-            Id = Guid.NewGuid().ToString(),
-            Property1 = "Test Property"
-        };
-
-        _context.{Entity}Plural.Add(_testEntity);
-        _context.SaveChanges();
+        result.Value!.Items.Should().HaveCount(1);
     }
 
     [Fact]
-    public async Task Handle_WhenEntityExists_ShouldReturnDto()
+    public async Task Handle_ShouldReturnPaginationMetadata()
     {
-        // Arrange
-        var query = new Get{Entity}DetailsQuery { Id = _testEntity.Id };
+        await SeedData();
+        var handler = new Get{Entity}ListQueryHandler(_context);
+        var query = new Get{Entity}ListQuery { PageNumber = 1, PageSize = 1 };
+        var result = await handler.Handle(query, CancellationToken.None);
 
-        // Act
-        var result = await _handler.Handle(query, CancellationToken.None);
-
-        // Assert
         result.IsSuccess.Should().BeTrue();
-        result.Value.Should().NotBeNull();
-        result.Value!.Id.Should().Be(_testEntity.Id);
+        result.Value!.TotalCount.Should().Be(2);
+        result.Value.TotalPages.Should().Be(2);
+        result.Value.HasNext.Should().BeTrue();
+        result.Value.Items.Should().HaveCount(1);
     }
 
     [Fact]
-    public async Task Handle_WhenEntityNotFound_ShouldReturnNotFound()
+    public async Task Handle_ShouldSortByTitleAscending()
     {
-        // Arrange
-        var nonExistentId = Guid.NewGuid().ToString();
-        var query = new Get{Entity}DetailsQuery { Id = nonExistentId };
+        await SeedData();
+        var handler = new Get{Entity}ListQueryHandler(_context);
+        var query = new Get{Entity}ListQuery { SortBy = {Entity}SortField.Title, SortDescending = false };
+        var result = await handler.Handle(query, CancellationToken.None);
 
-        // Act
-        var result = await _handler.Handle(query, CancellationToken.None);
-
-        // Assert
-        result.IsSuccess.Should().BeFalse();
-        result.Code.Should().Be(404);
-        result.Message.Should().Be("{Entity} not found");
+        result.IsSuccess.Should().BeTrue();
+        result.Value!.Items[0].Title.Should().Be("Alpha Item");
+        result.Value!.Items[1].Title.Should().Be("Beta Item");
     }
 }
 ```
@@ -459,458 +354,112 @@ public class Get{Entity}DetailsQueryHandlerTests
 
 ## Validator Tests
 
-### Validator Template
-
-**File:** `Tests/Application_Tests/Features/{Feature}/Commands/{Operation}/{Operation}ValidatorTests.cs`
+**Pattern:** Use `TestValidate` from FluentValidation, no mocking needed
 
 ```csharp
-using Application.Features.{Feature}.Commands.{Operation};
+using Application.Features.{Feature}.Commands.Create{Entity};
 using FluentAssertions;
 
-namespace Tests.Application_Tests.Features.{Feature}.Commands.{Operation};
+namespace Tests.Application_Tests.Features.{Feature}.Commands.Create{Entity};
 
-public class {Operation}ValidatorTests
+public class Create{Entity}CommandValidatorTests
 {
-    private readonly {Operation}Validator _validator;
+    private readonly Create{Entity}CommandValidator _validator = new();
 
-    public {Operation}ValidatorTests()
+    [Fact]
+    public void Should_HaveError_WhenDtoIsNull()
     {
-        _validator = new {Operation}Validator();
+        var command = new Create{Entity}Command { Create{Entity}Dto = null! };
+        var result = _validator.TestValidate(command);
+        result.ShouldHaveValidationErrorFor(x => x.Create{Entity}Dto);
     }
 
     [Fact]
-    public void Validate_WithValidCommand_ShouldPass()
+    public void Should_HaveError_WhenRequiredFieldIsEmpty()
     {
-        // Arrange
-        var command = new {Operation}
+        var command = new Create{Entity}Command
         {
-            Property1 = "Valid Value",
-            Property2 = 100
+            Create{Entity}Dto = new Create{Entity}Dto { Title = "" }
         };
-
-        // Act
-        var result = _validator.Validate(command);
-
-        // Assert
-        result.IsValid.Should().BeTrue();
-        result.Errors.Should().BeEmpty();
+        var result = _validator.TestValidate(command);
+        result.ShouldHaveValidationErrorFor(x => x.Create{Entity}Dto!.Title);
     }
 
     [Fact]
-    public void Validate_WithNullDto_ShouldFail()
+    public void Should_HaveError_WhenFieldExceedsMaxLength()
     {
-        // Arrange
-        var command = new {Operation} { Dto = null! };
-
-        // Act
-        var result = _validator.Validate(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result.Errors.Should().NotBeEmpty();
-    }
-
-    [Fact]
-    public void Validate_WithEmptyProperty_ShouldFail()
-    {
-        // Arrange
-        var command = new {Operation}
+        var command = new Create{Entity}Command
         {
-            Property1 = "",
-            Property2 = 100
+            Create{Entity}Dto = new Create{Entity}Dto { Title = new string('x', 201) }
         };
-
-        // Act
-        var result = _validator.Validate(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result.Errors.Should().Contain(e => e.PropertyName == "Property1");
+        var result = _validator.TestValidate(command);
+        result.ShouldHaveValidationErrorFor(x => x.Create{Entity}Dto!.Title);
     }
 
     [Fact]
-    public void Validate_WithInvalidNumericValue_ShouldFail()
+    public void Should_NotHaveError_WhenAllFieldsValid()
     {
-        // Arrange
-        var command = new {Operation}
+        var command = new Create{Entity}Command
         {
-            Property1 = "Valid",
-            Property2 = -1
+            Create{Entity}Dto = new Create{Entity}Dto { Title = "Valid", Description = "Valid" }
         };
-
-        // Act
-        var result = _validator.Validate(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
+        var result = _validator.TestValidate(command);
+        result.ShouldNotHaveAnyValidationErrors();
     }
 
     [Fact]
-    public void Validate_WithMultipleErrors_ShouldReturnAllErrors()
+    public void Should_HaveMultipleErrors_WhenMultipleFieldsInvalid()
     {
-        // Arrange
-        var command = new {Operation}
+        var command = new Create{Entity}Command
         {
-            Property1 = "",
-            Property2 = -1
+            Create{Entity}Dto = new Create{Entity}Dto { Title = "", Description = "" }
         };
-
-        // Act
-        var result = _validator.Validate(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result.Errors.Should().HaveCountGreaterOrEqualTo(2);
+        var result = _validator.TestValidate(command);
+        result.ShouldHaveValidationErrorFor(x => x.Create{Entity}Dto!.Title);
+        result.ShouldHaveValidationErrorFor(x => x.Create{Entity}Dto!.Description);
     }
 }
 ```
 
 ---
 
-## Controller Tests
+## Workflow Handler Tests
 
-### Controller Template
+For status-transition handlers like `CancelItemClaim`, `RespondToClaim`, `ExtendClaimDeadline`, `AdminReviewClaim:
 
-**File:** `Tests/API_Tests/Controllers/{ControllerName}Tests.cs`
+**Pattern:** Seed item + claim, test each status guard and transition
 
 ```csharp
-using API.Controllers;
-using API.Responses;
-using Application.Core;
-using FluentAssertions;
-using MediatR;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Moq;
-using Xunit;
-
-namespace Tests.API_Tests.Controllers;
-
-public class {ControllerName}Tests : IDisposable
+public class CancelItemClaimCommandHandlerTests
 {
-    private readonly {ControllerName} _controller;
-    private readonly Mock<IMediator> _mediatorMock;
-
-    public {ControllerName}Tests()
+    private async Task<AppDbContext> CreateContextWithClaim(
+        string claimantId = "claimant-id",
+        string ownerId = "owner-id")
     {
-        _mediatorMock = new Mock<IMediator>();
-        _controller = new {ControllerName}();
-
-        // Setup HttpContext
-        var httpContext = new DefaultHttpContext();
-        httpContext.Request.Path = "/api/v1/test";
-        httpContext.TraceIdentifier = "test-trace-id";
-
-        var serviceProviderMock = new Mock<IServiceProvider>();
-        serviceProviderMock.Setup(sp => sp.GetService(typeof(IMediator)))
-            .Returns(_mediatorMock.Object);
-
-        httpContext.RequestServices = serviceProviderMock.Object;
-        _controller.ControllerContext = new ControllerContext
+        var context = TestDbContextFactory.CreateInMemoryDbContext();
+        context.Users.Add(new ApplicationUser { Id = ownerId, /* ... */ });
+        context.Users.Add(new ApplicationUser { Id = claimantId, /* ... */ });
+        context.LostItems.Add(new LostItem { Id = "item-1", UserId = ownerId, IsActive = true });
+        context.ItemClaims.Add(new ItemClaim
         {
-            HttpContext = httpContext
-        };
+            Id = "claim-1",
+            LostItemId = "item-1",
+            ClaimantId = claimantId,
+            Status = ClaimStatus.Pending,
+            ExpiresAt = DateTime.UtcNow.AddDays(2),
+            IsActive = true
+        });
+        await context.SaveChangesAsync();
+        return context;
     }
 
     [Fact]
-    public async Task Get_ShouldReturnOk_WhenDataExists()
-    {
-        // Arrange
-        var result = Result<List<Dto>>.Success("Success", new List<Dto>());
-        _mediatorMock.Setup(m => m.Send(It.IsAny<Query>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(result);
-
-        // Act
-        var actionResult = await _controller.Get();
-
-        // Assert
-        actionResult.Result.Should().BeOfType<OkObjectResult>();
-        var okResult = actionResult.Result as OkObjectResult;
-        var response = okResult!.Value as StandardApiResponse<List<Dto>>;
-        response!.Success.Should().BeTrue();
-    }
-
+    public async Task Handle_ShouldReturnNotFound_WhenClaimDoesNotExist() { /* 404 */ }
     [Fact]
-    public async Task Get_ShouldReturnNotFound_WhenNotFound()
-    {
-        // Arrange
-        var result = Result<Dto>.Failure("Not found", 404);
-        _mediatorMock.Setup(m => m.Send(It.IsAny<Query>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(result);
-
-        // Act
-        var actionResult = await _controller.GetById("id");
-
-        // Assert
-        actionResult.Result.Should().BeOfType<NotFoundObjectResult>();
-    }
-
+    public async Task Handle_ShouldReturnForbidden_WhenNotClaimant() { /* 403 */ }
     [Fact]
-    public async Task Post_ShouldReturnOk_WhenCreationSucceeds()
-    {
-        // Arrange
-        var result = Result<string>.Success("Created", "id");
-        _mediatorMock.Setup(m => m.Send(It.IsAny<Command>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(result);
-
-        // Act
-        var actionResult = await _controller.Create(new Dto());
-
-        // Assert
-        actionResult.Result.Should().BeOfType<OkObjectResult>();
-    }
-
+    public async Task Handle_ShouldReturnBadRequest_WhenNotPending() { /* 400 */ }
     [Fact]
-    public async Task Put_ShouldReturnNotFound_WhenEntityNotFound()
-    {
-        // Arrange
-        var result = Result<Unit>.Failure("Not found", 404);
-        _mediatorMock.Setup(m => m.Send(It.IsAny<Command>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(result);
-
-        // Act
-        var actionResult = await _controller.Update("id", new Dto());
-
-        // Assert
-        actionResult.Result.Should().BeOfType<NotFoundObjectResult>();
-    }
-
-    [Fact]
-    public async Task Delete_ShouldReturnOk_WhenDeletionSucceeds()
-    {
-        // Arrange
-        var result = Result<Unit>.Success("Deleted", Unit.Value);
-        _mediatorMock.Setup(m => m.Send(It.IsAny<Command>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(result);
-
-        // Act
-        var actionResult = await _controller.Delete("id");
-
-        // Assert
-        actionResult.Result.Should().BeOfType<OkObjectResult>();
-    }
-
-    public void Dispose()
-    {
-        _controller?.Dispose();
-    }
+    public async Task Handle_ShouldCancel_WhenPending() { /* Status = Cancelled */ }
 }
 ```
-
----
-
-## Service Tests
-
-### Service Template
-
-**File:** `Tests/Application_Tests/Services/{ServiceName}Tests.cs` or `Tests/Infrastructure_Tests/{Path}/{ServiceName}Tests.cs`
-
-```csharp
-using FluentAssertions;
-using Moq;
-using Xunit;
-
-namespace Tests.{TestFolder}.Services;
-
-public class {ServiceName}Tests
-{
-    private readonly Mock<IDependency> _dependencyMock;
-    private readonly {ServiceName} _service;
-
-    public {ServiceName}Tests()
-    {
-        _dependencyMock = new Mock<IDependency>();
-        _service = new {ServiceName}(_dependencyMock.Object);
-    }
-
-    [Fact]
-    public void MethodName_WithValidInput_ShouldReturnExpected()
-    {
-        // Arrange
-        var input = "test";
-        var expected = "result";
-        _dependencyMock.Setup(d => d.SomeMethod(input)).Returns(expected);
-
-        // Act
-        var result = _service.MethodName(input);
-
-        // Assert
-        result.Should().Be(expected);
-        _dependencyMock.Verify(d => d.SomeMethod(input), Times.Once);
-    }
-
-    [Fact]
-    public void MethodName_WithInvalidInput_ShouldThrowException()
-    {
-        // Arrange
-        var input = "";
-
-        // Act
-        var action = () => _service.MethodName(input);
-
-        // Assert
-        action.Should().Throw<ArgumentException>()
-            .WithMessage("*cannot be empty*");
-    }
-
-    [Fact]
-    public async Task AsyncMethod_WhenCalled_ShouldReturnSuccess()
-    {
-        // Arrange
-        _dependencyMock.Setup(d => d.GetAsync()).ReturnsAsync("value");
-
-        // Act
-        var result = await _service.AsyncMethod();
-
-        // Assert
-        result.Should().Be("value");
-    }
-}
-```
-
----
-
-## Middleware Tests
-
-### Middleware Template
-
-**File:** `Tests/API_Tests/Middleware/{MiddlewareName}Tests.cs`
-
-```csharp
-using FluentAssertions;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
-using Moq;
-using Xunit;
-
-namespace Tests.API_Tests.Middleware;
-
-public class {MiddlewareName}Tests
-{
-    private readonly Mock<ILogger<{MiddlewareName}>> _loggerMock;
-    private readonly {MiddlewareName} _middleware;
-    private readonly DefaultHttpContext _context;
-
-    public {MiddlewareName}Tests()
-    {
-        _loggerMock = new Mock<ILogger<{MiddlewareName}>>();
-        _middleware = new {MiddlewareName}(next: (innerContext) => Task.CompletedTask, _loggerMock.Object);
-        _context = new DefaultHttpContext();
-    }
-
-    [Fact]
-    public async Task Invoke_WhenCalled_ShouldCallNext()
-    {
-        // Arrange
-        var nextCalled = false;
-        var middleware = new {MiddlewareName>(
-            (innerContext) =>
-            {
-                nextCalled = true;
-                return Task.CompletedTask;
-            },
-            _loggerMock.Object
-        );
-
-        // Act
-        await middleware.Invoke(_context);
-
-        // Assert
-        nextCalled.Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task Invoke_WhenExceptionThrown_ShouldHandleGracefully()
-    {
-        // Arrange
-        var middleware = new {MiddlewareName>(
-            (innerContext) => throw new Exception("Test exception"),
-            _loggerMock.Object
-        );
-
-        // Act
-        var act = async () => await middleware.Invoke(_context);
-
-        // Assert
-        await act.Should().NotThrowAsync<Exception>();
-        _context.Response.StatusCode.Should().Be(500);
-    }
-}
-```
-
----
-
-## Extension Method Tests
-
-### Extension Method Template
-
-**File:** `Tests/API_Tests/Extensions/{ExtensionName}Tests.cs` or `Tests/Application_Tests/Extensions/{ExtensionName}Tests.cs`
-
-```csharp
-using FluentAssertions;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
-using Xunit;
-
-namespace Tests.{TestFolder}.Extensions;
-
-public class {ExtensionName}Tests
-{
-    [Fact]
-    public void ExtensionMethod_WithNullBuilder_ShouldThrowArgumentNullException()
-    {
-        // Arrange
-        IApplicationBuilder builder = null!;
-
-        // Act
-        var action = () => builder.ExtensionMethod();
-
-        // Assert
-        action.Should().Throw<ArgumentNullException>();
-    }
-
-    [Fact]
-    public void ExtensionMethod_WithValidBuilder_ShouldReturnBuilder()
-    {
-        // Arrange
-        var services = new ServiceCollection();
-        var builder = new ApplicationBuilder(services.BuildServiceProvider());
-
-        // Act
-        var result = builder.ExtensionMethod();
-
-        // Assert
-        result.Should().NotBeNull();
-        result.Should().BeSameAs(builder);
-    }
-
-    [Fact]
-    public void ExtensionMethod_WhenCalled_ShouldRegisterServices()
-    {
-        // Arrange
-        var services = new ServiceCollection();
-        var builder = new ApplicationBuilder(services.BuildServiceProvider());
-
-        // Act
-        builder.ExtensionMethod();
-
-        // Assert
-        services.Should().ContainSingle(d => d.ServiceType == typeof(IService));
-    }
-}
-```
-
----
-
-## Test Best Practices
-
-1. **AAA Pattern**: Always use Arrange-Act-Assert structure
-2. **Descriptive Names**: Test names should follow `MethodName_Senario_ExpectedOutcome`
-3. **Mock External Dependencies**: Use Moq for DbContext, AutoMapper, MediatR, etc.
-4. **Unique Database Names**: Each test class should use unique in-memory database
-5. **Dispose Resources**: Implement IDisposable for tests with database contexts
-6. **Test Both Paths**: Always test both success and failure scenarios
-7. **Verify Mock Calls**: Use Verify to ensure methods are called correctly
-8. **Use FluentAssertions**: Provides readable assertion syntax
-9. **Avoid Test Interdependence**: Each test should be independent
-10. **One Assert Per Test**: Prefer focused tests with single assertions
