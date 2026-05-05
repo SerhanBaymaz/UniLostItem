@@ -1,7 +1,4 @@
 using System;
-using Application.Features.SerhanKitaplar.Queries.Common.DTOs;
-using Application.Features.SerhanKitaplar.Commands.CreateSerhanKitap;
-using Application.Features.SerhanKitaplar.Commands.EditSerhanKitap;
 using Application.Features.LostItems.Commands.CreateLostItem;
 using Application.Features.ItemClaims.Commands.CreateItemClaim;
 using AutoMapper;
@@ -14,18 +11,6 @@ public class MappingProfiles : Profile
 {
     public MappingProfiles()
     {
-        // ========== QUERIES (Read) ==========
-        // Entity → DTO: Map all properties including audit fields
-        CreateMap<SerhanKitap, GetSerhanKitapDto>();
-
-        // ========== COMMANDS (Write) ==========
-        // DTO → Entity: Ignore all BaseEntity properties (set by handlers, not from DTOs)
-        CreateMap<CreateSerhanKitapDto, SerhanKitap>()
-            .IgnoreAllBaseEntityProperties();
-
-        CreateMap<EditSerhanKitapDto, SerhanKitap>()
-            .IgnoreAllBaseEntityProperties();
-
         CreateMap<CreateLostItemDto, LostItem>()
             .IgnoreAllBaseEntityProperties()
             .ForMember(dest => dest.UserId, opt => opt.Ignore())

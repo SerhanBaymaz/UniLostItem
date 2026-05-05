@@ -89,9 +89,6 @@ public class DbInitializerTests
 
         await DbInitializer.SeedData(context, userManagerMock.Object, roleManagerMock.Object);
 
-        var kitapCount = await context.SerhanKitaplar.CountAsync();
-        kitapCount.Should().BeGreaterThan(0);
-
         var lostItemCount = await context.LostItems.CountAsync();
         lostItemCount.Should().Be(4);
     }
@@ -111,11 +108,11 @@ public class DbInitializerTests
         userManagerMock.Setup(u => u.FindByEmailAsync(It.IsAny<string>())).ReturnsAsync(existingUser);
 
         await DbInitializer.SeedData(context, userManagerMock.Object, roleManagerMock.Object);
-        var initialKitapCount = await context.SerhanKitaplar.CountAsync();
+        var initialLostItemCount = await context.LostItems.CountAsync();
 
         await DbInitializer.SeedData(context, userManagerMock.Object, roleManagerMock.Object);
 
-        var finalKitapCount = await context.SerhanKitaplar.CountAsync();
-        finalKitapCount.Should().Be(initialKitapCount);
+        var finalLostItemCount = await context.LostItems.CountAsync();
+        finalLostItemCount.Should().Be(initialLostItemCount);
     }
 }

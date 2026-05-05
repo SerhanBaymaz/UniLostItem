@@ -11,7 +11,6 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>, IAppDbContext
     {
     }
 
-    public DbSet<SerhanKitap> SerhanKitaplar { get; set; } = null!;
     public DbSet<LostItem> LostItems { get; set; } = null!;
     public DbSet<ItemClaim> ItemClaims { get; set; } = null!;
 
