@@ -22,7 +22,7 @@ namespace API.Controllers;
 public class ItemClaimsController : BaseApiController
 {
     [HttpGet("by-item/{lostItemId}")]
-    [Authorize]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(StandardApiResponse<PaginatedListDto<GetItemClaimDto>>), StatusCodes.Status200OK)]
     public async Task<ActionResult<StandardApiResponse<PaginatedListDto<GetItemClaimDto>>>> GetClaimsByItem(
         string lostItemId,

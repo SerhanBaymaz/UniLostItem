@@ -1,11 +1,9 @@
 using Application.Core;
 using Application.Features.ItemClaims.Queries.GetClaimsByItem;
-using Application.Interfaces;
 using Domain;
 using Domain.Common.Enums;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
-using Moq;
 using Persistence;
 using Tests.Helpers;
 
@@ -15,7 +13,6 @@ public class GetClaimsByItemQueryHandlerTests
 {
     private const string OwnerUserId = "owner-id";
     private const string ClaimantUserId = "claimant-id";
-    private const string OtherUserId = "other-id";
 
     private async Task<AppDbContext> SeedContext()
     {
@@ -78,15 +75,12 @@ public class GetClaimsByItemQueryHandlerTests
     }
 
     [Fact]
-    public async Task Handle_ShouldReturnAllClaims_WhenOwnerRequests()
+    public async Task Handle_ShouldReturnAllClaims_WhenAnyoneRequests()
     {
         var context = await SeedContext();
         var itemId = (await context.LostItems.FirstAsync()).Id;
 
-        var currentUserMock = new Mock<ICurrentUserService>();
-        currentUserMock.Setup(x => x.UserId).Returns(OwnerUserId);
-
-        var handler = new GetClaimsByItemQueryHandler(context, currentUserMock.Object);
+        var handler = new GetClaimsByItemQueryHandler(context);
         var query = new GetClaimsByItemQuery { LostItemId = itemId };
 
         var result = await handler.Handle(query, CancellationToken.None);
@@ -101,10 +95,7 @@ public class GetClaimsByItemQueryHandlerTests
         var context = await SeedContext();
         var itemId = (await context.LostItems.FirstAsync()).Id;
 
-        var currentUserMock = new Mock<ICurrentUserService>();
-        currentUserMock.Setup(x => x.UserId).Returns(OwnerUserId);
-
-        var handler = new GetClaimsByItemQueryHandler(context, currentUserMock.Object);
+        var handler = new GetClaimsByItemQueryHandler(context);
         var query = new GetClaimsByItemQuery { LostItemId = itemId, Status = ClaimStatus.Pending };
 
         var result = await handler.Handle(query, CancellationToken.None);
@@ -118,10 +109,8 @@ public class GetClaimsByItemQueryHandlerTests
     public async Task Handle_ShouldReturnNotFound_WhenItemDoesNotExist()
     {
         var context = TestDbContextFactory.CreateInMemoryDbContext();
-        var currentUserMock = new Mock<ICurrentUserService>();
-        currentUserMock.Setup(x => x.UserId).Returns(OwnerUserId);
 
-        var handler = new GetClaimsByItemQueryHandler(context, currentUserMock.Object);
+        var handler = new GetClaimsByItemQueryHandler(context);
         var query = new GetClaimsByItemQuery { LostItemId = "non-existent" };
 
         var result = await handler.Handle(query, CancellationToken.None);
@@ -132,34 +121,12 @@ public class GetClaimsByItemQueryHandlerTests
     }
 
     [Fact]
-    public async Task Handle_ShouldReturnForbidden_WhenNotOwner()
-    {
-        var context = await SeedContext();
-        var itemId = (await context.LostItems.FirstAsync()).Id;
-
-        var currentUserMock = new Mock<ICurrentUserService>();
-        currentUserMock.Setup(x => x.UserId).Returns(OtherUserId);
-
-        var handler = new GetClaimsByItemQueryHandler(context, currentUserMock.Object);
-        var query = new GetClaimsByItemQuery { LostItemId = itemId };
-
-        var result = await handler.Handle(query, CancellationToken.None);
-
-        result.IsSuccess.Should().BeFalse();
-        result.Code.Should().Be(403);
-        result.Message.Should().Be("Bu ilanın taleplerini görüntüleme yetkiniz yok");
-    }
-
-    [Fact]
     public async Task Handle_ShouldReturnPaginationMetadata()
     {
         var context = await SeedContext();
         var itemId = (await context.LostItems.FirstAsync()).Id;
 
-        var currentUserMock = new Mock<ICurrentUserService>();
-        currentUserMock.Setup(x => x.UserId).Returns(OwnerUserId);
-
-        var handler = new GetClaimsByItemQueryHandler(context, currentUserMock.Object);
+        var handler = new GetClaimsByItemQueryHandler(context);
         var query = new GetClaimsByItemQuery { LostItemId = itemId, PageNumber = 1, PageSize = 1 };
 
         var result = await handler.Handle(query, CancellationToken.None);

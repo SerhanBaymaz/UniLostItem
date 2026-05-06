@@ -2,7 +2,6 @@ using Application.Core;
 using Application.Core.Pagination;
 using Application.Features.ItemClaims.Queries.Common.DTOs;
 using Application.Features.ItemClaims.Queries.Common.Enums;
-using Application.Interfaces;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
@@ -13,12 +12,10 @@ public class GetClaimsByItemQueryHandler :
     IRequestHandler<GetClaimsByItemQuery, Result<PaginatedListDto<GetItemClaimDto>>>
 {
     private readonly IAppDbContext _context;
-    private readonly ICurrentUserService _currentUserService;
 
-    public GetClaimsByItemQueryHandler(IAppDbContext context, ICurrentUserService currentUserService)
+    public GetClaimsByItemQueryHandler(IAppDbContext context)
     {
         _context = context;
-        _currentUserService = currentUserService;
     }
 
     public async Task<Result<PaginatedListDto<GetItemClaimDto>>> Handle(
@@ -31,11 +28,6 @@ public class GetClaimsByItemQueryHandler :
         if (lostItem == null)
         {
             return Result<PaginatedListDto<GetItemClaimDto>>.Failure("İlan bulunamadı", 404);
-        }
-
-        if (lostItem.UserId != _currentUserService.UserId)
-        {
-            return Result<PaginatedListDto<GetItemClaimDto>>.Failure("Bu ilanın taleplerini görüntüleme yetkiniz yok", 403);
         }
 
         var query = _context.ItemClaims

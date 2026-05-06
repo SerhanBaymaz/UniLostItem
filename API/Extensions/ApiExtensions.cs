@@ -54,7 +54,7 @@ public static class ApiExtensions
     public static void UseCorsConfiguration(this IApplicationBuilder app)
     {
         app.UseCors(x => x.AllowAnyHeader().AllowAnyMethod()
-            .WithOrigins("http://localhost:3000", "https://localhost:3000"));
+            .WithOrigins("http://localhost:3000", "https://localhost:3000", "http://localhost:5173"));
     }
 
     public static void UseHealthChecksConfiguration(this IApplicationBuilder app)
