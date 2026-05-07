@@ -122,7 +122,7 @@ jobs:
         run: dotnet restore UniLostItem.sln
 
       - name: Begin SonarCloud analysis
-        run: dotnet sonarscanner begin /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
+        run: dotnet sonarscanner begin /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /s:sonar-project.properties
 
       - name: Build solution
         run: dotnet build UniLostItem.sln --configuration Release
