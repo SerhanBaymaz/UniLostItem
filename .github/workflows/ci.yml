@@ -26,7 +26,7 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Check formatting
-        run: dotnet format --verify-no-changes UniLostItem.sln
+        run: dotnet format --verify-no-changes UniLostItem.sln --exclude Persistence/Migrations
 
   build-test:
     name: Build & Test

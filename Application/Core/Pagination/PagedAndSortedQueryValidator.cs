@@ -2,7 +2,7 @@ using FluentValidation;
 
 namespace Application.Core.Pagination;
 
-public class PagedAndSortedQueryValidator<TQuery, TSortEnum> : AbstractValidator<TQuery> 
+public class PagedAndSortedQueryValidator<TQuery, TSortEnum> : AbstractValidator<TQuery>
     where TQuery : PagedAndSortedQueryBase<TSortEnum>
     where TSortEnum : struct, Enum
 {

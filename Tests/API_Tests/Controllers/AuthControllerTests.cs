@@ -159,15 +159,15 @@ public class AuthControllerTests
         // Note: BaseApiController returns BadRequest for failures by default (or NotFound for 404).
         // If LoginHandler returns failure, BaseApiController wraps it in BadRequest (400) 
         // unless code is 404.
-        
+
         // Arrange
         var loginDto = new LoginDto { Email = "fail@test.com", Password = "wrong" };
-        var result = Result<UserDto>.Failure("Invalid email or password.", 401); 
+        var result = Result<UserDto>.Failure("Invalid email or password.", 401);
         // Note: BaseApiController treats failure as BadRequest (400) by default for now, 
         // or we need to update BaseApiController to handle 401 Unauthorized if needed.
         // Let's check BaseApiController logic. It returns BadRequest for failure unless 404.
         // So even if result code is 401, BaseApiController might return 400 BadRequest with the message.
-        
+
         _mediatorMock.Setup(m => m.Send(It.IsAny<LoginCommand>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(result);
 
@@ -176,10 +176,10 @@ public class AuthControllerTests
 
         // Assert
         actionResult.Result.Should().BeOfType<BadRequestObjectResult>();
-        
+
         var badRequestResult = actionResult.Result as BadRequestObjectResult;
         var response = badRequestResult!.Value as StandardApiResponse<UserDto>;
-        
+
         response!.Success.Should().BeFalse();
         response.Message.Should().Be("Invalid email or password.");
     }
