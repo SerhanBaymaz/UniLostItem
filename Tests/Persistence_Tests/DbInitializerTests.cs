@@ -2,6 +2,7 @@ using Domain;
 using FluentAssertions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -74,6 +75,12 @@ public class DbInitializerTests
         var context = TestDbContextFactory.CreateInMemoryDbContext(Guid.NewGuid().ToString());
         var userManagerMock = GetMockUserManager();
         var roleManagerMock = GetMockRoleManager();
+        var configMock = new Mock<IConfiguration>();
+
+        configMock.Setup(c => c["SeedData:Images:iPhone"]).Returns("iphone-url");
+        configMock.Setup(c => c["SeedData:Images:GalaxyBuds"]).Returns("buds-url");
+        configMock.Setup(c => c["SeedData:Images:StudentId"]).Returns("id-url");
+        configMock.Setup(c => c["SeedData:Images:NikeBag"]).Returns("bag-url");
 
         // Add the test-user to the DB directly so FK constraint is satisfied
         var testUser = CreateTestUser("test-user@unilost.com", "test-user-id");
@@ -87,7 +94,7 @@ public class DbInitializerTests
         userManagerMock.Setup(u => u.CreateAsync(It.IsAny<ApplicationUser>(), It.IsAny<string>())).ReturnsAsync(IdentityResult.Success);
         userManagerMock.Setup(u => u.AddToRoleAsync(It.IsAny<ApplicationUser>(), It.IsAny<string>())).ReturnsAsync(IdentityResult.Success);
 
-        await DbInitializer.SeedData(context, userManagerMock.Object, roleManagerMock.Object);
+        await DbInitializer.SeedData(context, userManagerMock.Object, roleManagerMock.Object, configMock.Object);
 
         var lostItemCount = await context.LostItems.CountAsync();
         lostItemCount.Should().Be(4);
@@ -99,6 +106,7 @@ public class DbInitializerTests
         var context = TestDbContextFactory.CreateInMemoryDbContext(Guid.NewGuid().ToString());
         var userManagerMock = GetMockUserManager();
         var roleManagerMock = GetMockRoleManager();
+        var configMock = new Mock<IConfiguration>();
 
         var existingUser = CreateTestUser("test-user@unilost.com", "test-user-id");
         context.Users.Add(existingUser);
@@ -107,10 +115,10 @@ public class DbInitializerTests
         roleManagerMock.Setup(r => r.RoleExistsAsync(It.IsAny<string>())).ReturnsAsync(true);
         userManagerMock.Setup(u => u.FindByEmailAsync(It.IsAny<string>())).ReturnsAsync(existingUser);
 
-        await DbInitializer.SeedData(context, userManagerMock.Object, roleManagerMock.Object);
+        await DbInitializer.SeedData(context, userManagerMock.Object, roleManagerMock.Object, configMock.Object);
         var initialLostItemCount = await context.LostItems.CountAsync();
 
-        await DbInitializer.SeedData(context, userManagerMock.Object, roleManagerMock.Object);
+        await DbInitializer.SeedData(context, userManagerMock.Object, roleManagerMock.Object, configMock.Object);
 
         var finalLostItemCount = await context.LostItems.CountAsync();
         finalLostItemCount.Should().Be(initialLostItemCount);

@@ -32,7 +32,7 @@
   },
   "sonarlint.connectedMode.project": {
     "connectionId": "serhanbaymaz",
-    "projectKey": "SerhanBaymaz_TemplateDeneme"
+    "projectKey": "SerhanBaymaz_UniLostItem"
   },
   "postman.settings.dotenv-detection-notification-visibility": false
 }

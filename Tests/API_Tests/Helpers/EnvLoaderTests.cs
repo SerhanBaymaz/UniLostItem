@@ -21,7 +21,7 @@ public sealed class EnvLoaderTests : IDisposable
         // Cleanup environment variables
         Environment.SetEnvironmentVariable(_testKey, null);
         Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", null);
-        
+
         // Cleanup created files
         foreach (var file in _createdFiles)
         {
@@ -71,14 +71,17 @@ public sealed class EnvLoaderTests : IDisposable
         Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Development");
         // Ensure dev.env does not exist
         var devPath = Path.Combine(Directory.GetCurrentDirectory(), "dev.env");
-        if (File.Exists(devPath)) File.Delete(devPath);
+        if (File.Exists(devPath))
+        {
+            File.Delete(devPath);
+        }
 
         // Create example.dev.env in parent directory (simulating project root)
         // Note: Unit tests run in bin/Debug/netX.X, so parent is bin/Debug. 
         // EnvLoader checks current and parent.
         // Let's create it in the current directory's parent to test that logic specifically if possible,
         // or just rely on the logic that checks ".."
-        
+
         var parentDir = Directory.GetParent(Directory.GetCurrentDirectory())!.FullName;
         var examplePath = Path.Combine(parentDir, "example.dev.env");
         File.WriteAllText(examplePath, $"{_testKey}={_testValue}");

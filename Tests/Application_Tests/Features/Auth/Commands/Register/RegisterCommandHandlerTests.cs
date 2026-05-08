@@ -20,9 +20,9 @@ public class RegisterCommandHandlerTests
         var store = new Mock<IUserStore<ApplicationUser>>();
         _userManagerMock = new Mock<UserManager<ApplicationUser>>(
             store.Object, null!, null!, null!, null!, null!, null!, null!, null!);
-        
+
         _jwtServiceMock = new Mock<IJwtService>();
-        
+
         _handler = new RegisterCommandHandler(_userManagerMock.Object, _jwtServiceMock.Object);
     }
 
@@ -30,8 +30,8 @@ public class RegisterCommandHandlerTests
     public async Task Handle_Should_Return_Failure_When_Email_Exists()
     {
         // Arrange
-        var command = new RegisterCommand 
-        { 
+        var command = new RegisterCommand
+        {
             RegisterDto = new RegisterDto { Email = "existing@test.com" }
         };
         _userManagerMock.Setup(x => x.FindByEmailAsync(command.RegisterDto.Email))
@@ -101,7 +101,7 @@ public class RegisterCommandHandlerTests
         // Arrange
         var command = new RegisterCommand
         {
-            RegisterDto = new RegisterDto 
+            RegisterDto = new RegisterDto
             {
                 Email = "new@test.com",
                 Password = "Password1!",
@@ -118,7 +118,7 @@ public class RegisterCommandHandlerTests
 
         _userManagerMock.Setup(x => x.AddToRoleAsync(It.IsAny<ApplicationUser>(), "BaseUser"))
             .ReturnsAsync(IdentityResult.Success);
-            
+
         _userManagerMock.Setup(x => x.GetRolesAsync(It.IsAny<ApplicationUser>()))
             .ReturnsAsync(new List<string> { "BaseUser" });
 
@@ -137,7 +137,7 @@ public class RegisterCommandHandlerTests
         result.Value!.Email.Should().Be(command.RegisterDto.Email);
         result.Value.AccessToken.Should().Be("access_token");
         result.Value.RefreshToken.Should().Be("refresh_token");
-        
+
         // Refresh token update çağrıldı mı?
         _userManagerMock.Verify(x => x.UpdateAsync(It.IsAny<ApplicationUser>()), Times.Once);
     }

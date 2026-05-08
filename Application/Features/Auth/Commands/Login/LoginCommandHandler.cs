@@ -47,7 +47,7 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<UserDto>
 
         // Save Refresh Token to DB
         user.RefreshToken = refreshToken;
-        
+
         var refreshTokenDays = _configuration.GetValue<int>("Jwt:RefreshTokenExpirationDays", 7);
         user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(refreshTokenDays);
         user.LastLoginDate = DateTime.UtcNow;

@@ -2,6 +2,7 @@ using System;
 using Domain;
 using Domain.Common.Enums;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
 
 namespace Persistence;
 
@@ -10,7 +11,7 @@ public static class DbInitializer
     private const string AdminRole = "Admin";
     private const string BaseUserRole = "BaseUser";
 
-    public static async Task SeedData(AppDbContext context, UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager)
+    public static async Task SeedData(AppDbContext context, UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration)
     {
         // Seed Roles
         if (!await roleManager.RoleExistsAsync(AdminRole))
@@ -87,6 +88,11 @@ public static class DbInitializer
         {
             var testUser = await userManager.FindByEmailAsync("test-user@unilost.com");
 
+            var iphoneImage = configuration["SeedData:Images:iPhone"];
+            var galaxyBudsImage = configuration["SeedData:Images:GalaxyBuds"];
+            var studentIdImage = configuration["SeedData:Images:StudentId"];
+            var nikeBagImage = configuration["SeedData:Images:NikeBag"];
+
             var lostItems = new List<LostItem>
             {
                 new()
@@ -101,6 +107,7 @@ public static class DbInitializer
                     Latitude = 41.0082,
                     Longitude = 28.9784,
                     ContactInfo = "serhan@uni.edu.tr",
+                    ImageUrl = iphoneImage,
                     UserId = testUser!.Id
                 },
                 new()
@@ -115,6 +122,7 @@ public static class DbInitializer
                     Latitude = 41.0090,
                     Longitude = 28.9795,
                     ContactInfo = "Ahmet - 0555 123 4567",
+                    ImageUrl = galaxyBudsImage,
                     UserId = testUser!.Id
                 },
                 new()
@@ -128,6 +136,7 @@ public static class DbInitializer
                     LocationLabel = "Spor Salonu",
                     Latitude = 41.0100,
                     Longitude = 28.9800,
+                    ImageUrl = studentIdImage,
                     UserId = testUser!.Id
                 },
                 new()
@@ -141,6 +150,7 @@ public static class DbInitializer
                     LocationLabel = "Otobüs Durağı",
                     Latitude = 41.0075,
                     Longitude = 28.9760,
+                    ImageUrl = nikeBagImage,
                     UserId = testUser!.Id
                 }
             };

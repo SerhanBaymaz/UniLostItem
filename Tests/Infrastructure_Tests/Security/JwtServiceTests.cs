@@ -18,7 +18,7 @@ public class JwtServiceTests
     public JwtServiceTests()
     {
         _configMock = new Mock<IConfiguration>();
-        
+
         _secretKey = "SuperSecretKeyMustBeLongEnoughForHmacSha512SecurityAlgorithm_AtLeast64BytesLong_BlaBlaBla123";
         _configMock.Setup(x => x["Jwt:SecretKey"]).Returns(_secretKey);
         _configMock.Setup(x => x["Jwt:Issuer"]).Returns("TestIssuer");
@@ -46,7 +46,7 @@ public class JwtServiceTests
 
         // Assert
         token.Should().NotBeNullOrEmpty();
-        
+
         var handler = new JwtSecurityTokenHandler();
         var jwtToken = handler.ReadJwtToken(token);
 
@@ -59,7 +59,7 @@ public class JwtServiceTests
         // Custom Claim Kontrolleri
         jwtToken.Claims.Select(c => c.Type).Should().Contain("FirstName");
         jwtToken.Claims.First(c => c.Type == "FirstName").Value.Should().Be(user.FirstName);
-        
+
         // Rolleri kontrol et
         var roleClaims = jwtToken.Claims.Where(c => c.Type == "role" || c.Type == ClaimTypes.Role).Select(c => c.Value).ToList();
         roleClaims.Should().Contain("Admin");

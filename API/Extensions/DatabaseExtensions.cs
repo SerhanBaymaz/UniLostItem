@@ -27,9 +27,10 @@ public static class DatabaseExtensions
             var context = services.GetRequiredService<AppDbContext>();
             var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
             var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+            var configuration = services.GetRequiredService<IConfiguration>();
 
             await context.Database.MigrateAsync();
-            await DbInitializer.SeedData(context, userManager, roleManager);
+            await DbInitializer.SeedData(context, userManager, roleManager, configuration);
         }
         catch (Exception ex)
         {
