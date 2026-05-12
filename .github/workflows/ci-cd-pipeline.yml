@@ -192,6 +192,9 @@ jobs:
           JWT_AUDIENCE: ${{ secrets.JWT_AUDIENCE }}
           JWT_ACCESS_TOKEN_EXPIRATION_MINUTES: ${{ secrets.JWT_ACCESS_TOKEN_EXPIRATION_MINUTES }}
           JWT_REFRESH_TOKEN_EXPIRATION_DAYS: ${{ secrets.JWT_REFRESH_TOKEN_EXPIRATION_DAYS }}
+          CLOUDINARY_CLOUDNAME: ${{ secrets.CLOUDINARY_CLOUDNAME }}
+          CLOUDINARY_APIKEY: ${{ secrets.CLOUDINARY_APIKEY }}
+          CLOUDINARY_APISECRET: ${{ secrets.CLOUDINARY_APISECRET }}
         run: |
           docker run --rm -d --name test-container -p 8080:8080 \
             -e Jwt__SecretKey="${JWT_SECRET_KEY}" \
@@ -199,6 +202,9 @@ jobs:
             -e Jwt__Audience="${JWT_AUDIENCE}" \
             -e Jwt__AccessTokenExpirationMinutes="${JWT_ACCESS_TOKEN_EXPIRATION_MINUTES}" \
             -e Jwt__RefreshTokenExpirationDays="${JWT_REFRESH_TOKEN_EXPIRATION_DAYS}" \
+            -e Cloudinary__CloudName="${CLOUDINARY_CLOUDNAME}" \
+            -e Cloudinary__ApiKey="${CLOUDINARY_APIKEY}" \
+            -e Cloudinary__ApiSecret="${CLOUDINARY_APISECRET}" \
             ghcr.io/${{ steps.repo-owner.outputs.owner }}/prod-uni-lost-item:latest
 
           echo "Waiting for container to start..."
