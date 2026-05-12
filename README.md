@@ -127,6 +127,23 @@ dotnet ef database update -p Persistence -s API
 dotnet run --project API
 ```
 
+## Automation
+
+The project uses **Husky.Net** to automate code formatting and quality checks.
+
+- **Pre-commit Hooks:** Automatically runs `dotnet format` on staged files before every commit.
+- **VS Code Integration:** Configured to format and organize imports on every save.
+
+### Initial Setup for Developers
+
+If you are just cloning the repo, run these commands once:
+```bash
+dotnet tool restore
+dotnet husky install
+```
+
+---
+
 ## Development
 
 ```bash

@@ -15,6 +15,9 @@ dotnet ef migrations add X -p Persistence -s API   # Add migration
 dotnet ef database update -p Persistence -s API     # Apply migration
 ```
 
+## Formatting & Quality
+- **Husky.Net:** `dotnet tool restore && dotnet husky install` (auto-formats staged files on commit).
+
 ## Generating New Features & Tests
 
 - **CRUD scaffolding:** Use `/crud-complete` skill — generates entity, commands, queries, handler, validator, controller, mapping, and tests following the project's established patterns (BaseEntity, ICurrentUserService, soft delete, ownership checks, Turkish messages, SQLite in-memory tests)
