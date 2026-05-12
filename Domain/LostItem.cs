@@ -12,6 +12,7 @@ public class LostItem : BaseEntity
     public ItemStatus Status { get; set; } = ItemStatus.Active;
     public DateTime IncidentDate { get; set; }
     public string? ImageUrl { get; set; }
+    public string? ImagePublicId { get; set; }
     public required string ContactInfo { get; set; }
 
     public required string LocationLabel { get; set; }

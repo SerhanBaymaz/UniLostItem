@@ -16,18 +16,19 @@ dotnet ef database update -p Persistence -s API     # Apply migration
 ```
 
 ## Formatting & Quality
+
 - **Husky.Net:** `dotnet tool restore && dotnet husky install` (auto-formats staged files on commit).
 
 ## Generating New Features & Tests
 
-- **CRUD scaffolding:** Use `/crud-complete` skill — generates entity, commands, queries, handler, validator, controller, mapping, and tests following the project's established patterns (BaseEntity, ICurrentUserService, soft delete, ownership checks, Turkish messages, SQLite in-memory tests)
-- **Test generation:** Use `/test-generator` skill — analyzes git diff, identifies coverage gaps, generates tests matching project patterns (TestDbContextFactory, Mock<ICurrentUserService>, FK seeding)
+- **CRUD scaffolding:** Use `/crud-complete` skill — generates entity, commands, queries, handler, validator, controller, mapping, and tests following the project's established patterns (BaseEntity, `ICurrentUserService`, soft delete, ownership checks, Turkish messages, SQLite in-memory tests)
+- **Test generation:** Use `/test-generator` skill — analyzes git diff, identifies coverage gaps, generates tests matching project patterns (TestDbContextFactory, `Mock<ICurrentUserService>`, FK seeding)
 
 ## Architecture
 
 ### CQRS Pattern
 
-```
+```text
 Commands/  — Create{X}Command, Handler, Dto, Validator
 Queries/   — Get{X}List/DetailsQuery, Handler, Dto, Validator (optional)
 Common/    — DTOs, Enums (sort fields)
@@ -58,9 +59,9 @@ Common/    — DTOs, Enums (sort fields)
 
 ## API Surface
 
-| Controller | Route | Auth |
-|-----------|-------|------|
-| LostItemsController | `/api/v1/items` | List/Details: anonymous, CUD: `[Authorize]` |
+| Controller           | Route            | Auth                                                                                                  |
+| -------------------- | ---------------- | ----------------------------------------------------------------------------------------------------- |
+| LostItemsController  | `/api/v1/items`  | List/Details: anonymous, CUD: `[Authorize]`                                                           |
 | ItemClaimsController | `/api/v1/claims` | List: `[Authorize]`, Pending: `[Authorize(Roles="Admin")]`, AdminReview: `[Authorize(Roles="Admin")]` |
 
 ## Test Setup
