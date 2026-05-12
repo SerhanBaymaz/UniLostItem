@@ -30,7 +30,7 @@ public class CreateLostItemCommandValidator : AbstractValidator<CreateLostItemCo
 
         RuleFor(x => x.CreateLostItemDto.IncidentDate)
             .NotEmpty().WithMessage("Olay tarihi boş olamaz")
-            .LessThanOrEqualTo(DateTime.UtcNow).WithMessage("Olay tarihi gelecekte olamaz")
+            .LessThanOrEqualTo(DateTime.UtcNow.AddMinutes(2)).WithMessage("Olay tarihi gelecekte olamaz")
             .When(x => x.CreateLostItemDto != null);
 
         RuleFor(x => x.CreateLostItemDto.ImageUrl)
