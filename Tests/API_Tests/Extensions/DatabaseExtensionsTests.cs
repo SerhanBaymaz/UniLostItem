@@ -392,6 +392,7 @@ public class DatabaseExtensionsTests
                 LocationLabel = "Test",
                 Latitude = 41.0,
                 Longitude = 29.0,
+                ContactInfo = "test@test.com",
                 UserId = "test-user-id"
             });
             await context.SaveChangesAsync();

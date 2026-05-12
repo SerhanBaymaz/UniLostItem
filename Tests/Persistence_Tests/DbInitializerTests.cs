@@ -69,6 +69,31 @@ public class DbInitializerTests
         };
     }
 
+    private static void SetupCommonMocks(
+        Mock<UserManager<ApplicationUser>> userManagerMock,
+        Mock<RoleManager<IdentityRole>> roleManagerMock,
+        Mock<IConfiguration> configMock,
+        bool rolesExist = true,
+        bool adminExists = true,
+        bool testUserExists = true)
+    {
+        roleManagerMock.Setup(r => r.RoleExistsAsync(It.IsAny<string>())).ReturnsAsync(rolesExist);
+        userManagerMock.Setup(u => u.FindByEmailAsync("admin@admin.com")).ReturnsAsync(
+            adminExists ? CreateTestUser("admin@admin.com", "admin-id") : null);
+        userManagerMock.Setup(u => u.FindByEmailAsync("ahmetkuyuldar@gmail.com")).ReturnsAsync(
+            testUserExists ? CreateTestUser("ahmetkuyuldar@gmail.com", "test-user-id") : null);
+        userManagerMock.Setup(u => u.CreateAsync(It.IsAny<ApplicationUser>(), It.IsAny<string>()))
+            .ReturnsAsync(IdentityResult.Success);
+        userManagerMock.Setup(u => u.AddToRoleAsync(It.IsAny<ApplicationUser>(), It.IsAny<string>()))
+            .ReturnsAsync(IdentityResult.Success);
+        roleManagerMock.Setup(r => r.CreateAsync(It.IsAny<IdentityRole>()))
+            .ReturnsAsync(IdentityResult.Success);
+        configMock.Setup(c => c["SeedData:Images:iPhone"]).Returns("iphone-url");
+        configMock.Setup(c => c["SeedData:Images:GalaxyBuds"]).Returns("buds-url");
+        configMock.Setup(c => c["SeedData:Images:StudentId"]).Returns("id-url");
+        configMock.Setup(c => c["SeedData:Images:NikeBag"]).Returns("bag-url");
+    }
+
     [Fact]
     public async Task SeedData_Should_Add_Data_When_Db_Is_Empty()
     {
@@ -77,22 +102,11 @@ public class DbInitializerTests
         var roleManagerMock = GetMockRoleManager();
         var configMock = new Mock<IConfiguration>();
 
-        configMock.Setup(c => c["SeedData:Images:iPhone"]).Returns("iphone-url");
-        configMock.Setup(c => c["SeedData:Images:GalaxyBuds"]).Returns("buds-url");
-        configMock.Setup(c => c["SeedData:Images:StudentId"]).Returns("id-url");
-        configMock.Setup(c => c["SeedData:Images:NikeBag"]).Returns("bag-url");
-
-        // Add the test-user to the DB directly so FK constraint is satisfied
-        var testUser = CreateTestUser("test-user@unilost.com", "test-user-id");
+        var testUser = CreateTestUser("ahmetkuyuldar@gmail.com", "test-user-id");
         context.Users.Add(testUser);
         await context.SaveChangesAsync();
 
-        roleManagerMock.Setup(r => r.RoleExistsAsync(It.IsAny<string>())).ReturnsAsync(false);
-        roleManagerMock.Setup(r => r.CreateAsync(It.IsAny<IdentityRole>())).ReturnsAsync(IdentityResult.Success);
-        userManagerMock.Setup(u => u.FindByEmailAsync(It.IsAny<string>())).ReturnsAsync((ApplicationUser)null!);
-        userManagerMock.Setup(u => u.FindByEmailAsync("test-user@unilost.com")).ReturnsAsync(testUser);
-        userManagerMock.Setup(u => u.CreateAsync(It.IsAny<ApplicationUser>(), It.IsAny<string>())).ReturnsAsync(IdentityResult.Success);
-        userManagerMock.Setup(u => u.AddToRoleAsync(It.IsAny<ApplicationUser>(), It.IsAny<string>())).ReturnsAsync(IdentityResult.Success);
+        SetupCommonMocks(userManagerMock, roleManagerMock, configMock);
 
         await DbInitializer.SeedData(context, userManagerMock.Object, roleManagerMock.Object, configMock.Object);
 
@@ -108,12 +122,11 @@ public class DbInitializerTests
         var roleManagerMock = GetMockRoleManager();
         var configMock = new Mock<IConfiguration>();
 
-        var existingUser = CreateTestUser("test-user@unilost.com", "test-user-id");
+        var existingUser = CreateTestUser("ahmetkuyuldar@gmail.com", "test-user-id");
         context.Users.Add(existingUser);
         await context.SaveChangesAsync();
 
-        roleManagerMock.Setup(r => r.RoleExistsAsync(It.IsAny<string>())).ReturnsAsync(true);
-        userManagerMock.Setup(u => u.FindByEmailAsync(It.IsAny<string>())).ReturnsAsync(existingUser);
+        SetupCommonMocks(userManagerMock, roleManagerMock, configMock);
 
         await DbInitializer.SeedData(context, userManagerMock.Object, roleManagerMock.Object, configMock.Object);
         var initialLostItemCount = await context.LostItems.CountAsync();
@@ -122,5 +135,335 @@ public class DbInitializerTests
 
         var finalLostItemCount = await context.LostItems.CountAsync();
         finalLostItemCount.Should().Be(initialLostItemCount);
+    }
+
+    [Fact]
+    public async Task SeedData_Should_Create_Roles_When_Not_Exist()
+    {
+        var context = TestDbContextFactory.CreateInMemoryDbContext(Guid.NewGuid().ToString());
+        var userManagerMock = GetMockUserManager();
+        var roleManagerMock = GetMockRoleManager();
+        var configMock = new Mock<IConfiguration>();
+
+        var testUser = CreateTestUser("ahmetkuyuldar@gmail.com", "test-user-id");
+        context.Users.Add(testUser);
+
+        // Add user for the dummy lost item to satisfy FK
+        context.Users.Add(new ApplicationUser { Id = "dummy-id", UserName = "dummy", Email = "dummy@test.com" });
+
+        context.LostItems.Add(new LostItem
+        {
+            Title = "Dummy",
+            Description = "Dummy",
+            ContactInfo = "dummy@test.com",
+            LocationLabel = "Dummy",
+            UserId = "dummy-id"
+        });
+        await context.SaveChangesAsync();
+
+        SetupCommonMocks(userManagerMock, roleManagerMock, configMock, rolesExist: false);
+
+        await DbInitializer.SeedData(context, userManagerMock.Object, roleManagerMock.Object, configMock.Object);
+
+        roleManagerMock.Verify(r => r.CreateAsync(It.Is<IdentityRole>(role => role.Name == "Admin")), Times.Once);
+        roleManagerMock.Verify(r => r.CreateAsync(It.Is<IdentityRole>(role => role.Name == "BaseUser")), Times.Once);
+    }
+
+    [Fact]
+    public async Task SeedData_Should_Not_Create_Roles_When_Exist()
+    {
+        var context = TestDbContextFactory.CreateInMemoryDbContext(Guid.NewGuid().ToString());
+        var userManagerMock = GetMockUserManager();
+        var roleManagerMock = GetMockRoleManager();
+        var configMock = new Mock<IConfiguration>();
+
+        var testUser = CreateTestUser("ahmetkuyuldar@gmail.com", "test-user-id");
+        context.Users.Add(testUser);
+
+        // Add user for the dummy lost item to satisfy FK
+        context.Users.Add(new ApplicationUser { Id = "dummy-id", UserName = "dummy", Email = "dummy@test.com" });
+
+        context.LostItems.Add(new LostItem
+        {
+            Title = "Dummy",
+            Description = "Dummy",
+            ContactInfo = "dummy@test.com",
+            LocationLabel = "Dummy",
+            UserId = "dummy-id"
+        });
+        await context.SaveChangesAsync();
+
+        SetupCommonMocks(userManagerMock, roleManagerMock, configMock, rolesExist: true);
+
+        await DbInitializer.SeedData(context, userManagerMock.Object, roleManagerMock.Object, configMock.Object);
+
+        roleManagerMock.Verify(r => r.CreateAsync(It.IsAny<IdentityRole>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task SeedData_Should_Create_Admin_User_When_Not_Exist()
+    {
+        var context = TestDbContextFactory.CreateInMemoryDbContext(Guid.NewGuid().ToString());
+        var userManagerMock = GetMockUserManager();
+        var roleManagerMock = GetMockRoleManager();
+        var configMock = new Mock<IConfiguration>();
+
+        var testUser = CreateTestUser("ahmetkuyuldar@gmail.com", "test-user-id");
+        context.Users.Add(testUser);
+
+        // Add user for the dummy lost item to satisfy FK
+        context.Users.Add(new ApplicationUser { Id = "dummy-id", UserName = "dummy", Email = "dummy@test.com" });
+
+        context.LostItems.Add(new LostItem
+        {
+            Title = "Dummy",
+            Description = "Dummy",
+            ContactInfo = "dummy@test.com",
+            LocationLabel = "Dummy",
+            UserId = "dummy-id"
+        });
+        await context.SaveChangesAsync();
+
+        SetupCommonMocks(userManagerMock, roleManagerMock, configMock, adminExists: false);
+
+        await DbInitializer.SeedData(context, userManagerMock.Object, roleManagerMock.Object, configMock.Object);
+
+        userManagerMock.Verify(u => u.CreateAsync(It.Is<ApplicationUser>(user => user.Email == "admin@admin.com"), It.IsAny<string>()), Times.Once);
+        userManagerMock.Verify(u => u.AddToRoleAsync(It.Is<ApplicationUser>(user => user.Email == "admin@admin.com"), "Admin"), Times.Once);
+    }
+
+    [Fact]
+    public async Task SeedData_Should_Not_Create_Admin_User_When_Exists()
+    {
+        var context = TestDbContextFactory.CreateInMemoryDbContext(Guid.NewGuid().ToString());
+        var userManagerMock = GetMockUserManager();
+        var roleManagerMock = GetMockRoleManager();
+        var configMock = new Mock<IConfiguration>();
+
+        var existingAdmin = CreateTestUser("admin@admin.com", "admin-id");
+        var testUser = CreateTestUser("ahmetkuyuldar@gmail.com", "test-user-id");
+        context.Users.Add(existingAdmin);
+        context.Users.Add(testUser);
+
+        // Add user for the dummy lost item to satisfy FK
+        context.Users.Add(new ApplicationUser { Id = "dummy-id", UserName = "dummy", Email = "dummy@test.com" });
+
+        context.LostItems.Add(new LostItem
+        {
+            Title = "Dummy",
+            Description = "Dummy",
+            ContactInfo = "dummy@test.com",
+            LocationLabel = "Dummy",
+            UserId = "dummy-id"
+        });
+        await context.SaveChangesAsync();
+
+        SetupCommonMocks(userManagerMock, roleManagerMock, configMock, adminExists: true);
+
+        await DbInitializer.SeedData(context, userManagerMock.Object, roleManagerMock.Object, configMock.Object);
+
+        userManagerMock.Verify(u => u.CreateAsync(It.IsAny<ApplicationUser>(), It.IsAny<string>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task SeedData_Should_Create_Test_User_When_Not_Exist()
+    {
+        var context = TestDbContextFactory.CreateInMemoryDbContext(Guid.NewGuid().ToString());
+        var userManagerMock = GetMockUserManager();
+        var roleManagerMock = GetMockRoleManager();
+        var configMock = new Mock<IConfiguration>();
+
+        var adminUser = CreateTestUser("admin@admin.com", "admin-id");
+        context.Users.Add(adminUser);
+
+        // Add user for the dummy lost item to satisfy FK
+        context.Users.Add(new ApplicationUser { Id = "dummy-id", UserName = "dummy", Email = "dummy@test.com" });
+
+        context.LostItems.Add(new LostItem
+        {
+            Title = "Dummy",
+            Description = "Dummy",
+            ContactInfo = "dummy@test.com",
+            LocationLabel = "Dummy",
+            UserId = "dummy-id"
+        });
+        await context.SaveChangesAsync();
+
+        SetupCommonMocks(userManagerMock, roleManagerMock, configMock, testUserExists: false);
+
+        await DbInitializer.SeedData(context, userManagerMock.Object, roleManagerMock.Object, configMock.Object);
+
+        userManagerMock.Verify(u => u.CreateAsync(It.Is<ApplicationUser>(user => user.Email == "ahmetkuyuldar@gmail.com"), It.IsAny<string>()), Times.Once);
+        userManagerMock.Verify(u => u.AddToRoleAsync(It.Is<ApplicationUser>(user => user.Email == "ahmetkuyuldar@gmail.com"), "BaseUser"), Times.Once);
+    }
+
+    [Fact]
+    public async Task SeedData_Should_Not_Create_Test_User_When_Exists()
+    {
+        var context = TestDbContextFactory.CreateInMemoryDbContext(Guid.NewGuid().ToString());
+        var userManagerMock = GetMockUserManager();
+        var roleManagerMock = GetMockRoleManager();
+        var configMock = new Mock<IConfiguration>();
+
+        var adminUser = CreateTestUser("admin@admin.com", "admin-id");
+        var testUser = CreateTestUser("ahmetkuyuldar@gmail.com", "test-user-id");
+        context.Users.Add(adminUser);
+        context.Users.Add(testUser);
+
+        // Add user for the dummy lost item to satisfy FK
+        context.Users.Add(new ApplicationUser { Id = "dummy-id", UserName = "dummy", Email = "dummy@test.com" });
+
+        context.LostItems.Add(new LostItem
+        {
+            Title = "Dummy",
+            Description = "Dummy",
+            ContactInfo = "dummy@test.com",
+            LocationLabel = "Dummy",
+            UserId = "dummy-id"
+        });
+        await context.SaveChangesAsync();
+
+        SetupCommonMocks(userManagerMock, roleManagerMock, configMock, testUserExists: true);
+
+        await DbInitializer.SeedData(context, userManagerMock.Object, roleManagerMock.Object, configMock.Object);
+
+        userManagerMock.Verify(u => u.CreateAsync(It.IsAny<ApplicationUser>(), It.IsAny<string>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task SeedData_Should_Create_Admin_User_With_Correct_Properties()
+    {
+        var context = TestDbContextFactory.CreateInMemoryDbContext(Guid.NewGuid().ToString());
+        var userManagerMock = GetMockUserManager();
+        var roleManagerMock = GetMockRoleManager();
+        var configMock = new Mock<IConfiguration>();
+
+        // Add user for the dummy lost item to satisfy FK
+        context.Users.Add(new ApplicationUser { Id = "dummy-id", UserName = "dummy", Email = "dummy@test.com" });
+        context.LostItems.Add(new LostItem
+        {
+            Title = "Dummy",
+            Description = "Dummy",
+            ContactInfo = "dummy@test.com",
+            LocationLabel = "Dummy",
+            UserId = "dummy-id"
+        });
+        await context.SaveChangesAsync();
+
+        SetupCommonMocks(userManagerMock, roleManagerMock, configMock, adminExists: false);
+
+        await DbInitializer.SeedData(context, userManagerMock.Object, roleManagerMock.Object, configMock.Object);
+
+        userManagerMock.Verify(u => u.CreateAsync(It.Is<ApplicationUser>(user =>
+            user.Email == "admin@admin.com" &&
+            user.UserName == "admin@admin.com" &&
+            user.FirstName == "System" &&
+            user.LastName == "Admin" &&
+            user.EmailConfirmed
+        ), "Admin.1234"), Times.Once);
+    }
+
+    [Fact]
+    public async Task SeedData_Should_Not_Add_To_Role_If_Admin_User_Creation_Fails()
+    {
+        var context = TestDbContextFactory.CreateInMemoryDbContext(Guid.NewGuid().ToString());
+        var userManagerMock = GetMockUserManager();
+        var roleManagerMock = GetMockRoleManager();
+        var configMock = new Mock<IConfiguration>();
+
+        // Add user for the dummy lost item to satisfy FK
+        context.Users.Add(new ApplicationUser { Id = "dummy-id", UserName = "dummy", Email = "dummy@test.com" });
+        context.LostItems.Add(new LostItem
+        {
+            Title = "Dummy",
+            Description = "Dummy",
+            ContactInfo = "dummy@test.com",
+            LocationLabel = "Dummy",
+            UserId = "dummy-id"
+        });
+        await context.SaveChangesAsync();
+
+        SetupCommonMocks(userManagerMock, roleManagerMock, configMock, adminExists: false);
+        userManagerMock.Setup(u => u.CreateAsync(It.Is<ApplicationUser>(u => u.Email == "admin@admin.com"), It.IsAny<string>()))
+            .ReturnsAsync(IdentityResult.Failed(new IdentityError { Description = "Error" }));
+
+        await DbInitializer.SeedData(context, userManagerMock.Object, roleManagerMock.Object, configMock.Object);
+
+        userManagerMock.Verify(u => u.AddToRoleAsync(It.Is<ApplicationUser>(u => u.Email == "admin@admin.com"), "Admin"), Times.Never);
+    }
+
+    [Fact]
+    public async Task SeedData_Should_Create_Test_User_With_Correct_Properties()
+    {
+        var context = TestDbContextFactory.CreateInMemoryDbContext(Guid.NewGuid().ToString());
+        var userManagerMock = GetMockUserManager();
+        var roleManagerMock = GetMockRoleManager();
+        var configMock = new Mock<IConfiguration>();
+
+        // Add user for the dummy lost item to satisfy FK
+        context.Users.Add(new ApplicationUser { Id = "dummy-id", UserName = "dummy", Email = "dummy@test.com" });
+        context.LostItems.Add(new LostItem
+        {
+            Title = "Dummy",
+            Description = "Dummy",
+            ContactInfo = "dummy@test.com",
+            LocationLabel = "Dummy",
+            UserId = "dummy-id"
+        });
+        await context.SaveChangesAsync();
+
+        SetupCommonMocks(userManagerMock, roleManagerMock, configMock, testUserExists: false);
+
+        await DbInitializer.SeedData(context, userManagerMock.Object, roleManagerMock.Object, configMock.Object);
+
+        userManagerMock.Verify(u => u.CreateAsync(It.Is<ApplicationUser>(user =>
+            user.Email == "ahmetkuyuldar@gmail.com" &&
+            user.UserName == "ahmetkuyuldar@gmail.com" &&
+            user.FirstName == "Ahmet" &&
+            user.LastName == "Kuyuldar" &&
+            user.EmailConfirmed
+        ), "Ahmet.1234"), Times.Once);
+    }
+
+    [Fact]
+    public async Task SeedData_Should_Perform_Full_Seed_When_Empty()
+    {
+        var context = TestDbContextFactory.CreateInMemoryDbContext(Guid.NewGuid().ToString());
+        var userManagerMock = GetMockUserManager();
+        var roleManagerMock = GetMockRoleManager();
+        var configMock = new Mock<IConfiguration>();
+
+        // Setup mock to return null first, then the user (simulating creation)
+        var testUser = CreateTestUser("ahmetkuyuldar@gmail.com", "test-user-id");
+
+        // Also add the user to context to satisfy FK when items are saved
+        context.Users.Add(testUser);
+        await context.SaveChangesAsync();
+
+        userManagerMock.SetupSequence(u => u.FindByEmailAsync("ahmetkuyuldar@gmail.com"))
+            .ReturnsAsync((ApplicationUser)null!)
+            .ReturnsAsync(testUser);
+
+        userManagerMock.Setup(u => u.FindByEmailAsync("admin@admin.com"))
+            .ReturnsAsync((ApplicationUser)null!);
+
+        userManagerMock.Setup(u => u.CreateAsync(It.IsAny<ApplicationUser>(), It.IsAny<string>()))
+            .ReturnsAsync(IdentityResult.Success);
+        userManagerMock.Setup(u => u.AddToRoleAsync(It.IsAny<ApplicationUser>(), It.IsAny<string>()))
+            .ReturnsAsync(IdentityResult.Success);
+        roleManagerMock.Setup(r => r.RoleExistsAsync(It.IsAny<string>())).ReturnsAsync(false);
+        roleManagerMock.Setup(r => r.CreateAsync(It.IsAny<IdentityRole>())).ReturnsAsync(IdentityResult.Success);
+
+        configMock.Setup(c => c["SeedData:Images:iPhone"]).Returns("iphone-url");
+        configMock.Setup(c => c["SeedData:Images:GalaxyBuds"]).Returns("buds-url");
+        configMock.Setup(c => c["SeedData:Images:StudentId"]).Returns("id-url");
+        configMock.Setup(c => c["SeedData:Images:NikeBag"]).Returns("bag-url");
+
+        await DbInitializer.SeedData(context, userManagerMock.Object, roleManagerMock.Object, configMock.Object);
+
+        roleManagerMock.Verify(r => r.CreateAsync(It.IsAny<IdentityRole>()), Times.Exactly(2));
+        userManagerMock.Verify(u => u.CreateAsync(It.IsAny<ApplicationUser>(), It.IsAny<string>()), Times.Exactly(2));
+        var lostItemCount = await context.LostItems.CountAsync();
+        lostItemCount.Should().Be(4);
     }
 }

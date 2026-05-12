@@ -37,8 +37,9 @@ public class UpdateLostItemCommandValidator : AbstractValidator<UpdateLostItemCo
             .When(x => x.UpdateLostItemDto != null && !string.IsNullOrEmpty(x.UpdateLostItemDto.ImageUrl));
 
         RuleFor(x => x.UpdateLostItemDto.ContactInfo)
+            .NotEmpty().WithMessage("İletişim bilgisi boş olamaz")
             .MaximumLength(300).WithMessage("İletişim bilgisi en fazla 300 karakter olabilir")
-            .When(x => x.UpdateLostItemDto != null && !string.IsNullOrEmpty(x.UpdateLostItemDto.ContactInfo));
+            .When(x => x.UpdateLostItemDto != null);
 
         RuleFor(x => x.UpdateLostItemDto.LocationLabel)
             .NotEmpty().WithMessage("Konum açıklaması boş olamaz")

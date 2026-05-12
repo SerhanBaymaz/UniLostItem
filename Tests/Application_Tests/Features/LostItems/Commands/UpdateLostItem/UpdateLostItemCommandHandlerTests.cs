@@ -39,6 +39,7 @@ public class UpdateLostItemCommandHandlerTests
             LocationLabel = "Original Location",
             Latitude = 41.0,
             Longitude = 29.0,
+            ContactInfo = "original@test.com",
             UserId = userId,
             IsActive = true
         });
@@ -66,7 +67,8 @@ public class UpdateLostItemCommandHandlerTests
                 IncidentDate = DateTime.UtcNow,
                 LocationLabel = "Updated Location",
                 Latitude = 41.0,
-                Longitude = 29.0
+                Longitude = 29.0,
+                ContactInfo = "updated@test.com"
             }
         };
 
@@ -97,7 +99,8 @@ public class UpdateLostItemCommandHandlerTests
                 IncidentDate = DateTime.UtcNow,
                 LocationLabel = "Hacked Location",
                 Latitude = 40.0,
-                Longitude = 30.0
+                Longitude = 30.0,
+                ContactInfo = "hacked@test.com"
             }
         };
 
@@ -128,7 +131,8 @@ public class UpdateLostItemCommandHandlerTests
                 IncidentDate = DateTime.UtcNow.AddDays(-2),
                 LocationLabel = "New Location",
                 Latitude = 40.0,
-                Longitude = 30.0
+                Longitude = 30.0,
+                ContactInfo = "new@test.com"
             }
         };
 
@@ -166,7 +170,8 @@ public class UpdateLostItemCommandHandlerTests
                 IncidentDate = item.IncidentDate,
                 LocationLabel = item.LocationLabel,
                 Latitude = item.Latitude,
-                Longitude = item.Longitude
+                Longitude = item.Longitude,
+                ContactInfo = item.ContactInfo
             }
         };
 

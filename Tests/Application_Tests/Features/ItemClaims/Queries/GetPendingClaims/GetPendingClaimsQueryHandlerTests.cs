@@ -47,6 +47,7 @@ public class GetPendingClaimsQueryHandlerTests
             LocationLabel = "Test",
             Latitude = 41.0,
             Longitude = 29.0,
+            ContactInfo = "owner@test.com",
             UserId = OwnerUserId,
             IsActive = true
         });
@@ -169,6 +170,7 @@ public class GetPendingClaimsQueryHandlerTests
             LocationLabel = "Test",
             Latitude = 41.0,
             Longitude = 29.0,
+            ContactInfo = "owner@test.com",
             UserId = OwnerUserId,
             IsActive = true
         });

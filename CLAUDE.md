@@ -91,3 +91,4 @@ Common/    — DTOs, Enums (sort fields)
 - Use `/crud-complete` and `/test-generator` skills for feature/test generation
 - `dotnet test` for validation; Docker only for integration scenarios
 - EF migrations via `dotnet ef ... -p Persistence -s API`, not raw SQL
+- **Coverage on New Code (required ≥ 80%)** — All new/modified code must have ≥80% test coverage (SonarQube quality gate)

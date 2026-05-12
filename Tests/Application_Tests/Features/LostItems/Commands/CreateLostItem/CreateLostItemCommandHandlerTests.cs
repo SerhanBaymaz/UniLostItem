@@ -60,7 +60,8 @@ public class CreateLostItemCommandHandlerTests
             IncidentDate = DateTime.UtcNow.AddDays(-1),
             LocationLabel = "Kütüphane B Blok",
             Latitude = 41.0082,
-            Longitude = 28.9784
+            Longitude = 28.9784,
+            ContactInfo = "test@test.com"
         };
 
         var command = new CreateLostItemCommand { CreateLostItemDto = dto };
@@ -75,6 +76,7 @@ public class CreateLostItemCommandHandlerTests
             LocationLabel = dto.LocationLabel,
             Latitude = dto.Latitude,
             Longitude = dto.Longitude,
+            ContactInfo = "",
             UserId = ""
         };
 
@@ -106,7 +108,8 @@ public class CreateLostItemCommandHandlerTests
             IncidentDate = DateTime.UtcNow,
             LocationLabel = "Test Location",
             Latitude = 40.0,
-            Longitude = 30.0
+            Longitude = 30.0,
+            ContactInfo = "contact@test.com"
         };
 
         var command = new CreateLostItemCommand { CreateLostItemDto = dto };
@@ -121,6 +124,7 @@ public class CreateLostItemCommandHandlerTests
             LocationLabel = dto.LocationLabel,
             Latitude = dto.Latitude,
             Longitude = dto.Longitude,
+            ContactInfo = "",
             UserId = ""
         };
 
@@ -146,7 +150,8 @@ public class CreateLostItemCommandHandlerTests
             IncidentDate = DateTime.UtcNow,
             LocationLabel = "Mapper Location",
             Latitude = 41.0,
-            Longitude = 29.0
+            Longitude = 29.0,
+            ContactInfo = "mapper@test.com"
         };
 
         var command = new CreateLostItemCommand { CreateLostItemDto = dto };
@@ -161,6 +166,7 @@ public class CreateLostItemCommandHandlerTests
             LocationLabel = dto.LocationLabel,
             Latitude = dto.Latitude,
             Longitude = dto.Longitude,
+            ContactInfo = "",
             UserId = ""
         };
 
@@ -194,7 +200,8 @@ public class CreateLostItemCommandHandlerTests
             IncidentDate = DateTime.UtcNow,
             LocationLabel = "Fail Location",
             Latitude = 41.0,
-            Longitude = 29.0
+            Longitude = 29.0,
+            ContactInfo = "fail@test.com"
         };
 
         var command = new CreateLostItemCommand { CreateLostItemDto = dto };
@@ -209,6 +216,7 @@ public class CreateLostItemCommandHandlerTests
             LocationLabel = dto.LocationLabel,
             Latitude = dto.Latitude,
             Longitude = dto.Longitude,
+            ContactInfo = "",
             UserId = ""
         };
 

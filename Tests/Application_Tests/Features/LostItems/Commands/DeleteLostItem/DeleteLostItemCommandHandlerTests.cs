@@ -39,6 +39,7 @@ public class DeleteLostItemCommandHandlerTests
             LocationLabel = "Test Location",
             Latitude = 41.0,
             Longitude = 29.0,
+            ContactInfo = "test@test.com",
             UserId = userId,
             IsActive = true
         });

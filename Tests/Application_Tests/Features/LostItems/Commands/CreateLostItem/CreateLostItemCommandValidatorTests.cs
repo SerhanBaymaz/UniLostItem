@@ -27,7 +27,8 @@ public class CreateLostItemCommandValidatorTests
                 IncidentDate = DateTime.UtcNow.AddDays(-1),
                 LocationLabel = "Kütüphane B Blok",
                 Latitude = 41.0082,
-                Longitude = 28.9784
+                Longitude = 28.9784,
+                ContactInfo = "test@test.com"
             }
         };
 
@@ -59,7 +60,8 @@ public class CreateLostItemCommandValidatorTests
                 IncidentDate = DateTime.UtcNow.AddDays(-1),
                 LocationLabel = "Konum",
                 Latitude = 41.0,
-                Longitude = 29.0
+                Longitude = 29.0,
+                ContactInfo = "test@test.com"
             }
         };
 
@@ -82,7 +84,8 @@ public class CreateLostItemCommandValidatorTests
                 IncidentDate = DateTime.UtcNow.AddDays(-1),
                 LocationLabel = "Konum",
                 Latitude = 41.0,
-                Longitude = 29.0
+                Longitude = 29.0,
+                ContactInfo = "test@test.com"
             }
         };
 
@@ -105,13 +108,38 @@ public class CreateLostItemCommandValidatorTests
                 IncidentDate = DateTime.UtcNow.AddDays(-1),
                 LocationLabel = "Konum",
                 Latitude = 41.0,
-                Longitude = 29.0
+                Longitude = 29.0,
+                ContactInfo = "test@test.com"
             }
         };
 
         var result = _validator.Validate(command);
         result.IsValid.Should().BeFalse();
         result.Errors.Should().Contain(e => e.ErrorMessage == "Açıklama boş olamaz");
+    }
+
+    [Fact]
+    public void Validate_WithEmptyContactInfo_ShouldFail()
+    {
+        var command = new CreateLostItemCommand
+        {
+            CreateLostItemDto = new CreateLostItemDto
+            {
+                Title = "Başlık",
+                Description = "Açıklama",
+                Category = ItemCategory.Electronics,
+                ItemType = ItemType.Lost,
+                IncidentDate = DateTime.UtcNow.AddDays(-1),
+                LocationLabel = "Konum",
+                Latitude = 41.0,
+                Longitude = 29.0,
+                ContactInfo = ""
+            }
+        };
+
+        var result = _validator.Validate(command);
+        result.IsValid.Should().BeFalse();
+        result.Errors.Should().Contain(e => e.ErrorMessage == "İletişim bilgisi boş olamaz");
     }
 
     [Fact]
@@ -128,7 +156,8 @@ public class CreateLostItemCommandValidatorTests
                 IncidentDate = DateTime.UtcNow.AddDays(1),
                 LocationLabel = "Konum",
                 Latitude = 41.0,
-                Longitude = 29.0
+                Longitude = 29.0,
+                ContactInfo = "test@test.com"
             }
         };
 
@@ -151,7 +180,8 @@ public class CreateLostItemCommandValidatorTests
                 IncidentDate = DateTime.UtcNow.AddDays(-1),
                 LocationLabel = "Konum",
                 Latitude = 91.0,
-                Longitude = 29.0
+                Longitude = 29.0,
+                ContactInfo = "test@test.com"
             }
         };
 
@@ -174,7 +204,8 @@ public class CreateLostItemCommandValidatorTests
                 IncidentDate = DateTime.UtcNow.AddDays(-1),
                 LocationLabel = "Konum",
                 Latitude = 41.0,
-                Longitude = 181.0
+                Longitude = 181.0,
+                ContactInfo = "test@test.com"
             }
         };
 
@@ -197,7 +228,8 @@ public class CreateLostItemCommandValidatorTests
                 IncidentDate = DateTime.UtcNow.AddDays(-1),
                 LocationLabel = "",
                 Latitude = 41.0,
-                Longitude = 29.0
+                Longitude = 29.0,
+                ContactInfo = "test@test.com"
             }
         };
 
@@ -220,12 +252,13 @@ public class CreateLostItemCommandValidatorTests
                 IncidentDate = DateTime.UtcNow.AddDays(1),
                 LocationLabel = "",
                 Latitude = 91.0,
-                Longitude = 181.0
+                Longitude = 181.0,
+                ContactInfo = ""
             }
         };
 
         var result = _validator.Validate(command);
         result.IsValid.Should().BeFalse();
-        result.Errors.Count.Should().BeGreaterOrEqualTo(5);
+        result.Errors.Count.Should().BeGreaterOrEqualTo(6);
     }
 }
