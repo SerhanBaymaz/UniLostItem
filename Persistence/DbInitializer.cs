@@ -68,7 +68,7 @@ public static class DbInitializer
         // Seed LostItems
         if (!context.LostItems.Any())
         {
-            var testUser = await userManager.FindByEmailAsync("ahmetkuyuldar@gmail.com");
+            var testUser = await userManager.FindByEmailAsync(TestUserEmail);
 
             var iphoneImage = configuration["SeedData:Images:iPhone"];
             var galaxyBudsImage = configuration["SeedData:Images:GalaxyBuds"];

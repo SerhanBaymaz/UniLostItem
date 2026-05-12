@@ -83,14 +83,15 @@ public class DbInitializerTests
         configMock.Setup(c => c["SeedData:Images:NikeBag"]).Returns("bag-url");
 
         // Add the test-user to the DB directly so FK constraint is satisfied
-        var testUser = CreateTestUser("test-user@unilost.com", "test-user-id");
+        var testUser = CreateTestUser("ahmetkuyuldar@gmail.com", "test-user-id");
         context.Users.Add(testUser);
         await context.SaveChangesAsync();
 
         roleManagerMock.Setup(r => r.RoleExistsAsync(It.IsAny<string>())).ReturnsAsync(false);
         roleManagerMock.Setup(r => r.CreateAsync(It.IsAny<IdentityRole>())).ReturnsAsync(IdentityResult.Success);
-        userManagerMock.Setup(u => u.FindByEmailAsync(It.IsAny<string>())).ReturnsAsync((ApplicationUser)null!);
-        userManagerMock.Setup(u => u.FindByEmailAsync("test-user@unilost.com")).ReturnsAsync(testUser);
+        userManagerMock.Setup(u => u.FindByEmailAsync("admin@admin.com")).ReturnsAsync((ApplicationUser)null!);
+        userManagerMock.Setup(u => u.FindByEmailAsync("test-admin@unilost.com")).ReturnsAsync((ApplicationUser)null!);
+        userManagerMock.Setup(u => u.FindByEmailAsync("ahmetkuyuldar@gmail.com")).ReturnsAsync(testUser);
         userManagerMock.Setup(u => u.CreateAsync(It.IsAny<ApplicationUser>(), It.IsAny<string>())).ReturnsAsync(IdentityResult.Success);
         userManagerMock.Setup(u => u.AddToRoleAsync(It.IsAny<ApplicationUser>(), It.IsAny<string>())).ReturnsAsync(IdentityResult.Success);
 
@@ -108,7 +109,7 @@ public class DbInitializerTests
         var roleManagerMock = GetMockRoleManager();
         var configMock = new Mock<IConfiguration>();
 
-        var existingUser = CreateTestUser("test-user@unilost.com", "test-user-id");
+        var existingUser = CreateTestUser("ahmetkuyuldar@gmail.com", "test-user-id");
         context.Users.Add(existingUser);
         await context.SaveChangesAsync();
 
