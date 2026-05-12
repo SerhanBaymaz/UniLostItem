@@ -147,10 +147,10 @@ public class DbInitializerTests
 
         var testUser = CreateTestUser("ahmetkuyuldar@gmail.com", "test-user-id");
         context.Users.Add(testUser);
-        
+
         // Add user for the dummy lost item to satisfy FK
         context.Users.Add(new ApplicationUser { Id = "dummy-id", UserName = "dummy", Email = "dummy@test.com" });
-        
+
         context.LostItems.Add(new LostItem
         {
             Title = "Dummy",
@@ -179,7 +179,7 @@ public class DbInitializerTests
 
         var testUser = CreateTestUser("ahmetkuyuldar@gmail.com", "test-user-id");
         context.Users.Add(testUser);
-        
+
         // Add user for the dummy lost item to satisfy FK
         context.Users.Add(new ApplicationUser { Id = "dummy-id", UserName = "dummy", Email = "dummy@test.com" });
 
@@ -210,7 +210,7 @@ public class DbInitializerTests
 
         var testUser = CreateTestUser("ahmetkuyuldar@gmail.com", "test-user-id");
         context.Users.Add(testUser);
-        
+
         // Add user for the dummy lost item to satisfy FK
         context.Users.Add(new ApplicationUser { Id = "dummy-id", UserName = "dummy", Email = "dummy@test.com" });
 
@@ -244,7 +244,7 @@ public class DbInitializerTests
         var testUser = CreateTestUser("ahmetkuyuldar@gmail.com", "test-user-id");
         context.Users.Add(existingAdmin);
         context.Users.Add(testUser);
-        
+
         // Add user for the dummy lost item to satisfy FK
         context.Users.Add(new ApplicationUser { Id = "dummy-id", UserName = "dummy", Email = "dummy@test.com" });
 
@@ -275,7 +275,7 @@ public class DbInitializerTests
 
         var adminUser = CreateTestUser("admin@admin.com", "admin-id");
         context.Users.Add(adminUser);
-        
+
         // Add user for the dummy lost item to satisfy FK
         context.Users.Add(new ApplicationUser { Id = "dummy-id", UserName = "dummy", Email = "dummy@test.com" });
 
@@ -309,7 +309,7 @@ public class DbInitializerTests
         var testUser = CreateTestUser("ahmetkuyuldar@gmail.com", "test-user-id");
         context.Users.Add(adminUser);
         context.Users.Add(testUser);
-        
+
         // Add user for the dummy lost item to satisfy FK
         context.Users.Add(new ApplicationUser { Id = "dummy-id", UserName = "dummy", Email = "dummy@test.com" });
 
@@ -354,7 +354,7 @@ public class DbInitializerTests
 
         await DbInitializer.SeedData(context, userManagerMock.Object, roleManagerMock.Object, configMock.Object);
 
-        userManagerMock.Verify(u => u.CreateAsync(It.Is<ApplicationUser>(user => 
+        userManagerMock.Verify(u => u.CreateAsync(It.Is<ApplicationUser>(user =>
             user.Email == "admin@admin.com" &&
             user.UserName == "admin@admin.com" &&
             user.FirstName == "System" &&
@@ -416,7 +416,7 @@ public class DbInitializerTests
 
         await DbInitializer.SeedData(context, userManagerMock.Object, roleManagerMock.Object, configMock.Object);
 
-        userManagerMock.Verify(u => u.CreateAsync(It.Is<ApplicationUser>(user => 
+        userManagerMock.Verify(u => u.CreateAsync(It.Is<ApplicationUser>(user =>
             user.Email == "ahmetkuyuldar@gmail.com" &&
             user.UserName == "ahmetkuyuldar@gmail.com" &&
             user.FirstName == "Ahmet" &&
@@ -435,7 +435,7 @@ public class DbInitializerTests
 
         // Setup mock to return null first, then the user (simulating creation)
         var testUser = CreateTestUser("ahmetkuyuldar@gmail.com", "test-user-id");
-        
+
         // Also add the user to context to satisfy FK when items are saved
         context.Users.Add(testUser);
         await context.SaveChangesAsync();
@@ -453,7 +453,7 @@ public class DbInitializerTests
             .ReturnsAsync(IdentityResult.Success);
         roleManagerMock.Setup(r => r.RoleExistsAsync(It.IsAny<string>())).ReturnsAsync(false);
         roleManagerMock.Setup(r => r.CreateAsync(It.IsAny<IdentityRole>())).ReturnsAsync(IdentityResult.Success);
-        
+
         configMock.Setup(c => c["SeedData:Images:iPhone"]).Returns("iphone-url");
         configMock.Setup(c => c["SeedData:Images:GalaxyBuds"]).Returns("buds-url");
         configMock.Setup(c => c["SeedData:Images:StudentId"]).Returns("id-url");
