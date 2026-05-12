@@ -20,6 +20,8 @@
   "files.insertFinalNewline": true,
   "files.encoding": "utf8",
 
+  "csharp.format.enable": true,
+
   // Omnisharp settings for C#
   "omnisharp.enableEditorConfigSupport": true,
   "omnisharp.useModernNet": true,
