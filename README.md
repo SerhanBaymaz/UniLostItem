@@ -14,7 +14,7 @@ A Lost & Found platform for university campuses. Built with .NET 9 Clean Archite
 
 ## Features
 
-- **LostItems** — Create, update, soft-delete lost/found item postings with filtering, sorting, and pagination
+- **LostItems** — Create, update, soft-delete lost/found item postings with filtering, sorting, pagination, and image attachments
 - **ItemClaims** — Claim workflow: create → approve/reject → item Resolved, deadline extension (max 2x), Admin escalation
 - **Auth** — JWT Bearer, register/login, refresh token, profile management (ASP.NET Core Identity)
 
@@ -25,7 +25,7 @@ A Lost & Found platform for university campuses. Built with .NET 9 Clean Archite
 | API            | ASP.NET Core 9, Swagger, Health Checks, Seq logging  |
 | Application    | MediatR (CQRS), FluentValidation, AutoMapper 16      |
 | Persistence    | EF Core 9, PostgreSQL (Npgsql)                       |
-| Infrastructure | JWT Bearer, ICurrentUserService                      |
+| Infrastructure | JWT Bearer, ICurrentUserService, CloudinaryDotNet    |
 | Domain         | BaseEntity audit trail, enums, navigation properties |
 | Tests          | xUnit, FluentAssertions, Moq, SQLite in-memory (391) |
 | CI/CD          | GitHub Actions, Docker, GHCR, SonarCloud             |
@@ -94,6 +94,13 @@ UniLostItem/
 | PUT    | `/{id}/extend`          | `[Authorize]` (item owner)     | Extend deadline (+2 days, max 2x)     |
 | PUT    | `/{id}/admin-review`    | `[Authorize(Roles="Admin")]`   | Admin approve/reject                  |
 | GET    | `/pending`              | `[Authorize(Roles="Admin")]`   | List pending claims (Admin dashboard) |
+
+### Images — `/api/v1/images`
+
+| Method | Endpoint      | Auth          | Description                             |
+| ------ | ------------- | ------------- | --------------------------------------- |
+| POST   | `/upload`     | `[Authorize]` | Upload an image (returns URL & ID)      |
+| DELETE | `/{*publicId}`| `[Authorize]` | Delete an image by its Cloudinary ID    |
 
 ### Claim Flow
 

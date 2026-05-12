@@ -12,12 +12,18 @@ public class CreateLostItemCommandHandler : IRequestHandler<CreateLostItemComman
     private readonly IAppDbContext _context;
     private readonly IMapper _mapper;
     private readonly ICurrentUserService _currentUserService;
+    private readonly IImageStorageService _imageStorageService;
 
-    public CreateLostItemCommandHandler(IAppDbContext context, IMapper mapper, ICurrentUserService currentUserService)
+    public CreateLostItemCommandHandler(
+        IAppDbContext context,
+        IMapper mapper,
+        ICurrentUserService currentUserService,
+        IImageStorageService imageStorageService)
     {
         _context = context;
         _mapper = mapper;
         _currentUserService = currentUserService;
+        _imageStorageService = imageStorageService;
     }
 
     public async Task<Result<string>> Handle(CreateLostItemCommand request, CancellationToken cancellationToken)
@@ -27,6 +33,17 @@ public class CreateLostItemCommandHandler : IRequestHandler<CreateLostItemComman
         lostItem.CreatedDate = DateTime.UtcNow;
         lostItem.CreatedBy = _currentUserService.UserId;
         lostItem.UserId = _currentUserService.UserId!;
+
+        if (request.CreateLostItemDto.ImageStream != null
+            && !string.IsNullOrEmpty(request.CreateLostItemDto.ImageFileName))
+        {
+            var uploadResult = await _imageStorageService.UploadImageAsync(
+                request.CreateLostItemDto.ImageStream,
+                request.CreateLostItemDto.ImageFileName,
+                cancellationToken);
+            lostItem.ImageUrl = uploadResult.Url;
+            lostItem.ImagePublicId = uploadResult.PublicId;
+        }
 
         _context.LostItems.Add(lostItem);
 

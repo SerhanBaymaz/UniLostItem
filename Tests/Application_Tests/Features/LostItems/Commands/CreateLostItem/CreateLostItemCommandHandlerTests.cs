@@ -16,6 +16,7 @@ public class CreateLostItemCommandHandlerTests
 {
     private readonly Mock<IMapper> _mapperMock;
     private readonly Mock<ICurrentUserService> _currentUserServiceMock;
+    private readonly Mock<IImageStorageService> _imageStorageServiceMock;
     private readonly AppDbContext _context;
     private readonly CreateLostItemCommandHandler _handler;
 
@@ -26,8 +27,9 @@ public class CreateLostItemCommandHandlerTests
         _context = TestDbContextFactory.CreateInMemoryDbContext();
         _mapperMock = new Mock<IMapper>();
         _currentUserServiceMock = new Mock<ICurrentUserService>();
+        _imageStorageServiceMock = new Mock<IImageStorageService>();
         _currentUserServiceMock.Setup(x => x.UserId).Returns(TestUserId);
-        _handler = new CreateLostItemCommandHandler(_context, _mapperMock.Object, _currentUserServiceMock.Object);
+        _handler = new CreateLostItemCommandHandler(_context, _mapperMock.Object, _currentUserServiceMock.Object, _imageStorageServiceMock.Object);
     }
 
     private void SeedUser()
@@ -189,7 +191,7 @@ public class CreateLostItemCommandHandlerTests
         mockContext.Setup(c => c.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(0);
         mockUserService.Setup(x => x.UserId).Returns(TestUserId);
 
-        var handler = new CreateLostItemCommandHandler(mockContext.Object, _mapperMock.Object, mockUserService.Object);
+        var handler = new CreateLostItemCommandHandler(mockContext.Object, _mapperMock.Object, mockUserService.Object, _imageStorageServiceMock.Object);
 
         var dto = new CreateLostItemDto
         {

@@ -67,18 +67,33 @@ public class LostItemsController : BaseApiController
 
     [HttpPost]
     [Authorize]
+    [Consumes("multipart/form-data")]
     public async Task<ActionResult<StandardApiResponse<string>>> CreateItem(
-        [FromBody] CreateLostItemDto createLostItemDto)
+        [FromForm] CreateLostItemDto createLostItemDto,
+        IFormFile? image)
     {
+        if (image != null)
+        {
+            createLostItemDto.ImageStream = image.OpenReadStream();
+            createLostItemDto.ImageFileName = image.FileName;
+        }
         var command = new CreateLostItemCommand { CreateLostItemDto = createLostItemDto };
         return HandleResult(await Mediator.Send(command));
     }
 
     [HttpPut("{id}")]
     [Authorize]
+    [Consumes("multipart/form-data")]
     public async Task<ActionResult<StandardApiResponse<Unit>>> UpdateItem(
-        string id, [FromBody] UpdateLostItemDto updateLostItemDto)
+        string id,
+        [FromForm] UpdateLostItemDto updateLostItemDto,
+        IFormFile? image)
     {
+        if (image != null)
+        {
+            updateLostItemDto.ImageStream = image.OpenReadStream();
+            updateLostItemDto.ImageFileName = image.FileName;
+        }
         var command = new UpdateLostItemCommand { Id = id, UpdateLostItemDto = updateLostItemDto };
         return HandleResult(await Mediator.Send(command));
     }

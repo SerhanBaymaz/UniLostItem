@@ -11,13 +11,19 @@ public static class ConfigurationExtensions
         // Override configuration with environment variables
         var connectionString = Environment.GetEnvironmentVariable("DefaultConnection");
         var seqServerUrl = Environment.GetEnvironmentVariable("SeqServerUrl");
+        var cloudinaryCloudName = Environment.GetEnvironmentVariable("Cloudinary__CloudName");
+        var cloudinaryApiKey = Environment.GetEnvironmentVariable("Cloudinary__ApiKey");
+        var cloudinaryApiSecret = Environment.GetEnvironmentVariable("Cloudinary__ApiSecret");
 
         if (!string.IsNullOrEmpty(connectionString) && !string.IsNullOrEmpty(seqServerUrl))
         {
             configurationBuilder.AddInMemoryCollection(new Dictionary<string, string?>
             {
                 ["ConnectionStrings:DefaultConnection"] = connectionString,
-                ["Serilog:WriteTo:1:Args:serverUrl"] = seqServerUrl
+                ["Serilog:WriteTo:1:Args:serverUrl"] = seqServerUrl,
+                ["Cloudinary:CloudName"] = cloudinaryCloudName,
+                ["Cloudinary:ApiKey"] = cloudinaryApiKey,
+                ["Cloudinary:ApiSecret"] = cloudinaryApiSecret
             }!);
         }
     }

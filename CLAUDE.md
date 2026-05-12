@@ -4,30 +4,31 @@ This is **UniLostItem** — a .NET 9 Clean Architecture Web API with CQRS (Media
 
 **Layers:** API -> Application -> Persistence -> Domain <- Infrastructure
 
-**Features:** `Auth` (Login/Register/Profile), `LostItems` (CRUD+Queries), `ItemClaims` (Workflow Commands+Queries)
+**Features:** `Auth` (Login/Register/Profile), `LostItems` (CRUD+Queries), `ItemClaims` (Workflow Commands+Queries), `Images` (Cloudinary Uploads)
 
 ## Commands
 
 ```bash
 dotnet build UniLostItem.sln        # Build
-dotnet test                        # Run all tests (391 tests)
+dotnet test                        # Run all tests (444 tests)
 dotnet ef migrations add X -p Persistence -s API   # Add migration
 dotnet ef database update -p Persistence -s API     # Apply migration
 ```
 
 ## Formatting & Quality
+
 - **Husky.Net:** `dotnet tool restore && dotnet husky install` (auto-formats staged files on commit).
 
 ## Generating New Features & Tests
 
-- **CRUD scaffolding:** Use `/crud-complete` skill — generates entity, commands, queries, handler, validator, controller, mapping, and tests following the project's established patterns (BaseEntity, ICurrentUserService, soft delete, ownership checks, Turkish messages, SQLite in-memory tests)
-- **Test generation:** Use `/test-generator` skill — analyzes git diff, identifies coverage gaps, generates tests matching project patterns (TestDbContextFactory, Mock<ICurrentUserService>, FK seeding)
+- **CRUD scaffolding:** Use `/crud-complete` skill — generates entity, commands, queries, handler, validator, controller, mapping, and tests following the project's established patterns (BaseEntity, `ICurrentUserService`, soft delete, ownership checks, Turkish messages, SQLite in-memory tests)
+- **Test generation:** Use `/test-generator` skill — analyzes git diff, identifies coverage gaps, generates tests matching project patterns (TestDbContextFactory, `Mock<ICurrentUserService>`, FK seeding)
 
 ## Architecture
 
 ### CQRS Pattern
 
-```
+```text
 Commands/  — Create{X}Command, Handler, Dto, Validator
 Queries/   — Get{X}List/DetailsQuery, Handler, Dto, Validator (optional)
 Common/    — DTOs, Enums (sort fields)
@@ -48,8 +49,8 @@ Common/    — DTOs, Enums (sort fields)
 - **Ownership** — Update/Delete check `entity.UserId != currentUserId` → 403
 - **Update handlers** — property-by-property mapping (NOT AutoMapper)
 - **Query projections** — `.Select()` for computed fields (UserFullName, ClaimCount), NOT AutoMapper
-- **Paginated queries** — inherit `PagedAndSortedQueryBase<TSortEnum>`, use `PaginatedListDto<T>`
 - **AutoMapper** — only for Create DTO→Entity mapping; use `IgnoreAllBaseEntityProperties()` + `.Ignore()` for each navigation property
+- **External Services** — External services like Cloudinary (for images) are abstracted behind an interface (`IImageStorageService`) in Application and implemented in Infrastructure.
 
 ### Auth
 
@@ -58,10 +59,11 @@ Common/    — DTOs, Enums (sort fields)
 
 ## API Surface
 
-| Controller | Route | Auth |
-|-----------|-------|------|
-| LostItemsController | `/api/v1/items` | List/Details: anonymous, CUD: `[Authorize]` |
+| Controller           | Route            | Auth                                                                                                  |
+| -------------------- | ---------------- | ----------------------------------------------------------------------------------------------------- |
+| LostItemsController  | `/api/v1/items`  | List/Details: anonymous, CUD: `[Authorize]`                                                           |
 | ItemClaimsController | `/api/v1/claims` | List: `[Authorize]`, Pending: `[Authorize(Roles="Admin")]`, AdminReview: `[Authorize(Roles="Admin")]` |
+| ImagesController     | `/api/v1/images` | Upload/Delete: `[Authorize]`                                                                          |
 
 ## Test Setup
 

@@ -32,9 +32,23 @@ public class UpdateLostItemCommandValidator : AbstractValidator<UpdateLostItemCo
             .LessThanOrEqualTo(DateTime.UtcNow.AddMinutes(2)).WithMessage("Olay tarihi gelecekte olamaz")
             .When(x => x.UpdateLostItemDto != null);
 
-        RuleFor(x => x.UpdateLostItemDto.ImageUrl)
-            .MaximumLength(500).WithMessage("Resim URL en fazla 500 karakter olabilir")
-            .When(x => x.UpdateLostItemDto != null && !string.IsNullOrEmpty(x.UpdateLostItemDto.ImageUrl));
+        RuleFor(x => x.UpdateLostItemDto.ImageFileName)
+            .Must(fileName =>
+            {
+                if (string.IsNullOrEmpty(fileName))
+                {
+                    return true;
+                }
+                var ext = Path.GetExtension(fileName).ToLowerInvariant();
+                return new[] { ".jpg", ".jpeg", ".png", ".webp" }.Contains(ext);
+            })
+            .WithMessage("Yalnızca JPG, JPEG, PNG ve WEBP formatları desteklenmektedir")
+            .When(x => x.UpdateLostItemDto != null);
+
+        RuleFor(x => x.UpdateLostItemDto.ImageStream)
+            .Must(stream => stream == null || stream.Length <= 20 * 1024 * 1024)
+            .WithMessage("Görsel boyutu en fazla 20 MB olabilir")
+            .When(x => x.UpdateLostItemDto != null);
 
         RuleFor(x => x.UpdateLostItemDto.ContactInfo)
             .NotEmpty().WithMessage("İletişim bilgisi boş olamaz")
