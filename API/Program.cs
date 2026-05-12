@@ -1,9 +1,15 @@
+using System.Globalization;
 using API.Extensions;
 using API.Helpers;
 using API.Middleware;
 using Infrastructure;
 using Serilog;
 using DotNetEnv;
+
+// Set culture to Invariant to ensure consistent number/date parsing across different locales (e.g. Turkish decimal separator issue)
+var culture = CultureInfo.InvariantCulture;
+CultureInfo.DefaultThreadCurrentCulture = culture;
+CultureInfo.DefaultThreadCurrentUICulture = culture;
 
 // Load environment variables from .env files
 EnvLoader.Load();
