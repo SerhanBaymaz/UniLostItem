@@ -29,7 +29,7 @@ public class UpdateLostItemCommandValidator : AbstractValidator<UpdateLostItemCo
 
         RuleFor(x => x.UpdateLostItemDto.IncidentDate)
             .NotEmpty().WithMessage("Olay tarihi boş olamaz")
-            .LessThanOrEqualTo(DateTime.UtcNow).WithMessage("Olay tarihi gelecekte olamaz")
+            .LessThanOrEqualTo(DateTime.UtcNow.AddMinutes(2)).WithMessage("Olay tarihi gelecekte olamaz")
             .When(x => x.UpdateLostItemDto != null);
 
         RuleFor(x => x.UpdateLostItemDto.ImageUrl)
