@@ -16,9 +16,12 @@ public class MappingProfiles : Profile
             .ForMember(dest => dest.UserId, opt => opt.Ignore())
             .ForMember(dest => dest.ItemType, opt => opt.MapFrom(src => src.ItemType))
             .ForMember(dest => dest.Status, opt => opt.Ignore())
+            .ForMember(dest => dest.ImageUrl, opt => opt.Ignore())
             .ForMember(dest => dest.ImagePublicId, opt => opt.Ignore())
             .ForMember(dest => dest.User, opt => opt.Ignore())
-            .ForMember(dest => dest.Claims, opt => opt.Ignore());
+            .ForMember(dest => dest.Claims, opt => opt.Ignore())
+            .ForSourceMember(src => src.ImageStream, opt => opt.DoNotValidate())
+            .ForSourceMember(src => src.ImageFileName, opt => opt.DoNotValidate());
 
         CreateMap<CreateItemClaimDto, ItemClaim>()
             .IgnoreAllBaseEntityProperties()

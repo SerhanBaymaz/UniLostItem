@@ -54,7 +54,7 @@ public class UpdateLostItemCommandHandlerTests
         var currentUserMock = new Mock<ICurrentUserService>();
         currentUserMock.Setup(x => x.UserId).Returns(OwnerUserId);
 
-        var handler = new UpdateLostItemCommandHandler(context, currentUserMock.Object);
+        var handler = new UpdateLostItemCommandHandler(context, currentUserMock.Object, new Mock<IImageStorageService>().Object);
 
         var command = new UpdateLostItemCommand
         {
@@ -86,7 +86,7 @@ public class UpdateLostItemCommandHandlerTests
         var currentUserMock = new Mock<ICurrentUserService>();
         currentUserMock.Setup(x => x.UserId).Returns(OtherUserId);
 
-        var handler = new UpdateLostItemCommandHandler(context, currentUserMock.Object);
+        var handler = new UpdateLostItemCommandHandler(context, currentUserMock.Object, new Mock<IImageStorageService>().Object);
 
         var command = new UpdateLostItemCommand
         {
@@ -118,7 +118,7 @@ public class UpdateLostItemCommandHandlerTests
         var currentUserMock = new Mock<ICurrentUserService>();
         currentUserMock.Setup(x => x.UserId).Returns(OwnerUserId);
 
-        var handler = new UpdateLostItemCommandHandler(context, currentUserMock.Object);
+        var handler = new UpdateLostItemCommandHandler(context, currentUserMock.Object, new Mock<IImageStorageService>().Object);
 
         var command = new UpdateLostItemCommand
         {
@@ -157,7 +157,7 @@ public class UpdateLostItemCommandHandlerTests
         var currentUserMock = new Mock<ICurrentUserService>();
         currentUserMock.Setup(x => x.UserId).Returns(OwnerUserId);
 
-        var handler = new UpdateLostItemCommandHandler(context, currentUserMock.Object);
+        var handler = new UpdateLostItemCommandHandler(context, currentUserMock.Object, new Mock<IImageStorageService>().Object);
 
         var command = new UpdateLostItemCommand
         {
