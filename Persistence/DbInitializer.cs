@@ -10,6 +10,7 @@ public static class DbInitializer
 {
     private const string AdminRole = "Admin";
     private const string BaseUserRole = "BaseUser";
+    private const string TestUserEmail = "ahmetkuyuldar@gmail.com";
 
     public static async Task SeedData(AppDbContext context, UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration)
     {
@@ -28,7 +29,7 @@ public static class DbInitializer
         {
             var admin = new ApplicationUser
             {
-                UserName = "admin",
+                UserName = "admin@admin.com",
                 Email = "admin@admin.com",
                 FirstName = "System",
                 LastName = "Admin",
@@ -36,47 +37,28 @@ public static class DbInitializer
                 CreatedDate = DateTime.UtcNow
             };
 
-            var result = await userManager.CreateAsync(admin, "Pa$$w0rd");
+            var result = await userManager.CreateAsync(admin, "Admin.1234");
             if (result.Succeeded)
             {
                 await userManager.AddToRoleAsync(admin, AdminRole);
             }
         }
 
-        // Seed Test Admin User
-        if (await userManager.FindByEmailAsync("test-admin@unilost.com") == null)
-        {
-            var testAdmin = new ApplicationUser
-            {
-                UserName = "test-admin",
-                Email = "test-admin@unilost.com",
-                FirstName = "AdminNameTest",
-                LastName = "AdminSurnameTest",
-                EmailConfirmed = true,
-                CreatedDate = DateTime.UtcNow
-            };
-
-            var result = await userManager.CreateAsync(testAdmin, "Test1234!");
-            if (result.Succeeded)
-            {
-                await userManager.AddToRoleAsync(testAdmin, AdminRole);
-            }
-        }
 
         // Seed Test Base User
-        if (await userManager.FindByEmailAsync("test-user@unilost.com") == null)
+        if (await userManager.FindByEmailAsync(TestUserEmail) == null)
         {
             var testUser = new ApplicationUser
             {
-                UserName = "test-user",
-                Email = "test-user@unilost.com",
-                FirstName = "UserNameTest",
-                LastName = "UserSurnameTest",
+                UserName = TestUserEmail,
+                Email = TestUserEmail,
+                FirstName = "Ahmet",
+                LastName = "Kuyuldar",
                 EmailConfirmed = true,
                 CreatedDate = DateTime.UtcNow
             };
 
-            var result = await userManager.CreateAsync(testUser, "Test1234!");
+            var result = await userManager.CreateAsync(testUser, "Ahmet.1234");
             if (result.Succeeded)
             {
                 await userManager.AddToRoleAsync(testUser, BaseUserRole);
@@ -86,7 +68,7 @@ public static class DbInitializer
         // Seed LostItems
         if (!context.LostItems.Any())
         {
-            var testUser = await userManager.FindByEmailAsync("test-user@unilost.com");
+            var testUser = await userManager.FindByEmailAsync("ahmetkuyuldar@gmail.com");
 
             var iphoneImage = configuration["SeedData:Images:iPhone"];
             var galaxyBudsImage = configuration["SeedData:Images:GalaxyBuds"];
@@ -106,7 +88,7 @@ public static class DbInitializer
                     LocationLabel = "Kütüphane B Blok",
                     Latitude = 41.0082,
                     Longitude = 28.9784,
-                    ContactInfo = "serhan@uni.edu.tr",
+                    ContactInfo = "05554443322",
                     ImageUrl = iphoneImage,
                     UserId = testUser!.Id
                 },
@@ -121,7 +103,7 @@ public static class DbInitializer
                     LocationLabel = "Yemekhane Giriş",
                     Latitude = 41.0090,
                     Longitude = 28.9795,
-                    ContactInfo = "Ahmet - 0555 123 4567",
+                    ContactInfo = "0555 123 4567",
                     ImageUrl = galaxyBudsImage,
                     UserId = testUser!.Id
                 },
@@ -136,6 +118,7 @@ public static class DbInitializer
                     LocationLabel = "Spor Salonu",
                     Latitude = 41.0100,
                     Longitude = 28.9800,
+                    ContactInfo = "İletişim için Öğrenci İşleri",
                     ImageUrl = studentIdImage,
                     UserId = testUser!.Id
                 },
@@ -150,6 +133,7 @@ public static class DbInitializer
                     LocationLabel = "Otobüs Durağı",
                     Latitude = 41.0075,
                     Longitude = 28.9760,
+                    ContactInfo = "Güvenlikdeki abi - 05559876543",
                     ImageUrl = nikeBagImage,
                     UserId = testUser!.Id
                 }

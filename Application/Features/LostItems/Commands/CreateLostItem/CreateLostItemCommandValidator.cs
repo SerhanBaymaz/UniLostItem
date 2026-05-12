@@ -38,8 +38,9 @@ public class CreateLostItemCommandValidator : AbstractValidator<CreateLostItemCo
             .When(x => x.CreateLostItemDto != null && !string.IsNullOrEmpty(x.CreateLostItemDto.ImageUrl));
 
         RuleFor(x => x.CreateLostItemDto.ContactInfo)
+            .NotEmpty().WithMessage("İletişim bilgisi boş olamaz")
             .MaximumLength(300).WithMessage("İletişim bilgisi en fazla 300 karakter olabilir")
-            .When(x => x.CreateLostItemDto != null && !string.IsNullOrEmpty(x.CreateLostItemDto.ContactInfo));
+            .When(x => x.CreateLostItemDto != null);
 
         RuleFor(x => x.CreateLostItemDto.LocationLabel)
             .NotEmpty().WithMessage("Konum açıklaması boş olamaz")

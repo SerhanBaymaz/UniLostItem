@@ -45,6 +45,7 @@ public class GetLostItemListQueryHandlerTests
                 LocationLabel = "Location A",
                 Latitude = 41.0,
                 Longitude = 29.0,
+                ContactInfo = "alpha@test.com",
                 UserId = "user-1",
                 IsActive = true
             },
@@ -59,6 +60,7 @@ public class GetLostItemListQueryHandlerTests
                 LocationLabel = "Location B",
                 Latitude = 41.1,
                 Longitude = 29.1,
+                ContactInfo = "beta@test.com",
                 UserId = "user-1",
                 IsActive = true
             },
@@ -73,6 +75,7 @@ public class GetLostItemListQueryHandlerTests
                 LocationLabel = "Location C",
                 Latitude = 41.2,
                 Longitude = 29.2,
+                ContactInfo = "gamma@test.com",
                 UserId = "user-1",
                 IsActive = true
             }

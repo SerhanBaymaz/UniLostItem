@@ -27,7 +27,8 @@ public class UpdateLostItemCommandValidatorTests
                 IncidentDate = DateTime.UtcNow.AddDays(-1),
                 LocationLabel = "Updated Location",
                 Latitude = 41.0,
-                Longitude = 29.0
+                Longitude = 29.0,
+                ContactInfo = "updated@test.com"
             }
         };
 
@@ -49,7 +50,8 @@ public class UpdateLostItemCommandValidatorTests
                 IncidentDate = DateTime.UtcNow,
                 LocationLabel = "Loc",
                 Latitude = 41.0,
-                Longitude = 29.0
+                Longitude = 29.0,
+                ContactInfo = "test@test.com"
             }
         };
 
@@ -82,7 +84,8 @@ public class UpdateLostItemCommandValidatorTests
                 IncidentDate = DateTime.UtcNow,
                 LocationLabel = "Loc",
                 Latitude = 41.0,
-                Longitude = 29.0
+                Longitude = 29.0,
+                ContactInfo = "test@test.com"
             }
         };
 
@@ -105,7 +108,8 @@ public class UpdateLostItemCommandValidatorTests
                 IncidentDate = DateTime.UtcNow.AddDays(1),
                 LocationLabel = "Loc",
                 Latitude = 41.0,
-                Longitude = 29.0
+                Longitude = 29.0,
+                ContactInfo = "test@test.com"
             }
         };
 
@@ -128,7 +132,8 @@ public class UpdateLostItemCommandValidatorTests
                 IncidentDate = DateTime.UtcNow,
                 LocationLabel = "Loc",
                 Latitude = 100.0,
-                Longitude = 200.0
+                Longitude = 200.0,
+                ContactInfo = "test@test.com"
             }
         };
 
