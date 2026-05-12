@@ -142,4 +142,84 @@ public class UpdateLostItemCommandValidatorTests
         result.Errors.Should().Contain(e => e.ErrorMessage == "Enlem -90 ile 90 arasında olmalıdır");
         result.Errors.Should().Contain(e => e.ErrorMessage == "Boylam -180 ile 180 arasında olmalıdır");
     }
+
+    [Theory]
+    [InlineData("photo.jpg")]
+    [InlineData("photo.png")]
+    [InlineData("photo.webp")]
+    public void Validate_WithValidImageExtensions_ShouldPass(string fileName)
+    {
+        var command = new UpdateLostItemCommand
+        {
+            Id = "id",
+            UpdateLostItemDto = new UpdateLostItemDto
+            {
+                Title = "Title",
+                Description = "Desc",
+                Category = ItemCategory.Electronics,
+                IncidentDate = DateTime.UtcNow,
+                LocationLabel = "Loc",
+                Latitude = 41.0,
+                Longitude = 29.0,
+                ContactInfo = "test@test.com",
+                ImageFileName = fileName
+            }
+        };
+
+        var result = _validator.Validate(command);
+        result.IsValid.Should().BeTrue();
+    }
+
+    [Theory]
+    [InlineData("virus.exe")]
+    [InlineData("doc.pdf")]
+    public void Validate_WithInvalidImageExtensions_ShouldFail(string fileName)
+    {
+        var command = new UpdateLostItemCommand
+        {
+            Id = "id",
+            UpdateLostItemDto = new UpdateLostItemDto
+            {
+                Title = "Title",
+                Description = "Desc",
+                Category = ItemCategory.Electronics,
+                IncidentDate = DateTime.UtcNow,
+                LocationLabel = "Loc",
+                Latitude = 41.0,
+                Longitude = 29.0,
+                ContactInfo = "test@test.com",
+                ImageFileName = fileName
+            }
+        };
+
+        var result = _validator.Validate(command);
+        result.IsValid.Should().BeFalse();
+        result.Errors.Should().Contain(e => e.ErrorMessage == "Yalnızca JPG, JPEG, PNG ve WEBP formatları desteklenmektedir");
+    }
+
+    [Fact]
+    public void Validate_WithLargeImageStream_ShouldFail()
+    {
+        var stream = new MemoryStream(new byte[21 * 1024 * 1024]); // 21MB
+        var command = new UpdateLostItemCommand
+        {
+            Id = "id",
+            UpdateLostItemDto = new UpdateLostItemDto
+            {
+                Title = "Title",
+                Description = "Desc",
+                Category = ItemCategory.Electronics,
+                IncidentDate = DateTime.UtcNow,
+                LocationLabel = "Loc",
+                Latitude = 41.0,
+                Longitude = 29.0,
+                ContactInfo = "test@test.com",
+                ImageStream = stream
+            }
+        };
+
+        var result = _validator.Validate(command);
+        result.IsValid.Should().BeFalse();
+        result.Errors.Should().Contain(e => e.ErrorMessage == "Görsel boyutu en fazla 20 MB olabilir");
+    }
 }
