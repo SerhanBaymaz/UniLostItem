@@ -4,6 +4,7 @@ using Domain;
 using FluentAssertions;
 using Infrastructure.Security;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
@@ -24,7 +25,8 @@ public class JwtServiceTests
         _configMock.Setup(x => x["Jwt:Issuer"]).Returns("TestIssuer");
         _configMock.Setup(x => x["Jwt:Audience"]).Returns("TestAudience");
 
-        _jwtService = new JwtService(_configMock.Object);
+        var loggerMock = new Mock<ILogger<JwtService>>();
+        _jwtService = new JwtService(_configMock.Object, loggerMock.Object);
     }
 
     [Fact]
@@ -90,10 +92,82 @@ public class JwtServiceTests
     }
 
     [Fact]
-    public void GetPrincipalFromExpiredToken_ShouldReturnNull_ForInvalidToken()
+    public void GetPrincipalFromExpiredToken_ShouldReturnNull_ForNullToken()
     {
-        var invalidToken = "bu.gecersiz.bir.token";
+        // Act
+        var principal = _jwtService.GetPrincipalFromExpiredToken(null);
+
+        // Assert
+        principal.Should().BeNull();
+    }
+
+    [Fact]
+    public void GetPrincipalFromExpiredToken_ShouldReturnNull_ForEmptyToken()
+    {
+        // Act
+        var principal = _jwtService.GetPrincipalFromExpiredToken(string.Empty);
+
+        // Assert
+        principal.Should().BeNull();
+    }
+
+    [Fact]
+    public void GetPrincipalFromExpiredToken_ShouldReturnNull_ForMalformedToken()
+    {
+        // Arrange — dotsuz, geçersiz format
+        var invalidToken = "malformedtoken";
+
+        // Act
         var principal = _jwtService.GetPrincipalFromExpiredToken(invalidToken);
+
+        // Assert — ArgumentException catch'ine düşer
+        principal.Should().BeNull();
+    }
+
+    [Fact]
+    public void GetPrincipalFromExpiredToken_ShouldReturnNull_ForInvalidJwtFormat()
+    {
+        // Arrange — 3 parçalı ama geçersiz Base64 içerik
+        var invalidToken = "bu.gecersiz.bir.token";
+
+        // Act
+        var principal = _jwtService.GetPrincipalFromExpiredToken(invalidToken);
+
+        // Assert
+        principal.Should().BeNull();
+    }
+
+    [Fact]
+    public void GetPrincipalFromExpiredToken_ShouldReturnNull_ForTamperedToken()
+    {
+        // Arrange — farklı key ile imzalanmış (manipüle edilmiş) token
+        var tamperedKey = "ThisIsADifferentSecretKeyThatIsNotTheOriginalOne_AtLeast64Bytes!";
+        var tamperedConfigMock = new Mock<IConfiguration>();
+        tamperedConfigMock.Setup(x => x["Jwt:SecretKey"]).Returns(tamperedKey);
+        var tamperedLoggerMock = new Mock<ILogger<JwtService>>();
+        var tamperedJwtService = new JwtService(tamperedConfigMock.Object, tamperedLoggerMock.Object);
+
+        var user = new ApplicationUser { Id = "123", UserName = "test", Email = "test@test.com" };
+        var token = tamperedJwtService.GenerateAccessToken(user, new List<string>());
+
+        // Act — orijinal secretKey ile doğrulamaya çalış
+        var principal = _jwtService.GetPrincipalFromExpiredToken(token);
+
+        // Assert — SecurityTokenException catch'ine düşer (imza uyuşmazlığı)
+        principal.Should().BeNull();
+    }
+
+    [Fact]
+    public void GetPrincipalFromExpiredToken_ShouldReturnNull_ForTokenWithInvalidBase64Content()
+    {
+        // Arrange — 3 parçalı JWT formatında ama Base64 geçersiz karakterler içeriyor
+        // FormatException → catch-all Exception catch'ine düşer
+        var invalidToken = "!!!.!!!.!!!";
+
+        // Act
+        var principal = _jwtService.GetPrincipalFromExpiredToken(invalidToken);
+
+        // Assert
         principal.Should().BeNull();
     }
 }
