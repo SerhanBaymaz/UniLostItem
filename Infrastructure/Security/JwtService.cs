@@ -5,6 +5,7 @@ using System.Text;
 using Application.Interfaces;
 using Domain;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Infrastructure.Security;
@@ -12,10 +13,12 @@ namespace Infrastructure.Security;
 public class JwtService : IJwtService
 {
     private readonly IConfiguration _config;
+    private readonly ILogger<JwtService> _logger;
 
-    public JwtService(IConfiguration config)
+    public JwtService(IConfiguration config, ILogger<JwtService> logger)
     {
         _config = config;
+        _logger = logger;
     }
 
     public string GenerateAccessToken(ApplicationUser user, IList<string> roles)
@@ -88,8 +91,28 @@ public class JwtService : IJwtService
 
             return principal;
         }
-        catch
+        catch (SecurityTokenException ex)
         {
+            _logger.LogWarning(ex, "Geçersiz token: {Message}", ex.Message);
+
+            return null;
+        }
+        catch (ArgumentException ex) when (string.IsNullOrEmpty(token))
+        {
+            _logger.LogInformation(ex, "Token boş veya null");
+
+            return null;
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Token formatı geçersiz");
+
+            return null;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Token doğrulama sırasında beklenmeyen hata");
+
             return null;
         }
     }
