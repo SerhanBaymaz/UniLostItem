@@ -1,4 +1,5 @@
 using Domain;
+using Domain.Common.Enums;
 using FluentAssertions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -465,5 +466,138 @@ public class DbInitializerTests
         userManagerMock.Verify(u => u.CreateAsync(It.IsAny<ApplicationUser>(), It.IsAny<string>()), Times.Exactly(2));
         var lostItemCount = await context.LostItems.CountAsync();
         lostItemCount.Should().Be(4);
+    }
+
+    [Fact]
+    public async Task SeedData_Should_Create_LostItems_With_Expected_Titles()
+    {
+        var context = TestDbContextFactory.CreateInMemoryDbContext(Guid.NewGuid().ToString());
+        var userManagerMock = GetMockUserManager();
+        var roleManagerMock = GetMockRoleManager();
+        var configMock = new Mock<IConfiguration>();
+
+        var testUser = CreateTestUser("ahmetkuyuldar@gmail.com", "test-user-id");
+        context.Users.Add(testUser);
+        await context.SaveChangesAsync();
+
+        SetupCommonMocks(userManagerMock, roleManagerMock, configMock);
+
+        await DbInitializer.SeedData(context, userManagerMock.Object, roleManagerMock.Object, configMock.Object);
+
+        var titles = await context.LostItems.Select(x => x.Title).ToListAsync();
+        titles.Should().BeEquivalentTo(
+            "iPhone 15 Pro Max",
+            "Samsung Galaxy Buds",
+            "Öğrenci Kimliği",
+            "Siyah Sırt Çantası");
+    }
+
+    [Fact]
+    public async Task SeedData_Should_Create_LostItems_With_Expected_Categories()
+    {
+        var context = TestDbContextFactory.CreateInMemoryDbContext(Guid.NewGuid().ToString());
+        var userManagerMock = GetMockUserManager();
+        var roleManagerMock = GetMockRoleManager();
+        var configMock = new Mock<IConfiguration>();
+
+        var testUser = CreateTestUser("ahmetkuyuldar@gmail.com", "test-user-id");
+        context.Users.Add(testUser);
+        await context.SaveChangesAsync();
+
+        SetupCommonMocks(userManagerMock, roleManagerMock, configMock);
+
+        await DbInitializer.SeedData(context, userManagerMock.Object, roleManagerMock.Object, configMock.Object);
+
+        var items = await context.LostItems.OrderBy(x => x.Title).ToListAsync();
+        items.Should().Contain(x => x.Title == "iPhone 15 Pro Max" && x.Category == ItemCategory.Electronics);
+        items.Should().Contain(x => x.Title == "Samsung Galaxy Buds" && x.Category == ItemCategory.Electronics);
+        items.Should().Contain(x => x.Title == "Öğrenci Kimliği" && x.Category == ItemCategory.IdentificationCard);
+        items.Should().Contain(x => x.Title == "Siyah Sırt Çantası" && x.Category == ItemCategory.BagWallet);
+    }
+
+    [Fact]
+    public async Task SeedData_Should_Create_LostItems_With_Expected_ItemTypes()
+    {
+        var context = TestDbContextFactory.CreateInMemoryDbContext(Guid.NewGuid().ToString());
+        var userManagerMock = GetMockUserManager();
+        var roleManagerMock = GetMockRoleManager();
+        var configMock = new Mock<IConfiguration>();
+
+        var testUser = CreateTestUser("ahmetkuyuldar@gmail.com", "test-user-id");
+        context.Users.Add(testUser);
+        await context.SaveChangesAsync();
+
+        SetupCommonMocks(userManagerMock, roleManagerMock, configMock);
+
+        await DbInitializer.SeedData(context, userManagerMock.Object, roleManagerMock.Object, configMock.Object);
+
+        var items = await context.LostItems.OrderBy(x => x.Title).ToListAsync();
+        items.Should().Contain(x => x.Title == "iPhone 15 Pro Max" && x.ItemType == ItemType.Lost);
+        items.Should().Contain(x => x.Title == "Samsung Galaxy Buds" && x.ItemType == ItemType.Found);
+        items.Should().Contain(x => x.Title == "Öğrenci Kimliği" && x.ItemType == ItemType.Lost);
+        items.Should().Contain(x => x.Title == "Siyah Sırt Çantası" && x.ItemType == ItemType.Found);
+    }
+
+    [Fact]
+    public async Task SeedData_Should_Assign_All_LostItems_To_TestUser()
+    {
+        var context = TestDbContextFactory.CreateInMemoryDbContext(Guid.NewGuid().ToString());
+        var userManagerMock = GetMockUserManager();
+        var roleManagerMock = GetMockRoleManager();
+        var configMock = new Mock<IConfiguration>();
+
+        var testUser = CreateTestUser("ahmetkuyuldar@gmail.com", "test-user-id");
+        context.Users.Add(testUser);
+        await context.SaveChangesAsync();
+
+        SetupCommonMocks(userManagerMock, roleManagerMock, configMock);
+
+        await DbInitializer.SeedData(context, userManagerMock.Object, roleManagerMock.Object, configMock.Object);
+
+        var allItems = await context.LostItems.ToListAsync();
+        allItems.Should().AllSatisfy(item => item.UserId.Should().Be("test-user-id"));
+    }
+
+    [Fact]
+    public async Task SeedData_Should_Use_Configuration_Image_Urls()
+    {
+        var context = TestDbContextFactory.CreateInMemoryDbContext(Guid.NewGuid().ToString());
+        var userManagerMock = GetMockUserManager();
+        var roleManagerMock = GetMockRoleManager();
+        var configMock = new Mock<IConfiguration>();
+
+        var testUser = CreateTestUser("ahmetkuyuldar@gmail.com", "test-user-id");
+        context.Users.Add(testUser);
+        await context.SaveChangesAsync();
+
+        SetupCommonMocks(userManagerMock, roleManagerMock, configMock);
+
+        await DbInitializer.SeedData(context, userManagerMock.Object, roleManagerMock.Object, configMock.Object);
+
+        var items = await context.LostItems.OrderBy(x => x.Title).ToListAsync();
+        items.Should().Contain(x => x.Title == "iPhone 15 Pro Max" && x.ImageUrl == "iphone-url");
+        items.Should().Contain(x => x.Title == "Samsung Galaxy Buds" && x.ImageUrl == "buds-url");
+        items.Should().Contain(x => x.Title == "Öğrenci Kimliği" && x.ImageUrl == "id-url");
+        items.Should().Contain(x => x.Title == "Siyah Sırt Çantası" && x.ImageUrl == "bag-url");
+    }
+
+    [Fact]
+    public async Task SeedData_Should_Create_LostItems_With_Active_Status()
+    {
+        var context = TestDbContextFactory.CreateInMemoryDbContext(Guid.NewGuid().ToString());
+        var userManagerMock = GetMockUserManager();
+        var roleManagerMock = GetMockRoleManager();
+        var configMock = new Mock<IConfiguration>();
+
+        var testUser = CreateTestUser("ahmetkuyuldar@gmail.com", "test-user-id");
+        context.Users.Add(testUser);
+        await context.SaveChangesAsync();
+
+        SetupCommonMocks(userManagerMock, roleManagerMock, configMock);
+
+        await DbInitializer.SeedData(context, userManagerMock.Object, roleManagerMock.Object, configMock.Object);
+
+        var items = await context.LostItems.ToListAsync();
+        items.Should().AllSatisfy(item => item.Status.Should().Be(ItemStatus.Active));
     }
 }
