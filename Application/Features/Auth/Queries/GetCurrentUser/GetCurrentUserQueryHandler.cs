@@ -6,16 +6,10 @@ using Microsoft.AspNetCore.Identity;
 
 namespace Application.Features.Auth.Queries.GetCurrentUser;
 
-public class GetCurrentUserQueryHandler : IRequestHandler<GetCurrentUserQuery, Result<CurrentUserDto>>
+public class GetCurrentUserQueryHandler(UserManager<ApplicationUser> userManager, ICurrentUserService currentUserService) : IRequestHandler<GetCurrentUserQuery, Result<CurrentUserDto>>
 {
-    private readonly UserManager<ApplicationUser> _userManager;
-    private readonly ICurrentUserService _currentUserService;
-
-    public GetCurrentUserQueryHandler(UserManager<ApplicationUser> userManager, ICurrentUserService currentUserService)
-    {
-        _userManager = userManager;
-        _currentUserService = currentUserService;
-    }
+    private readonly UserManager<ApplicationUser> _userManager = userManager;
+    private readonly ICurrentUserService _currentUserService = currentUserService;
 
     public async Task<Result<CurrentUserDto>> Handle(GetCurrentUserQuery request, CancellationToken cancellationToken)
     {

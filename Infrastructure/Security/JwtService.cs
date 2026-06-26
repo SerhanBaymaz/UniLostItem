@@ -10,16 +10,10 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace Infrastructure.Security;
 
-public class JwtService : IJwtService
+public class JwtService(IConfiguration config, ILogger<JwtService> logger) : IJwtService
 {
-    private readonly IConfiguration _config;
-    private readonly ILogger<JwtService> _logger;
-
-    public JwtService(IConfiguration config, ILogger<JwtService> logger)
-    {
-        _config = config;
-        _logger = logger;
-    }
+    private readonly IConfiguration _config = config;
+    private readonly ILogger<JwtService> _logger = logger;
 
     public string GenerateAccessToken(ApplicationUser user, IList<string> roles)
     {

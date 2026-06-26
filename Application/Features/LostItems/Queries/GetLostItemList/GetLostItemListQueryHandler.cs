@@ -8,15 +8,10 @@ using Persistence;
 
 namespace Application.Features.LostItems.Queries.GetLostItemList;
 
-public class GetLostItemListQueryHandler :
+public class GetLostItemListQueryHandler(IAppDbContext context) :
     IRequestHandler<GetLostItemListQuery, Result<PaginatedListDto<GetLostItemDto>>>
 {
-    private readonly IAppDbContext _context;
-
-    public GetLostItemListQueryHandler(IAppDbContext context)
-    {
-        _context = context;
-    }
+    private readonly IAppDbContext _context = context;
 
     public async Task<Result<PaginatedListDto<GetLostItemDto>>> Handle(
         GetLostItemListQuery request,

@@ -8,15 +8,10 @@ using Persistence;
 
 namespace Application.Features.ItemClaims.Queries.GetPendingClaims;
 
-public class GetPendingClaimsQueryHandler :
+public class GetPendingClaimsQueryHandler(IAppDbContext context) :
     IRequestHandler<GetPendingClaimsQuery, Result<PaginatedListDto<GetItemClaimDto>>>
 {
-    private readonly IAppDbContext _context;
-
-    public GetPendingClaimsQueryHandler(IAppDbContext context)
-    {
-        _context = context;
-    }
+    private readonly IAppDbContext _context = context;
 
     public async Task<Result<PaginatedListDto<GetItemClaimDto>>> Handle(
         GetPendingClaimsQuery request,

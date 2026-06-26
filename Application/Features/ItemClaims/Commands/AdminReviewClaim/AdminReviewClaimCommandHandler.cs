@@ -7,16 +7,10 @@ using Persistence;
 
 namespace Application.Features.ItemClaims.Commands.AdminReviewClaim;
 
-public class AdminReviewClaimCommandHandler : IRequestHandler<AdminReviewClaimCommand, Result<Unit>>
+public class AdminReviewClaimCommandHandler(IAppDbContext context, ICurrentUserService currentUserService) : IRequestHandler<AdminReviewClaimCommand, Result<Unit>>
 {
-    private readonly IAppDbContext _context;
-    private readonly ICurrentUserService _currentUserService;
-
-    public AdminReviewClaimCommandHandler(IAppDbContext context, ICurrentUserService currentUserService)
-    {
-        _context = context;
-        _currentUserService = currentUserService;
-    }
+    private readonly IAppDbContext _context = context;
+    private readonly ICurrentUserService _currentUserService = currentUserService;
 
     public async Task<Result<Unit>> Handle(AdminReviewClaimCommand request, CancellationToken cancellationToken)
     {

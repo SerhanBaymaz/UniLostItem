@@ -7,16 +7,10 @@ using Persistence;
 
 namespace Application.Features.ItemClaims.Queries.GetClaimDetails;
 
-public class GetClaimDetailsQueryHandler : IRequestHandler<GetClaimDetailsQuery, Result<GetItemClaimDto>>
+public class GetClaimDetailsQueryHandler(IAppDbContext context, ICurrentUserService currentUserService) : IRequestHandler<GetClaimDetailsQuery, Result<GetItemClaimDto>>
 {
-    private readonly IAppDbContext _context;
-    private readonly ICurrentUserService _currentUserService;
-
-    public GetClaimDetailsQueryHandler(IAppDbContext context, ICurrentUserService currentUserService)
-    {
-        _context = context;
-        _currentUserService = currentUserService;
-    }
+    private readonly IAppDbContext _context = context;
+    private readonly ICurrentUserService _currentUserService = currentUserService;
 
     public async Task<Result<GetItemClaimDto>> Handle(
         GetClaimDetailsQuery request,

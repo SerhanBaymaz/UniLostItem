@@ -26,14 +26,9 @@ public static class MockHelpers
         return mockDbSet;
     }
 
-    private class AsyncEnumerator<T> : IAsyncEnumerator<T>
+    private class AsyncEnumerator<T>(IEnumerator<T> enumerator) : IAsyncEnumerator<T>
     {
-        private readonly IEnumerator<T> _enumerator;
-
-        public AsyncEnumerator(IEnumerator<T> enumerator)
-        {
-            _enumerator = enumerator;
-        }
+        private readonly IEnumerator<T> _enumerator = enumerator;
 
         public T Current => _enumerator.Current;
         public ValueTask DisposeAsync() { _enumerator.Dispose(); return ValueTask.CompletedTask; }

@@ -6,21 +6,14 @@ using Persistence;
 
 namespace Application.Features.LostItems.Commands.UpdateLostItem;
 
-public class UpdateLostItemCommandHandler : IRequestHandler<UpdateLostItemCommand, Result<Unit>>
+public class UpdateLostItemCommandHandler(
+    IAppDbContext context,
+    ICurrentUserService currentUserService,
+    IImageStorageService imageStorageService) : IRequestHandler<UpdateLostItemCommand, Result<Unit>>
 {
-    private readonly IAppDbContext _context;
-    private readonly ICurrentUserService _currentUserService;
-    private readonly IImageStorageService _imageStorageService;
-
-    public UpdateLostItemCommandHandler(
-        IAppDbContext context,
-        ICurrentUserService currentUserService,
-        IImageStorageService imageStorageService)
-    {
-        _context = context;
-        _currentUserService = currentUserService;
-        _imageStorageService = imageStorageService;
-    }
+    private readonly IAppDbContext _context = context;
+    private readonly ICurrentUserService _currentUserService = currentUserService;
+    private readonly IImageStorageService _imageStorageService = imageStorageService;
 
     public async Task<Result<Unit>> Handle(UpdateLostItemCommand request, CancellationToken cancellationToken)
     {

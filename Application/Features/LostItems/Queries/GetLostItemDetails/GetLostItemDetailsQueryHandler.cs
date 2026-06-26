@@ -6,14 +6,9 @@ using Persistence;
 
 namespace Application.Features.LostItems.Queries.GetLostItemDetails;
 
-public class GetLostItemDetailsQueryHandler : IRequestHandler<GetLostItemDetailsQuery, Result<GetLostItemDetailDto>>
+public class GetLostItemDetailsQueryHandler(IAppDbContext context) : IRequestHandler<GetLostItemDetailsQuery, Result<GetLostItemDetailDto>>
 {
-    private readonly IAppDbContext _context;
-
-    public GetLostItemDetailsQueryHandler(IAppDbContext context)
-    {
-        _context = context;
-    }
+    private readonly IAppDbContext _context = context;
 
     public async Task<Result<GetLostItemDetailDto>> Handle(GetLostItemDetailsQuery request, CancellationToken cancellationToken)
     {
