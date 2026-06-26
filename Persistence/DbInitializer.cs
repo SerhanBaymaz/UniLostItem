@@ -2,6 +2,7 @@ using System;
 using Domain;
 using Domain.Common.Enums;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
 namespace Persistence;
@@ -66,7 +67,7 @@ public static class DbInitializer
         }
 
         // Seed LostItems
-        if (!context.LostItems.Any())
+        if (!await context.LostItems.AnyAsync())
         {
             var testUser = await userManager.FindByEmailAsync(TestUserEmail);
 
