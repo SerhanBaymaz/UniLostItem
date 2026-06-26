@@ -9,21 +9,14 @@ using Microsoft.Extensions.Configuration;
 
 namespace Application.Features.Auth.Commands.RefreshToken;
 
-public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, Result<UserDto>>
+public class RefreshTokenCommandHandler(
+    UserManager<ApplicationUser> userManager,
+    IJwtService jwtService,
+    IConfiguration configuration) : IRequestHandler<RefreshTokenCommand, Result<UserDto>>
 {
-    private readonly UserManager<ApplicationUser> _userManager;
-    private readonly IJwtService _jwtService;
-    private readonly IConfiguration _configuration;
-
-    public RefreshTokenCommandHandler(
-        UserManager<ApplicationUser> userManager,
-        IJwtService jwtService,
-        IConfiguration configuration)
-    {
-        _userManager = userManager;
-        _jwtService = jwtService;
-        _configuration = configuration;
-    }
+    private readonly UserManager<ApplicationUser> _userManager = userManager;
+    private readonly IJwtService _jwtService = jwtService;
+    private readonly IConfiguration _configuration = configuration;
 
     public async Task<Result<UserDto>> Handle(RefreshTokenCommand request, CancellationToken cancellationToken)
     {

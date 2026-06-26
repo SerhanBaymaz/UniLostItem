@@ -8,16 +8,10 @@ using Persistence;
 
 namespace Application.Features.ItemClaims.Commands.CreateItemClaim;
 
-public class CreateItemClaimCommandHandler : IRequestHandler<CreateItemClaimCommand, Result<string>>
+public class CreateItemClaimCommandHandler(IAppDbContext context, ICurrentUserService currentUserService) : IRequestHandler<CreateItemClaimCommand, Result<string>>
 {
-    private readonly IAppDbContext _context;
-    private readonly ICurrentUserService _currentUserService;
-
-    public CreateItemClaimCommandHandler(IAppDbContext context, ICurrentUserService currentUserService)
-    {
-        _context = context;
-        _currentUserService = currentUserService;
-    }
+    private readonly IAppDbContext _context = context;
+    private readonly ICurrentUserService _currentUserService = currentUserService;
 
     public async Task<Result<string>> Handle(CreateItemClaimCommand request, CancellationToken cancellationToken)
     {

@@ -97,3 +97,7 @@ Common/    — DTOs, Enums (sort fields)
 - `dotnet test` for validation; Docker only for integration scenarios
 - EF migrations via `dotnet ef ... -p Persistence -s API`, not raw SQL
 - **Coverage on New Code (required ≥ 80%)** — All new/modified code must have ≥80% test coverage (SonarQube quality gate)
+
+## Coding Style
+
+- **Primary constructors** — Prefer C# 12 primary constructors for all classes with constructor DI parameters instead of separate field+constructor boilerplate.

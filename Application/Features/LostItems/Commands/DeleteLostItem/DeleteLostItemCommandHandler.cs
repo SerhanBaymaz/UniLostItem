@@ -6,16 +6,10 @@ using Persistence;
 
 namespace Application.Features.LostItems.Commands.DeleteLostItem;
 
-public class DeleteLostItemCommandHandler : IRequestHandler<DeleteLostItemCommand, Result<Unit>>
+public class DeleteLostItemCommandHandler(IAppDbContext context, ICurrentUserService currentUserService) : IRequestHandler<DeleteLostItemCommand, Result<Unit>>
 {
-    private readonly IAppDbContext _context;
-    private readonly ICurrentUserService _currentUserService;
-
-    public DeleteLostItemCommandHandler(IAppDbContext context, ICurrentUserService currentUserService)
-    {
-        _context = context;
-        _currentUserService = currentUserService;
-    }
+    private readonly IAppDbContext _context = context;
+    private readonly ICurrentUserService _currentUserService = currentUserService;
 
     public async Task<Result<Unit>> Handle(DeleteLostItemCommand request, CancellationToken cancellationToken)
     {

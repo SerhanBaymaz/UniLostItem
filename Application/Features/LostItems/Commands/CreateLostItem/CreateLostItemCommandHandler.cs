@@ -7,24 +7,16 @@ using Persistence;
 
 namespace Application.Features.LostItems.Commands.CreateLostItem;
 
-public class CreateLostItemCommandHandler : IRequestHandler<CreateLostItemCommand, Result<string>>
+public class CreateLostItemCommandHandler(
+    IAppDbContext context,
+    IMapper mapper,
+    ICurrentUserService currentUserService,
+    IImageStorageService imageStorageService) : IRequestHandler<CreateLostItemCommand, Result<string>>
 {
-    private readonly IAppDbContext _context;
-    private readonly IMapper _mapper;
-    private readonly ICurrentUserService _currentUserService;
-    private readonly IImageStorageService _imageStorageService;
-
-    public CreateLostItemCommandHandler(
-        IAppDbContext context,
-        IMapper mapper,
-        ICurrentUserService currentUserService,
-        IImageStorageService imageStorageService)
-    {
-        _context = context;
-        _mapper = mapper;
-        _currentUserService = currentUserService;
-        _imageStorageService = imageStorageService;
-    }
+    private readonly IAppDbContext _context = context;
+    private readonly IMapper _mapper = mapper;
+    private readonly ICurrentUserService _currentUserService = currentUserService;
+    private readonly IImageStorageService _imageStorageService = imageStorageService;
 
     public async Task<Result<string>> Handle(CreateLostItemCommand request, CancellationToken cancellationToken)
     {

@@ -7,16 +7,10 @@ using Microsoft.AspNetCore.Identity;
 
 namespace Application.Features.Auth.Commands.Register;
 
-public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result<UserDto>>
+public class RegisterCommandHandler(UserManager<ApplicationUser> userManager, IJwtService jwtService) : IRequestHandler<RegisterCommand, Result<UserDto>>
 {
-    private readonly UserManager<ApplicationUser> _userManager;
-    private readonly IJwtService _jwtService;
-
-    public RegisterCommandHandler(UserManager<ApplicationUser> userManager, IJwtService jwtService)
-    {
-        _userManager = userManager;
-        _jwtService = jwtService;
-    }
+    private readonly UserManager<ApplicationUser> _userManager = userManager;
+    private readonly IJwtService _jwtService = jwtService;
 
     public async Task<Result<UserDto>> Handle(RegisterCommand request, CancellationToken cancellationToken)
     {

@@ -7,16 +7,10 @@ using Persistence;
 
 namespace Application.Features.ItemClaims.Commands.ExtendClaimDeadline;
 
-public class ExtendClaimDeadlineCommandHandler : IRequestHandler<ExtendClaimDeadlineCommand, Result<Unit>>
+public class ExtendClaimDeadlineCommandHandler(IAppDbContext context, ICurrentUserService currentUserService) : IRequestHandler<ExtendClaimDeadlineCommand, Result<Unit>>
 {
-    private readonly IAppDbContext _context;
-    private readonly ICurrentUserService _currentUserService;
-
-    public ExtendClaimDeadlineCommandHandler(IAppDbContext context, ICurrentUserService currentUserService)
-    {
-        _context = context;
-        _currentUserService = currentUserService;
-    }
+    private readonly IAppDbContext _context = context;
+    private readonly ICurrentUserService _currentUserService = currentUserService;
 
     public async Task<Result<Unit>> Handle(ExtendClaimDeadlineCommand request, CancellationToken cancellationToken)
     {

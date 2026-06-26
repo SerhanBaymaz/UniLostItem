@@ -9,17 +9,11 @@ using Persistence;
 
 namespace Application.Features.LostItems.Queries.GetMyLostItems;
 
-public class GetMyLostItemsQueryHandler :
+public class GetMyLostItemsQueryHandler(IAppDbContext context, ICurrentUserService currentUserService) :
     IRequestHandler<GetMyLostItemsQuery, Result<PaginatedListDto<GetLostItemDto>>>
 {
-    private readonly IAppDbContext _context;
-    private readonly ICurrentUserService _currentUserService;
-
-    public GetMyLostItemsQueryHandler(IAppDbContext context, ICurrentUserService currentUserService)
-    {
-        _context = context;
-        _currentUserService = currentUserService;
-    }
+    private readonly IAppDbContext _context = context;
+    private readonly ICurrentUserService _currentUserService = currentUserService;
 
     public async Task<Result<PaginatedListDto<GetLostItemDto>>> Handle(
         GetMyLostItemsQuery request,

@@ -4,14 +4,9 @@ using MediatR;
 
 namespace Application.Features.Images.Commands.DeleteImage;
 
-public class DeleteImageCommandHandler : IRequestHandler<DeleteImageCommand, Result<Unit>>
+public class DeleteImageCommandHandler(IImageStorageService imageStorageService) : IRequestHandler<DeleteImageCommand, Result<Unit>>
 {
-    private readonly IImageStorageService _imageStorageService;
-
-    public DeleteImageCommandHandler(IImageStorageService imageStorageService)
-    {
-        _imageStorageService = imageStorageService;
-    }
+    private readonly IImageStorageService _imageStorageService = imageStorageService;
 
     public async Task<Result<Unit>> Handle(DeleteImageCommand request, CancellationToken cancellationToken)
     {

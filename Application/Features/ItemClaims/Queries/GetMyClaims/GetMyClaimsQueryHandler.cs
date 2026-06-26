@@ -9,17 +9,11 @@ using Persistence;
 
 namespace Application.Features.ItemClaims.Queries.GetMyClaims;
 
-public class GetMyClaimsQueryHandler :
+public class GetMyClaimsQueryHandler(IAppDbContext context, ICurrentUserService currentUserService) :
     IRequestHandler<GetMyClaimsQuery, Result<PaginatedListDto<GetItemClaimDto>>>
 {
-    private readonly IAppDbContext _context;
-    private readonly ICurrentUserService _currentUserService;
-
-    public GetMyClaimsQueryHandler(IAppDbContext context, ICurrentUserService currentUserService)
-    {
-        _context = context;
-        _currentUserService = currentUserService;
-    }
+    private readonly IAppDbContext _context = context;
+    private readonly ICurrentUserService _currentUserService = currentUserService;
 
     public async Task<Result<PaginatedListDto<GetItemClaimDto>>> Handle(
         GetMyClaimsQuery request,

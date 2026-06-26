@@ -9,18 +9,11 @@ using Microsoft.Extensions.Configuration;
 
 namespace Application.Features.Auth.Commands.Login;
 
-public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<UserDto>>
+public class LoginCommandHandler(UserManager<ApplicationUser> userManager, IJwtService jwtService, IConfiguration configuration) : IRequestHandler<LoginCommand, Result<UserDto>>
 {
-    private readonly UserManager<ApplicationUser> _userManager;
-    private readonly IJwtService _jwtService;
-    private readonly IConfiguration _configuration;
-
-    public LoginCommandHandler(UserManager<ApplicationUser> userManager, IJwtService jwtService, IConfiguration configuration)
-    {
-        _userManager = userManager;
-        _jwtService = jwtService;
-        _configuration = configuration;
-    }
+    private readonly UserManager<ApplicationUser> _userManager = userManager;
+    private readonly IJwtService _jwtService = jwtService;
+    private readonly IConfiguration _configuration = configuration;
 
     public async Task<Result<UserDto>> Handle(LoginCommand request, CancellationToken cancellationToken)
     {

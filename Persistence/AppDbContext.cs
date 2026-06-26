@@ -5,12 +5,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Persistence;
 
-public class AppDbContext : IdentityDbContext<ApplicationUser>, IAppDbContext
+public class AppDbContext(DbContextOptions options) : IdentityDbContext<ApplicationUser>(options), IAppDbContext
 {
-    public AppDbContext(DbContextOptions options) : base(options)
-    {
-    }
-
     public DbSet<LostItem> LostItems { get; set; } = null!;
     public DbSet<ItemClaim> ItemClaims { get; set; } = null!;
 

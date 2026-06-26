@@ -7,16 +7,10 @@ using Microsoft.AspNetCore.Identity;
 
 namespace Application.Features.Auth.Commands.UpdateUserProfile;
 
-public class UpdateUserProfileCommandHandler : IRequestHandler<UpdateUserProfileCommand, Result<CurrentUserDto>>
+public class UpdateUserProfileCommandHandler(UserManager<ApplicationUser> userManager, ICurrentUserService currentUserService) : IRequestHandler<UpdateUserProfileCommand, Result<CurrentUserDto>>
 {
-    private readonly UserManager<ApplicationUser> _userManager;
-    private readonly ICurrentUserService _currentUserService;
-
-    public UpdateUserProfileCommandHandler(UserManager<ApplicationUser> userManager, ICurrentUserService currentUserService)
-    {
-        _userManager = userManager;
-        _currentUserService = currentUserService;
-    }
+    private readonly UserManager<ApplicationUser> _userManager = userManager;
+    private readonly ICurrentUserService _currentUserService = currentUserService;
 
     public async Task<Result<CurrentUserDto>> Handle(UpdateUserProfileCommand request, CancellationToken cancellationToken)
     {
